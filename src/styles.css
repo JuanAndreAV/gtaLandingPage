@@ -1,1 +1,13 @@
-/* You can add global styles to this file, and also import other style files */
+@import "tailwindcss";
+
+@theme {
+  --color-girardota-yellow: #F9D423;
+  --color-girardota-teal: #00897B;
+  --color-girardota-teal-dark: #00695C ;
+  --color-girardota-orange: #FF6B35;
+  --color-girardota-blue: #4DD0E1;
+  
+}
+
+       
+       

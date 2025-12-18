@@ -1,0 +1,16 @@
+{
+  
+    "address": "Girardota, Antioquia",
+    "phone": "604 322 42 99 ext. 41",
+    "email": "cultura@girardota.gov.co",
+    "social": {
+      "instagram": "@alcaldiagirardota",
+      "facebook": "CasaCulturaGirardota"
+    },
+    "schedule": {
+      "weekdays": "Lunes a Viernes: 8:00 AM - 6:00 PM",
+      "saturday": "Sábados: 9:00 AM - 1:00 PM",
+      "sunday": "Domingos: Cerrado"
+    }
+  
+}
