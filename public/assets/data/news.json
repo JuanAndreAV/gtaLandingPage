@@ -1,0 +1,56 @@
+{
+  "news": [
+    {
+      "id": "1",
+      "title": "Taller de Música",
+      "description": "Inscripciones abiertas para clases de guitarra, piano y canto. Cupos limitados.",
+      "badge": "NUEVO",
+      "badgeColor": "yellow",
+      "icon": "music",
+      "iconGradient": "from-girardota-teal to-girardota-teal-dark",
+      "link": "#inscripciones",
+      "linkText": "Inscríbete aquí →",
+      "createdAt": "2025-01-10T00:00:00Z",
+      "active": true
+    },
+    {
+      "id": "2",
+      "title": "Artes Plásticas",
+      "description": "Clases de pintura, escultura y dibujo para todas las edades. Materiales incluidos.",
+      "badge": "DESTACADO",
+      "badgeColor": "orange",
+      "icon": "palette",
+      "iconGradient": "from-girardota-yellow to-yellow-500",
+      "link": "#inscripciones",
+      "linkText": "Más información →",
+      "createdAt": "2025-01-08T00:00:00Z",
+      "active": true
+    },
+    {
+      "id": "3",
+      "title": "Teatro Comunitario",
+      "description": "Prepárate para formar parte de nuestro nuevo grupo de teatro. Inscripciones pronto.",
+      "badge": "PRÓXIMAMENTE",
+      "badgeColor": "blue",
+      "icon": "theater",
+      "iconGradient": "from-girardota-orange to-red-500",
+      "link": "#contacto",
+      "linkText": "Mantente informado →",
+      "createdAt": "2025-01-05T00:00:00Z",
+      "active": true
+    },
+    {
+      "id": "4",
+      "title": "Danza",
+      "description": "Prepárate para formar parte de nuestro nuevo grupo de danza. Inscripciones pronto.",
+      "badge": "PRÓXIMAMENTE",
+      "badgeColor": "blue",
+      "icon": "dance",
+      "iconGradient": "from-girardota-orange to-red-500",
+      "link": "#contacto",
+      "linkText": "Mantente informado →",
+      "createdAt": "2025-01-05T00:00:00Z",
+      "active": true
+    }
+  ]
+}

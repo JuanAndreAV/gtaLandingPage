@@ -1,9 +1,9 @@
-import { NgClass } from '@angular/common';
+
 import { Component, signal } from '@angular/core';
 
 @Component({
   selector: 'app-header',
-  imports: [NgClass],
+  imports: [],
   templateUrl: './header.component.html',
   styleUrl: './header.component.css',
   standalone: true

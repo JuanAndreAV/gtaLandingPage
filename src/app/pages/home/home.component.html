@@ -1,1 +1,135 @@
-<p>home works!</p>
+<!-- Hero Banner -->
+<section id="inicio" class="relative gradient-bg cultural-pattern text-white py-20">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center animate-fade-in">
+      <h2 class="text-5xl md:text-6xl font-bold mb-6">Girardota es Cultura</h2>
+      <p class="text-xl md:text-2xl mb-8 text-gray-100">
+        Descubre el arte, la música y las tradiciones de nuestro municipio
+      </p>
+      <a 
+        href="#inscripciones" 
+        class="btn-primary inline-block px-8 py-4 rounded-full font-bold text-lg shadow-xl text-girardota-teal-dark hover:scale-105 transition-transform">
+        Inscríbete Ahora
+      </a>
+    </div>
+  </div>
+  <div class="absolute bottom-0 left-0 right-0">
+    <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z" fill="#F9FAFB"/>
+    </svg>
+  </div>
+</section>
+
+<!-- Noticias e Inscripciones -->
+<section id="talleres" class="py-16 bg-gray-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <h3 class="text-3xl font-bold text-gray-900 mb-8 text-center">
+      Noticias e Inscripciones
+    </h3>
+    
+    @if (loadingNews()) {
+      <!-- Loading State -->
+      <div class="text-center py-12">
+        <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-girardota-teal"></div>
+        <p class="text-gray-600 mt-4">Cargando noticias...</p>
+      </div>
+    } @else if (errorNews()) {
+      <!-- Error State -->
+      <div class="text-center py-12">
+        <p class="text-red-600 font-semibold">{{ errorNews() }}</p>
+        <p class="text-gray-500 mt-2">Por favor, intenta nuevamente más tarde.</p>
+      </div>
+    } @else {
+      <!-- News Cards -->
+      <div class="grid md:grid-cols-3 gap-8">
+        @for (newsItem of news(); track newsItem.id) {
+          <app-news-card [news]="newsItem" />
+        }
+        @empty {
+          <div class="col-span-3 text-center py-12">
+            <p class="text-gray-500">No hay noticias disponibles en este momento.</p>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</section>
+
+<!-- Banner Inscripciones -->
+<section id="inscripciones" class="py-16 gradient-yellow">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+    <h3 class="text-4xl font-bold mb-6 text-girardota-teal-dark">
+      ¡Inscripciones Abiertas 2026!
+    </h3>
+    <p class="text-xl mb-8 text-gray-800">
+      No te quedes fuera. Únete a nuestra comunidad cultural y desarrolla tu talento.
+    </p>
+    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+      <a 
+        href="#talleres" 
+        class="bg-girardota-teal text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-girardota-teal-dark transition shadow-lg">
+        Ver Talleres Disponibles
+      </a>
+      <a 
+        href="#contacto" 
+        class="bg-transparent border-3 border-girardota-teal text-girardota-teal-dark px-8 py-4 rounded-full font-bold text-lg hover:bg-girardota-teal hover:text-white transition">
+        Contactar Ahora
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Próximos Eventos -->
+<section id="eventos" class="py-16 bg-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <h3 class="text-3xl font-bold text-gray-900 mb-8 text-center">
+      Próximos Eventos
+    </h3>
+    
+    @if (loadingEvents()) {
+      <!-- Loading State -->
+      <div class="text-center py-12">
+        <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-girardota-teal"></div>
+        <p class="text-gray-600 mt-4">Cargando eventos...</p>
+      </div>
+    } @else if (errorEvents()) {
+      <!-- Error State -->
+      <div class="text-center py-12">
+        <p class="text-red-600 font-semibold">{{ errorEvents() }}</p>
+        <p class="text-gray-500 mt-2">Por favor, intenta nuevamente más tarde.</p>
+      </div>
+    } @else {
+      <!-- Event Items -->
+      <div class="space-y-4">
+        @for (event of events(); track event.id) {
+         <app-event-item [event]="event" /> 
+        }
+        @empty {
+          <div class="text-center py-12">
+            <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            <p class="text-gray-500 text-lg">No hay eventos próximos en este momento.</p>
+            <p class="text-gray-400 text-sm mt-2">Vuelve pronto para ver nuestras próximas actividades.</p>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</section>
+
+<!-- Estadísticas -->
+<section class="py-16 gradient-bg cultural-pattern text-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid md:grid-cols-4 gap-8 text-center">
+      @for (stat of statistics; track stat.value) {
+        <div class="animate-fade-in">
+          <div class="text-5xl font-bold text-girardota-yellow mb-2">
+            {{ stat.value }}
+          </div>
+          <p class="text-gray-500">{{ stat.label }}</p>
+        </div>
+      }
+    </div>
+  </div>
+</section>
