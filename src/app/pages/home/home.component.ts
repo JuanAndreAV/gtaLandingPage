@@ -25,9 +25,9 @@ export class HomeComponent {
   errorEvents = signal('');
 
   statistics = [
-    { value: '40,000', label: 'Asistentes en 2024' },
+    { value: '1300', label: 'Asistentes en 2025' },
     { value: '600+', label: 'Artistas en Carnaval' },
-    { value: '487', label: 'Artistas Locales' },
+    { value: '100', label: 'Artistas Locales' },
     { value: '250+', label: 'Personas en Sainetes' }
   ];
 
