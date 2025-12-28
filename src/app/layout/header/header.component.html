@@ -20,11 +20,21 @@
       <!-- Desktop Menu -->
       <div class="hidden md:flex space-x-8">
         @for(item of menuItems; track item.id){
+        @if (!item.routerLink) {
         <a 
           [href]="item.link"
           class="text-white hover:text-girardota-yellow transition font-medium">
           {{ item.label }} 
+        </a>}@else {
+          <a 
+          [routerLink]="item.link"
+          class="text-white hover:text-girardota-yellow transition font-medium">
+          {{ item.label }} 
         </a>}
+        
+      
+      }
+        
       </div>
       
       <!-- Mobile Menu Button -->
