@@ -9,10 +9,12 @@ import { environment } from '../../environments/environment';
 })
 export class MetricasService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = environment.baseUrl;
+  //private readonly apiUrl = environment.baseUrl;
+   private readonly apiUrl = 'assets/data'; // Mock local
 
   getMetricasAdmin(): Observable<MetricasAdmin> {
-    return this.http.get<MetricasAdmin>(`${this.apiUrl}metricas/admin/dashboard`);
+    //return this.http.get<MetricasAdmin>(`${this.apiUrl}metricas/admin/dashboard`);
+    return this.http.get<MetricasAdmin>(`${this.apiUrl}/metricas-dashboard.json`); // Mock
   }
 
   getAnalisisDesercion(): Observable<DesercionAnalisis> {

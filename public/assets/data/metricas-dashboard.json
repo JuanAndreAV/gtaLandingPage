@@ -1,0 +1,101 @@
+{
+  "totalEstudiantes": 487,
+  "estudiantesActivos": 423,
+  "estudiantesNuevos": 45,
+  "totalCursos": 28,
+  "cursosActivos": 24,
+  "totalProfesores": 18,
+  "profesoresActivos": 16,
+  "inscripcionesDelMes": 67,
+  "inscripcionesPendientes": 12,
+  "tasaDesercion": 8.5,
+  "promedioAsistenciaGeneral": 87.3,
+  "cursosMasPopulares": [
+    {
+      "cursoId": "1",
+      "nombre": "Guitarra Nivel I",
+      "categoria": "Música",
+      "inscritos": 45,
+      "capacidad": 50,
+      "porcentajeOcupacion": 90,
+      "promedioAsistencia": 92.5
+    },
+    {
+      "cursoId": "2",
+      "nombre": "Pintura al Óleo",
+      "categoria": "Arte",
+      "inscritos": 38,
+      "capacidad": 40,
+      "porcentajeOcupacion": 95,
+      "promedioAsistencia": 88.7
+    },
+    {
+      "cursoId": "3",
+      "nombre": "Teatro Infantil",
+      "categoria": "Teatro",
+      "inscritos": 35,
+      "capacidad": 40,
+      "porcentajeOcupacion": 87.5,
+      "promedioAsistencia": 85.2
+    },
+    {
+      "cursoId": "4",
+      "nombre": "Danza Folclórica",
+      "categoria": "Danza",
+      "inscritos": 42,
+      "capacidad": 45,
+      "porcentajeOcupacion": 93.3,
+      "promedioAsistencia": 91.8
+    },
+    {
+      "cursoId": "5",
+      "nombre": "Piano Nivel II",
+      "categoria": "Música",
+      "inscritos": 28,
+      "capacidad": 30,
+      "porcentajeOcupacion": 93.3,
+      "promedioAsistencia": 89.4
+    },
+    {
+      "cursoId": "6",
+      "nombre": "Escultura",
+      "categoria": "Arte",
+      "inscritos": 22,
+      "capacidad": 25,
+      "porcentajeOcupacion": 88,
+      "promedioAsistencia": 86.1
+    },
+    {
+      "cursoId": "7",
+      "nombre": "Canto Coral",
+      "categoria": "Música",
+      "inscritos": 40,
+      "capacidad": 50,
+      "porcentajeOcupacion": 80,
+      "promedioAsistencia": 83.5
+    },
+    {
+      "cursoId": "8",
+      "nombre": "Fotografía Digital",
+      "categoria": "Arte",
+      "inscritos": 30,
+      "capacidad": 35,
+      "porcentajeOcupacion": 85.7,
+      "promedioAsistencia": 90.2
+    }
+  ],
+  "tendenciaInscripciones": [
+    { "mes": "Jul 2024", "inscripciones": 45, "deserciones": 8 },
+    { "mes": "Ago 2024", "inscripciones": 62, "deserciones": 5 },
+    { "mes": "Sep 2024", "inscripciones": 78, "deserciones": 12 },
+    { "mes": "Oct 2024", "inscripciones": 54, "deserciones": 7 },
+    { "mes": "Nov 2024", "inscripciones": 71, "deserciones": 9 },
+    { "mes": "Dic 2024", "inscripciones": 67, "deserciones": 6 }
+  ],
+  "distribucionPorCategoria": [
+    { "categoria": "Música", "cantidad": 156, "porcentaje": 36.4 },
+    { "categoria": "Arte", "cantidad": 134, "porcentaje": 31.2 },
+    { "categoria": "Danza", "cantidad": 87, "porcentaje": 20.3 },
+    { "categoria": "Teatro", "cantidad": 52, "porcentaje": 12.1 }
+  ]
+}

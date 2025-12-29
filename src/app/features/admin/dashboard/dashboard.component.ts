@@ -1,13 +1,14 @@
 import { Component, inject, signal } from '@angular/core';
 import { MetricasService } from '../../../services/metricas.service';
 import { MetricasAdmin } from '../../../models/metricas';
-//import { ChartModule } from 'primeng/chart';
+import { ChartModule } from 'primeng/chart';
 import { CommonModule } from '@angular/common';
+
 
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CommonModule],
+  imports: [CommonModule, ], 
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
   standalone: true
