@@ -1,11 +1,11 @@
 {
-  "totalEstudiantes": 487,
-  "estudiantesActivos": 423,
+  "totalEstudiantes": 1300,
+  "estudiantesActivos": 1250,
   "estudiantesNuevos": 45,
   "totalCursos": 28,
-  "cursosActivos": 24,
-  "totalProfesores": 18,
-  "profesoresActivos": 16,
+  "cursosActivos": 28,
+  "totalProfesores": 28,
+  "profesoresActivos": 25,
   "inscripcionesDelMes": 67,
   "inscripcionesPendientes": 12,
   "tasaDesercion": 8.5,
@@ -22,7 +22,7 @@
     },
     {
       "cursoId": "2",
-      "nombre": "Pintura al Óleo",
+      "nombre": "Pintura",
       "categoria": "Arte",
       "inscritos": 38,
       "capacidad": 40,
@@ -31,7 +31,7 @@
     },
     {
       "cursoId": "3",
-      "nombre": "Teatro Infantil",
+      "nombre": "Teatro",
       "categoria": "Teatro",
       "inscritos": 35,
       "capacidad": 40,
@@ -40,7 +40,7 @@
     },
     {
       "cursoId": "4",
-      "nombre": "Danza Folclórica",
+      "nombre": "Danza",
       "categoria": "Danza",
       "inscritos": 42,
       "capacidad": 45,
@@ -49,7 +49,7 @@
     },
     {
       "cursoId": "5",
-      "nombre": "Piano Nivel II",
+      "nombre": "Piano Nivel I",
       "categoria": "Música",
       "inscritos": 28,
       "capacidad": 30,
@@ -67,7 +67,7 @@
     },
     {
       "cursoId": "7",
-      "nombre": "Canto Coral",
+      "nombre": "Canto Popular",
       "categoria": "Música",
       "inscritos": 40,
       "capacidad": 50,
@@ -85,12 +85,12 @@
     }
   ],
   "tendenciaInscripciones": [
-    { "mes": "Jul 2024", "inscripciones": 45, "deserciones": 8 },
-    { "mes": "Ago 2024", "inscripciones": 62, "deserciones": 5 },
-    { "mes": "Sep 2024", "inscripciones": 78, "deserciones": 12 },
-    { "mes": "Oct 2024", "inscripciones": 54, "deserciones": 7 },
-    { "mes": "Nov 2024", "inscripciones": 71, "deserciones": 9 },
-    { "mes": "Dic 2024", "inscripciones": 67, "deserciones": 6 }
+    { "mes": "Jun 2025", "inscripciones": 45, "deserciones": 8 },
+    { "mes": "Jul 2025", "inscripciones": 62, "deserciones": 5 },
+    { "mes": "Ago 2025", "inscripciones": 78, "deserciones": 12 },
+    { "mes": "Sep 2025", "inscripciones": 54, "deserciones": 7 },
+    { "mes": "Oct 2025", "inscripciones": 71, "deserciones": 9 },
+    { "mes": "Nov 2025", "inscripciones": 67, "deserciones": 6 }
   ],
   "distribucionPorCategoria": [
     { "categoria": "Música", "cantidad": 156, "porcentaje": 36.4 },
