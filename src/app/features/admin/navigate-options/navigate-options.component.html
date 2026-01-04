@@ -1,0 +1,23 @@
+<div class="border-t border-gray-200 bg-gray-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav class="flex space-x-4 py-4">
+    @for(item of rutas(); track item.nombre) {
+      <a
+        [routerLink]="item.ruta"
+        routerLinkActive="bg-teal-600 text-white shadow-sm"
+        class="px-4 py-2 text-sm font-medium text-gray-700 
+               hover:text-girardota-teal-dark hover:bg-white 
+               rounded-lg transition"
+      >
+        {{ item.nombre }}
+      </a>}
+
+     
+
+      
+
+    </nav>
+  </div>
+</div>
+
+
