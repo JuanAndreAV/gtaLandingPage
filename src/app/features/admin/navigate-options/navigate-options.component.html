@@ -1,22 +1,40 @@
 <div class="border-t border-gray-200 bg-gray-50">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <nav class="flex space-x-4 py-4">
-    @for(item of rutas(); track item.nombre) {
-      <a
-        [routerLink]="item.ruta"
-        routerLinkActive="bg-teal-600 text-white shadow-sm"
-        class="px-4 py-2 text-sm font-medium text-gray-700 
-               hover:text-girardota-teal-dark hover:bg-white 
-               rounded-lg transition"
-      >
-        {{ item.nombre }}
-      </a>}
+  <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
 
-     
+    <nav
+      class="flex gap-2 py-3
+             overflow-x-auto flex-nowrap
+             scrollbar-hide
+             sm:overflow-visible sm:flex-wrap"
+    >
 
-      
+      @for (item of rutas(); track item.nombre) {
+        <a
+          [routerLink]="item.ruta"
+          routerLinkActive="bg-teal-600 text-white shadow-md scale-[1.02]"
+          class="
+            whitespace-nowrap
+            rounded-lg font-medium
+            transition-all duration-200 ease-out
+
+            /* MOBILE */
+            text-xs px-3 py-1.5
+
+            /* TABLET */
+            sm:text-sm sm:px-4 sm:py-2
+
+            /* DESKTOP */
+            lg:text-sm lg:px-5 lg:py-2
+            text-gray-700
+            hover:bg-teal-50 hover:text-teal-700
+          "
+        >
+          {{ item.nombre }}
+        </a>
+      }
 
     </nav>
+
   </div>
 </div>
 
