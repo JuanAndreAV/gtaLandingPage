@@ -2,14 +2,15 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { MetricasService } from '../../../services/metricas.service';
 import { MetricasAdmin } from '../../../models/metricas';
 import { CommonModule } from '@angular/common';
-import { NavigateOptionsComponent } from '../navigate-options/navigate-options.component';
+
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartData, ChartType } from 'chart.js';
 @Component({
   selector: 'app-dashboard-reports',
-  imports: [CommonModule, BaseChartDirective, NavigateOptionsComponent],
+  imports: [CommonModule, BaseChartDirective, ],
   templateUrl: './dashboard-reports.component.html',
   styleUrl: './dashboard-reports.component.css',
+  standalone: true
 })
 export class DashboardReportsComponent implements OnInit {
  private metricasService = inject(MetricasService);

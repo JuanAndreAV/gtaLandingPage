@@ -1,20 +1,17 @@
-<!-- user-management.component.html -->
 <div class="min-h-screen bg-gray-50">
   <!-- Header -->
   <div class="bg-white shadow">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div class="flex items-center justify-between flex-wrap gap-4">
         <div class="flex items-center gap-4">
-          <button
-            (click)="volverAlDashboard()"
-            class="p-2 text-gray-600 hover:text-girardota-teal transition">
+          <button (click)="volverAlDashboard()" class="p-2 text-gray-600 hover:text-girardota-teal transition">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
             </svg>
           </button>
           <div>
             <h1 class="text-3xl font-bold text-gray-900">Gestión de Usuarios</h1>
-            <p class="text-gray-600 mt-1">Administrar usuarios, profesores y permisos</p>
+            <p class="text-gray-600 mt-1">Administrar profesores y administradores</p>
           </div>
         </div>
         <button
@@ -33,9 +30,7 @@
     
     <!-- Filtros -->
     <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        
-        <!-- Búsqueda -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="md:col-span-2">
           <label class="block text-sm font-medium text-gray-700 mb-2">Buscar usuario</label>
           <div class="relative">
@@ -43,7 +38,7 @@
               type="text"
               [(ngModel)]="filtros.busqueda"
               (input)="aplicarFiltros()"
-              placeholder="Nombre, email, documento..."
+              placeholder="Nombre o email..."
               class="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-girardota-teal focus:border-transparent">
             <svg class="w-5 h-5 text-gray-400 absolute left-3 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -51,7 +46,6 @@
           </div>
         </div>
 
-        <!-- Filtro por Rol -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Rol</label>
           <select
@@ -61,27 +55,13 @@
             <option value="">Todos</option>
             <option value="admin">Administradores</option>
             <option value="profesor">Profesores</option>
-            <option value="estudiante">Estudiantes</option>
-          </select>
-        </div>
-
-        <!-- Filtro por Estado -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Estado</label>
-          <select
-            [(ngModel)]="filtros.activo"
-            (change)="aplicarFiltros()"
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-girardota-teal focus:border-transparent">
-            <option value="">Todos</option>
-            <option value="true">Activos</option>
-            <option value="false">Inactivos</option>
           </select>
         </div>
       </div>
     </div>
 
     <!-- Estadísticas -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
       <div class="bg-white rounded-lg shadow p-4">
         <div class="flex items-center justify-between">
           <div>
@@ -104,7 +84,7 @@
           </div>
           <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
             <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.040A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
             </svg>
           </div>
         </div>
@@ -123,22 +103,242 @@
           </div>
         </div>
       </div>
-
-      <div class="bg-white rounded-lg shadow p-4">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm text-gray-600 font-medium">Estudiantes</p>
-            <p class="text-2xl font-bold text-orange-600">{{ estadisticas.estudiantes }}</p>
-          </div>
-          <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-            <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path d="M12 14l9-5-9-5-9 5 9 5z"/>
-              <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"/>
-            </svg>
-          </div>
-        </div>
-      </div>
     </div>
 
-Continúa en el siguiente mensaje debido a la extensión...
+    @if (loading()) {
+      <div class="text-center py-12">
+        <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-girardota-teal"></div>
+        <p class="text-gray-600 mt-4 text-lg">Cargando usuarios...</p>
+      </div>
+    } @else if (error()) {
+      <div class="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg">
+        {{ error() }}
+      </div>
+    } @else {
+      
+      <!-- Tabla de Usuarios -->
+      <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Usuario</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rol</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha Creación</th>
+                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Acciones</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              @for (usuario of usuariosFiltrados(); track usuario.id) {
+                <tr class="hover:bg-gray-50">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                      <div class="flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center text-white font-bold"
+                           [ngClass]="{
+                             'bg-purple-500': usuario.role === 'admin',
+                             'bg-green-500': usuario.role === 'profesor'
+                           }">
+                        {{ usuario.nombre.split(' ')[0].charAt(0) }}{{ usuario.nombre.split(' ')[1]?.charAt(0) || '' }}
+                      </div>
+                      <div class="ml-4">
+                        <div class="text-sm font-medium text-gray-900">{{ usuario.nombre }}</div>
+                        <div class="text-sm text-gray-500">{{ usuario.email }}</div>
+                      </div>
+                    </div>
+                  </td>
+
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-3 py-1 text-xs font-bold rounded-full"
+                          [ngClass]="{
+                            'bg-purple-100 text-purple-800': usuario.role === 'admin',
+                            'bg-green-100 text-green-800': usuario.role === 'profesor'
+                          }">
+                      {{ getRoleName(usuario.role) }}
+                    </span>
+                  </td>
+
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {{ usuario.createdAt | date:'dd/MM/yyyy HH:mm' }}
+                  </td>
+
+                  <td class="px-6 py-4 whitespace-nowrap text-center">
+                    <div class="flex items-center justify-center gap-2">
+                      <button
+                        (click)="editarUsuario(usuario)"
+                        class="p-2 text-green-600 hover:bg-green-50 rounded-lg transition"
+                        title="Editar">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                        </svg>
+                      </button>
+                      <button
+                        (click)="eliminarUsuario(usuario)"
+                        class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+                        title="Eliminar">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        @if (usuariosFiltrados().length === 0) {
+          <div class="text-center py-12">
+            <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+            </svg>
+            <p class="text-gray-600 text-lg">No se encontraron usuarios</p>
+            <button
+              (click)="limpiarFiltros()"
+              class="mt-4 px-6 py-2 bg-girardota-teal text-white rounded-lg hover:bg-girardota-teal-dark transition">
+              Limpiar Filtros
+            </button>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Modal Crear/Editar -->
+  @if (modalAbierto()) {
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-lg shadow-2xl max-w-md w-full">
+        
+        <div class="bg-gradient-to-r from-girardota-teal to-teal-600 px-6 py-4 flex items-center justify-between rounded-t-lg">
+          <h2 class="text-2xl font-bold text-white">
+            {{ modoEdicion() ? 'Editar Usuario' : 'Crear Usuario' }}
+          </h2>
+          <button (click)="cerrarModal()" class="text-white hover:bg-white/20 rounded-lg p-2 transition">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+
+        <form (ngSubmit)="guardarUsuario()" class="p-6">
+          
+          <!-- Nombre -->
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Nombre Completo <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              [(ngModel)]="formularioUsuario.nombre"
+              name="nombre"
+              required
+              placeholder="Juan Alvarez Velasquez"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-girardota-teal focus:border-transparent"
+              [class.border-red-500]="formularioEnviado && !formularioUsuario.nombre">
+            @if (formularioEnviado && !formularioUsuario.nombre) {
+              <p class="text-red-500 text-xs mt-1">El nombre es requerido</p>
+            }
+          </div>
+
+          <!-- Email -->
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Email <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="email"
+              [(ngModel)]="formularioUsuario.email"
+              name="email"
+              required
+              [disabled]="modoEdicion()"
+              placeholder="usuario@ejemplo.com"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-girardota-teal focus:border-transparent disabled:bg-gray-100"
+              [class.border-red-500]="formularioEnviado && !formularioUsuario.email">
+            @if (formularioEnviado && !formularioUsuario.email) {
+              <p class="text-red-500 text-xs mt-1">El email es requerido</p>
+            }
+          </div>
+
+          <!-- Rol -->
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Rol <span class="text-red-500">*</span>
+            </label>
+            <select
+              [(ngModel)]="formularioUsuario.role"
+              name="role"
+              required
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-girardota-teal focus:border-transparent">
+              <option value="profesor">Profesor</option>
+              <option value="admin">Administrador</option>
+            </select>
+          </div>
+
+          <!-- Password (solo crear) -->
+          @if (!modoEdicion()) {
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Contraseña <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="password"
+                [(ngModel)]="formularioUsuario.password"
+                name="password"
+                required
+                placeholder="Mínimo 6 caracteres"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-girardota-teal focus:border-transparent"
+                [class.border-red-500]="formularioEnviado && (!formularioUsuario.password || formularioUsuario.password.length < 6)">
+              @if (formularioEnviado && !formularioUsuario.password) {
+                <p class="text-red-500 text-xs mt-1">La contraseña es requerida</p>
+              }
+              @if (formularioUsuario.password && formularioUsuario.password.length < 6) {
+                <p class="text-red-500 text-xs mt-1">Mínimo 6 caracteres</p>
+              }
+            </div>
+
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Confirmar Contraseña <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="password"
+                [(ngModel)]="formularioUsuario.confirmarPassword"
+                name="confirmarPassword"
+                required
+                placeholder="Repita la contraseña"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-girardota-teal focus:border-transparent"
+                [class.border-red-500]="formularioEnviado && formularioUsuario.password !== formularioUsuario.confirmarPassword">
+              @if (formularioEnviado && formularioUsuario.password !== formularioUsuario.confirmarPassword) {
+                <p class="text-red-500 text-xs mt-1">Las contraseñas no coinciden</p>
+              }
+            </div>
+          }
+
+          <!-- Botones -->
+          <div class="flex gap-3 mt-6">
+            <button
+              type="button"
+              (click)="cerrarModal()"
+              class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium">
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              [disabled]="guardando()"
+              class="flex-1 px-4 py-2 bg-girardota-teal text-white rounded-lg hover:bg-girardota-teal-dark transition font-medium disabled:opacity-50 flex items-center justify-center">
+              @if (guardando()) {
+                <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              } @else {
+                {{ modoEdicion() ? 'Actualizar' : 'Crear' }}
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>
+
