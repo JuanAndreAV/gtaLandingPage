@@ -1,6 +1,7 @@
 
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { AuthService } from '../../auth/services/auth.service';
 
 @Component({
   selector: 'app-header',
@@ -11,6 +12,7 @@ import { RouterModule } from '@angular/router';
 })
 export class HeaderComponent {
 mobileMenuOpen= signal(false);
+authService = inject(AuthService);
 
   toggleMobileMenu(){
     this.mobileMenuOpen.update(estado => !estado);
@@ -21,6 +23,6 @@ mobileMenuOpen= signal(false);
     { id: 3, label: 'Eventos', link: '#eventos', routerLink: false },
     { id: 4, label: 'Galería', link: '#galeria', routerLink: false },
     { id: 5, label: 'Contacto', link: '#contacto', routerLink: false },
-    { id: 6, label: 'Login', link: '/auth/login', routerLink: true },
+    //{ id: 6, label: 'Login', link: '/auth/login', routerLink: true },
   ];
 }

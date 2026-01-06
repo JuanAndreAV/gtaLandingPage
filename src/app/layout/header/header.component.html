@@ -34,6 +34,16 @@
         
       
       }
+      @if (authService.user()) {
+        <p>Bienvenido {{ authService.user()?.email?.slice(0, -10) }}</p>
+      }@else {
+        <a 
+          href="/auth/login"
+          class="text-white hover:text-girardota-yellow transition font-medium">
+          Login
+        </a>
+        
+      }
         
       </div>
       
