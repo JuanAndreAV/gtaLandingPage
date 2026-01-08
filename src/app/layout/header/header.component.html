@@ -31,11 +31,14 @@
           class="text-white hover:text-girardota-yellow transition font-medium">
           {{ item.label }} 
         </a>}
-        
-      
       }
-      @if (authService.user()) {
-        <p>Bienvenido {{ authService.user()?.email?.slice(0, -10) }}</p>
+      @if (authService.authStatus() === 'authenticated') {
+        <p>Bienvenido {{ authService.user()?.user_metadata?.nombre}}</p>
+        <button 
+          (click)="authService.logout()"
+          class="text-white hover:text-girardota-yellow transition font-medium">
+          Logout
+        </button>
       }@else {
         <a 
           href="/auth/login"
@@ -80,6 +83,21 @@
         class="block text-white py-2 hover:text-girardota-yellow transition">
         {{ item.label }}
       </a>}
+       @if (authService.authStatus() === 'authenticated') {
+        <p>Bienvenido {{ authService.user()?.user_metadata?.nombre}}</p>
+        <button 
+          (click)="authService.logout()"
+          class="text-white hover:text-girardota-yellow transition font-medium">
+          Logout
+        </button>
+      }@else {
+        <a 
+          href="/auth/login"
+          class="text-white hover:text-girardota-yellow transition font-medium">
+          Login
+        </a>
+        
+      }
     </div>
     }
   </div>
