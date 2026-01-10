@@ -5,6 +5,7 @@ import { DashboardReportsComponent } from './features/admin/dashboard-reports/da
 import { CourseManagementComponent } from './features/admin/course-management/course-management.component';
 import { UserManagementComponent } from './features/admin/user-management/user-management.component';
 import { RegistrationComponent } from './features/admin/registration/registration.component';
+import { notAuthenticatedGuard } from './auth/guards/not-authenticated.guard';
 
 
 export const routes: Routes = [
@@ -12,6 +13,10 @@ export const routes: Routes = [
     path: "auth",
     loadChildren: () => import('./auth/auth.routes'),
     //Guards TODO
+    canMatch: [
+      notAuthenticatedGuard,
+      ()=> { console.log('Guard para rutas de auth'); return true; }
+    ]
    },
    {
     path: "",
