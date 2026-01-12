@@ -6,6 +6,7 @@ import { CourseManagementComponent } from './features/admin/course-management/co
 import { UserManagementComponent } from './features/admin/user-management/user-management.component';
 import { RegistrationComponent } from './features/admin/registration/registration.component';
 import { notAuthenticatedGuard } from './auth/guards/not-authenticated.guard';
+import { isAdminGuard } from './auth/guards/is-admin.guard';
 
 
 export const routes: Routes = [
@@ -20,11 +21,17 @@ export const routes: Routes = [
    },
    {
     path: "",
-    component: HomeComponent
+    component: HomeComponent,
+    
+    
    },
    {
       path: "admin",
-      component: DashboardComponent,
+      component: DashboardComponent,  
+     canMatch: [
+            isAdminGuard
+        ], 
+      
       children: [
          {
               path: '',
@@ -48,6 +55,6 @@ export const routes: Routes = [
             component: RegistrationComponent
          }
 
-      ]
+      ] 
    }
 ];

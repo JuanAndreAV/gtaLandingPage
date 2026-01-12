@@ -32,6 +32,8 @@ authStatus = computed<AuthStatus>(()=> {
 } );
  user = computed<UserResponse | null>(()=> this._user());
  token = computed<string | null>(()=> this._token());
+ isAdmin = computed<boolean>(()=> this._user()?.user_metadata.role.includes('admin') ?true : false);
+
 
  login(email: string, password: string): Observable<boolean>{ // para el manejo de excepciones
   return this.http.post<AuthResponse>(`${baseUrl}/auth/login`, {email, password}).pipe(
@@ -63,7 +65,7 @@ authStatus = computed<AuthStatus>(()=> {
       this.logout()
       return of(false);
     }
-    return this.http.get<AuthResponse>(`${baseUrl}/auth/check-token`,{
+    return this.http.get<AuthResponse>(`${baseUrl}/auth/profile`,{
       headers: {
         'Authorization': `Bearer ${token}`
       }

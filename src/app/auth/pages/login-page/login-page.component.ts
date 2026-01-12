@@ -36,6 +36,7 @@ export class LoginPageComponent {
     this.authService.login(email!, password!).subscribe(isAuthenticated => {
       //console.log(isAuthenticated);
       if (isAuthenticated) {
+        console.log(this.authService.user());
           this.router.navigateByUrl('/admin');
           return;
       } else {
