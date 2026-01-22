@@ -7,6 +7,7 @@ import { UserManagementComponent } from './features/admin/user-management/user-m
 import { RegistrationComponent } from './features/admin/registration/registration.component';
 import { notAuthenticatedGuard } from './auth/guards/not-authenticated.guard';
 import { isAdminGuard } from './auth/guards/is-admin.guard';
+import { isAuthenticatedGuard } from './auth/guards/is-authenticated.guard';
 
 
 export const routes: Routes = [
@@ -29,7 +30,7 @@ export const routes: Routes = [
       path: "admin",
       component: DashboardComponent,  
      canMatch: [
-            isAdminGuard
+            isAdminGuard, isAuthenticatedGuard
         ], 
       
       children: [

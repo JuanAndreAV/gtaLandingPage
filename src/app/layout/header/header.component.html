@@ -1,104 +1,113 @@
-<nav class=" bg-girardota-teal shadow-lg sticky top-0 z-50">
+<nav class="bg-girardota-teal shadow-lg sticky top-0 z-50">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex justify-between items-center py-4">
       
-      <!-- Logo -->
       <div class="flex items-center space-x-3">
-        <a href="#inicio" class="flex items-center space-x-3">
-          <div class="w-14 h-14 bg-girardota-yellow  rounded-full flex items-center justify-center shadow-lg">
+        <a routerLink="/" class="flex items-center space-x-3">
+          <div class="w-14 h-14 bg-girardota-yellow rounded-full flex items-center justify-center shadow-lg">
             <svg class="w-8 h-8 text-girardota-teal" fill="currentColor" viewBox="0 0 20 20">
               <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"/>
             </svg>
           </div>
           <div class="text-white">
-            <h1 class="text-xl font-bold">Casa de la Cultura</h1>
-            <p class="text-xs text-girardota-yellow">Girardota es Cultura</p>
+            <h1 class="text-xl font-bold leading-tight">Casa de la Cultura</h1>
+            <p class="text-xs text-girardota-yellow uppercase tracking-wider">Girardota es Cultura</p>
           </div>
         </a>
       </div>
       
-      <!-- Desktop Menu -->
-      <div class="hidden md:flex space-x-8">
-        @for(item of menuItems; track item.id){
-        @if (!item.routerLink) {
-        <a 
-          [href]="item.link"
-          class="text-white hover:text-girardota-yellow transition font-medium">
-          {{ item.label }} 
-        </a>}@else {
-          <a 
-          [routerLink]="item.link"
-          class="text-white hover:text-girardota-yellow transition font-medium">
-          {{ item.label }} 
-        </a>}
-      }
-      @if (authService.authStatus() === 'authenticated') {
-        <p>Bienvenido {{ authService.user()?.user_metadata?.nombre}}</p>
-        <button 
-          (click)="authService.logout()"
-          class="text-white hover:text-girardota-yellow transition font-medium">
-          Logout
-        </button>
-      }@else {
-        <a 
-          href="/auth/login"
-          class="text-white hover:text-girardota-yellow transition font-medium">
-          Login
-        </a>
-        
-      }
-        
+      <div class="hidden md:flex items-center space-x-6">
+        @for(item of menuItems; track item.id) {
+          @if (item.fragment) {
+            <a (click)="navigateToAnchor(item.fragment)" 
+               class="text-white hover:text-girardota-yellow transition font-medium cursor-pointer">
+              {{ item.label }}
+            </a>
+          } @else {
+            <a [routerLink]="item.link" 
+               class="text-white hover:text-girardota-yellow transition font-medium">
+              {{ item.label }}
+            </a>
+          }
+        }
+
+        <div class="flex items-center ml-4 pl-4 border-l border-white/20 space-x-4">
+          @if (authService.authStatus() === 'authenticated') {
+            <a [routerLink]="authService.isAdmin() ? '/admin' : '/profesor'" 
+               class="bg-girardota-yellow text-girardota-teal px-4 py-2 rounded-md font-bold hover:bg-white transition shadow-md">
+               Panel {{ authService.isAdmin() ? 'Admin' : 'Profesor' }}
+            </a>
+            
+            <div class="text-right leading-tight">
+              <p class="text-white text-xs opacity-80">Hola, {{ authService.user()?.user_metadata?.nombre }}</p>
+              <button (click)="authService.logout()" class="text-girardota-yellow text-sm font-bold hover:underline">
+                Cerrar Sesión
+              </button>
+            </div>
+          } @else {
+            <a routerLink="/login" 
+               class="text-white border border-white px-5 py-2 rounded-md hover:bg-white hover:text-girardota-teal transition font-medium">
+              Login
+            </a>
+          }
+        </div>
       </div>
       
-      <!-- Mobile Menu Button -->
       <button 
         (click)="toggleMobileMenu()" 
-        class="md:hidden text-white cursor-pointer focus:outline-none"
-        [attr.aria-expanded]="mobileMenuOpen()"
-        aria-label="Toggle menu">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            @if (!mobileMenuOpen()) {
-          <path 
-            stroke-linecap="round" 
-            stroke-linejoin="round" 
-            stroke-width="2" 
-            d="M4 6h16M4 12h16M4 18h16"/>}
-            @else {
-          <path 
-            stroke-linecap="round" 
-            stroke-linejoin="round" 
-            stroke-width="2" 
-            d="M6 18L18 6M6 6l12 12"/>}
+        class="md:hidden text-white focus:outline-none p-2"
+        [attr.aria-expanded]="mobileMenuOpen()">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          @if (!mobileMenuOpen()) {
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+          } @else {
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          }
         </svg>
       </button>
     </div>
     
-    <!-- Mobile Menu -->
     @if (mobileMenuOpen()) {
-    <div class="md:hidden pb-4">
-      @for (item of menuItems; track item.id) {
-      <a 
-        [href]="item.link"
-        (click)="toggleMobileMenu()"
-        class="block text-white py-2 hover:text-girardota-yellow transition">
-        {{ item.label }}
-      </a>}
-       @if (authService.authStatus() === 'authenticated') {
-        <p>Bienvenido {{ authService.user()?.user_metadata?.nombre}}</p>
-        <button 
-          (click)="authService.logout()"
-          class="text-white hover:text-girardota-yellow transition font-medium">
-          Logout
-        </button>
-      }@else {
-        <a 
-          href="/auth/login"
-          class="text-white hover:text-girardota-yellow transition font-medium">
-          Login
-        </a>
-        
-      }
-    </div>
+      <div class="md:hidden pb-6 pt-2 space-y-3 border-t border-white/10 mt-2">
+        @for (item of menuItems; track item.id) {
+          @if (item.fragment) {
+            <a (click)="navigateToAnchor(item.fragment)"
+               class="block text-white text-lg py-2 hover:text-girardota-yellow transition border-b border-white/5 cursor-pointer">
+              {{ item.label }}
+            </a>
+          } @else {
+            <a [routerLink]="item.link" 
+               (click)="toggleMobileMenu()"
+               class="block text-white text-lg py-2 hover:text-girardota-yellow transition border-b border-white/5">
+              {{ item.label }}
+            </a>
+          }
+        }
+
+        <div class="pt-4 space-y-4">
+          @if (authService.authStatus() === 'authenticated') {
+            <div class="bg-white/10 p-4 rounded-lg">
+              <p class="text-white mb-3">Bienvenido, <span class="font-bold text-girardota-yellow">{{ authService.user()?.user_metadata?.nombre }}</span></p>
+              <div class="flex flex-col space-y-3">
+                <a [routerLink]="authService.isAdmin() ? '/admin' : '/profesor'" 
+                   (click)="toggleMobileMenu()"
+                   class="bg-girardota-yellow text-girardota-teal text-center py-3 rounded-md font-bold">
+                   Ir a mi Panel
+                </a>
+                <button (click)="authService.logout(); toggleMobileMenu()" class="text-white border border-white/30 py-2 rounded-md text-sm">
+                  Cerrar Sesión
+                </button>
+              </div>
+            </div>
+          } @else {
+            <a routerLink="/login" 
+               (click)="toggleMobileMenu()"
+               class="block bg-white text-girardota-teal text-center py-3 rounded-md font-bold">
+               Iniciar Sesión
+            </a>
+          }
+        </div>
+      </div>
     }
   </div>
 </nav>

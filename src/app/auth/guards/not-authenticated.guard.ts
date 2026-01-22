@@ -1,22 +1,18 @@
 import { inject } from '@angular/core';
-import { CanMatchFn, Route, Router, UrlSegment } from '@angular/router';
+import { CanMatchFn, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
-import { firstValueFrom } from 'rxjs';
 
-export const notAuthenticatedGuard: CanMatchFn = async (
-  route: Route, 
-  segments: UrlSegment[]
-) => {
+export const notAuthenticatedGuard: CanMatchFn = (route, segments) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  const isAuthenticated = await  firstValueFrom(authService.checkStatus());
-  ;
-  if (isAuthenticated) {
-    router.navigateByUrl('/');
+  // Si ya está autenticado, lo sacamos del login
+  if (authService.authStatus() === 'authenticated') {
+    const dashboard = authService.isAdmin() ? '/admin' : '/profesor';
+    router.navigateByUrl(dashboard);
     return false;
   }
-  
 
+  // Si está 'checking' o 'unauthenticated', permitimos ver el login
   return true;
 };

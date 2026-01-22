@@ -23,7 +23,7 @@ private http = inject(HttpClient);
 // checkStatusResource = rxResource({
   
 //   loader: ()=> this.checkStatus()
-// });
+// });//no pude implementar 
 
 authStatus = computed<AuthStatus>(()=> {
   if(this._authStatus() === 'checking')return 'checking';
