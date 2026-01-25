@@ -17,7 +17,7 @@
       </div>
       
       <div class="hidden md:flex items-center space-x-6">
-        @for(item of menuItems; track item.id) {
+        @for(item of menuItems(); track item.id) {
           @if (item.fragment) {
             <a (click)="navigateToAnchor(item.fragment)" 
                class="text-white hover:text-girardota-yellow transition font-medium cursor-pointer">
@@ -45,7 +45,7 @@
               </button>
             </div>
           } @else {
-            <a routerLink="/login" 
+            <a routerLink="/auth/login" 
                class="text-white border border-white px-5 py-2 rounded-md hover:bg-white hover:text-girardota-teal transition font-medium">
               Login
             </a>
@@ -55,7 +55,7 @@
       
       <button 
         (click)="toggleMobileMenu()" 
-        class="md:hidden text-white focus:outline-none p-2"
+        class="md:hidden text-white focus:outline-none p-2 cursor-pointer hover:text-girardota-yellow transition"
         [attr.aria-expanded]="mobileMenuOpen()">
         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           @if (!mobileMenuOpen()) {
@@ -69,7 +69,7 @@
     
     @if (mobileMenuOpen()) {
       <div class="md:hidden pb-6 pt-2 space-y-3 border-t border-white/10 mt-2">
-        @for (item of menuItems; track item.id) {
+        @for (item of menuItems(); track item.id) {
           @if (item.fragment) {
             <a (click)="navigateToAnchor(item.fragment)"
                class="block text-white text-lg py-2 hover:text-girardota-yellow transition border-b border-white/5 cursor-pointer">
@@ -100,7 +100,7 @@
               </div>
             </div>
           } @else {
-            <a routerLink="/login" 
+            <a routerLink="/auth/login" 
                (click)="toggleMobileMenu()"
                class="block bg-white text-girardota-teal text-center py-3 rounded-md font-bold">
                Iniciar Sesión

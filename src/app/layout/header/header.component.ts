@@ -1,5 +1,5 @@
 
-import { Component, signal, inject } from '@angular/core';
+import { Component, signal, computed, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../auth/services/auth.service';
 
@@ -25,14 +25,21 @@ authService = inject(AuthService);
   //   { id: 5, label: 'Contacto', link: '#contacto', routerLink: false },
   //   //{ id: 6, label: 'Login', link: '/auth/login', routerLink: true },
   // ];
-  menuItems = [
+ private _AllmenuItems = [
   { id: 1, label: 'Inicio', link: '/', routerLink: true },
-  { id: 2, label: 'Talleres', link: '/', fragment: 'talleres', routerLink: true },
-  { id: 3, label: 'Eventos', link: '/', fragment: 'eventos', routerLink: true },
-  { id: 4, label: 'Galería', link: '/', fragment: 'galeria', routerLink: true },
-  { id: 5, label: 'Contacto', link: '/', fragment: 'contacto', routerLink: true },
+  { id: 2, label: 'Talleres',  fragment: 'talleres' },
+  { id: 3, label: 'Eventos',  fragment: 'eventos'  },
+  { id: 4, label: 'Galería', fragment: 'galeria' },
+  { id: 5, label: 'Contacto',  fragment: 'contacto' },
   // ...
 ];
+menuItems = computed(()=>{
+if(this.authService.authStatus()=== 'authenticated'){
+  return this._AllmenuItems.filter(item=> item.label === 'Inicio')
+}
+return this._AllmenuItems;
+})
+
 navigateToAnchor(fragment: string | undefined) {
   if (!fragment) return;
   this.mobileMenuOpen.set(false); // Cierra el menú si es móvil
