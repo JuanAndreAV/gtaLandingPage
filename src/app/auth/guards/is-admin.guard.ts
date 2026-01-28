@@ -11,7 +11,7 @@ export const isAdminGuard: CanMatchFn = (route, segments) => {
 
   // Si es autenticado pero NO es admin (es profesor), lo mandamos a su panel
   if (authService.authStatus() === 'authenticated') {
-    router.navigateByUrl('/');
+    router.navigateByUrl('/profesor');
     return false;
   }
 

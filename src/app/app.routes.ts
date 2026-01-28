@@ -8,6 +8,7 @@ import { RegistrationComponent } from './features/admin/registration/registratio
 import { notAuthenticatedGuard } from './auth/guards/not-authenticated.guard';
 import { isAdminGuard } from './auth/guards/is-admin.guard';
 import { isAuthenticatedGuard } from './auth/guards/is-authenticated.guard';
+import { AreaprofesorComponent } from './features/profesor/areaprofesor/areaprofesor.component';
 
 
 export const routes: Routes = [
@@ -57,5 +58,10 @@ export const routes: Routes = [
          }
 
       ] 
+   },
+   {
+      path: "profesor",
+      canActivate: [isAuthenticatedGuard],
+      component: AreaprofesorComponent,
    }
 ];

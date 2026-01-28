@@ -4,6 +4,7 @@ import { environment } from '../../../environments/environment';
 import { UserResponse } from '../interfaces/auth-response';
 import { AuthResponse } from '../interfaces/auth-response';
 import { Observable, tap, map, catchError, of } from 'rxjs';
+import { Router } from '@angular/router';
 import { rxResource } from '@angular/core/rxjs-interop';
 
 type AuthStatus = 'checking' | 'authenticated' | 'unauthenticated';
@@ -14,25 +15,49 @@ const baseUrl = environment.baseUrl;
   providedIn: 'root'
 })
 export class AuthService {
-private _authStatus = signal<AuthStatus>('checking');
-private _token = signal<string | null>(localStorage.getItem('token'));
-private _user = signal<UserResponse | null>(null); //crear interfaz usuario
-
 private http = inject(HttpClient);
+  private router = inject(Router);
 
-// checkStatusResource = rxResource({
-  
-//   loader: ()=> this.checkStatus()
-// });//no pude implementar 
+  // Estados
+  private _authStatus = signal<AuthStatus>('checking');
+  private _user = signal<UserResponse | null>(null);
+  private _token = signal<string | null>(localStorage.getItem('token'));
 
-authStatus = computed<AuthStatus>(()=> {
-  if(this._authStatus() === 'checking')return 'checking';
-  if(this._user())return 'authenticated';
-  return 'unauthenticated';
-} );
- user = computed<UserResponse | null>(()=> this._user());
- token = computed<string | null>(()=> this._token());
- isAdmin = computed<boolean>(()=> this._user()?.user_metadata.role.includes('admin') ?true : false);
+  // Signals Públicos
+  public authStatus = computed(() => this._authStatus());
+  public user = computed(() => this._user());
+  public isAdmin = computed(() => 
+    !!this._user()?.user_metadata.role.includes('admin')
+  );
+  public token = computed(() => this._token());
+
+  constructor() {
+    // Al iniciar el servicio, verificamos el estado automáticamente
+    this.checkStatus().subscribe();
+  }
+
+  checkStatus(): Observable<boolean> {
+    //const token = localStorage.getItem('token');
+    const token = this.token();
+    if (!token) {
+      this.logout();
+      return of(false);
+    }
+
+    this._authStatus.set('checking');
+
+    return this.http.get<AuthResponse>(`${baseUrl}/auth/profile`/*, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    }*/).pipe(
+      tap(response => this.handleAuthSuccess(response)),
+      map(() => true),
+      catchError(() => {
+        this.logout();
+        return of(false);
+      })
+    );
+  }
+
 
 
  login(email: string, password: string): Observable<boolean>{ // para el manejo de excepciones
@@ -58,28 +83,14 @@ authStatus = computed<AuthStatus>(()=> {
   )
   );
  }
-  checkStatus(): Observable<boolean>{
-    const token =localStorage.getItem('token');
-    if(!token){
-      //this._authStatus.set('unauthenticated');
-      this.logout()
-      return of(false);
-    }
-    return this.http.get<AuthResponse>(`${baseUrl}/auth/profile`,{
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    }).pipe(
-    tap(response => this.handleAuthSuccess(response)),
-    map(()=> true),//al usar el map devolvemos un booleano
-    catchError((error: any) => this.handleAuthError(error))
-  );
-  }
+  
   logout(){
     this._authStatus.set('unauthenticated');
     this._token.set(null);
     this._user.set(null);
     localStorage.removeItem('token');
+    this.router.navigateByUrl('/auth/login');
+    
    }
 
    private handleAuthSuccess(response: AuthResponse){
