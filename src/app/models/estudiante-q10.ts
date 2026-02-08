@@ -1,0 +1,36 @@
+export interface EstudianteQ10 {
+    Codigo_estudiante: string;
+    Primer_nombre: string;
+    Segundo_nombre: string | null;
+    Primer_apellido: string;
+    Segundo_apellido: string;
+    Codigo_tipo_identificacion: string;
+    Numero_identificacion: string;
+    Genero: string;
+    Email: string;
+    Telefono: string;
+    Celular: string;
+    Fecha_nacimiento: string;
+    Lugar_nacimiento: string | null;
+    Lugar_residencia: string;
+    Direccion: string;
+    Consecutivo_sedejornada: number;
+    Nombre_sedejornada: string;
+    Codigo_matricula: string;
+    Fecha_matricula: string;
+    Fecha_renovacion: string | null;
+    Condicion_matricula: string | null;
+    Codigo_sede: string;
+    Nombre_sede: string;
+    Codigo_jornada: string;
+    Nombre_jornada: string;
+    Codigo_programa: string;
+    Nombre_programa: string;
+    Consecutivo_grupo: string | null;
+    Nombre_grupo: string | null;
+    Consecutivo_periodo: number;
+    Nombre_periodo: string;
+    Codigo_nivel: string;
+    Nombre_nivel: string;
+    Familiares_relacionados?: string[];
+}

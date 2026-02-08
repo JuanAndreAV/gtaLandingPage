@@ -31,10 +31,10 @@ private http = inject(HttpClient);
   );
   public token = computed(() => this._token());
 
-  constructor() {
-    // Al iniciar el servicio, verificamos el estado automáticamente
-    this.checkStatus().subscribe();
-  }
+  // constructor() {
+  //   // Al iniciar el servicio, verificamos el estado automáticamente
+  //   this.checkStatus().subscribe();
+  // }
 
   checkStatus(): Observable<boolean> {
     //const token = localStorage.getItem('token');
@@ -89,7 +89,7 @@ private http = inject(HttpClient);
     this._token.set(null);
     this._user.set(null);
     localStorage.removeItem('token');
-    this.router.navigateByUrl('/auth/login');
+    this.router.navigateByUrl('');
     
    }
 

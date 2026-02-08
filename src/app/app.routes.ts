@@ -9,9 +9,21 @@ import { notAuthenticatedGuard } from './auth/guards/not-authenticated.guard';
 import { isAdminGuard } from './auth/guards/is-admin.guard';
 import { isAuthenticatedGuard } from './auth/guards/is-authenticated.guard';
 import { AreaprofesorComponent } from './features/profesor/areaprofesor/areaprofesor.component';
+import { Q10ConsultaDocenteComponent } from './pages/q10-consulta-docente/q10-consulta-docente.component';
 
 
 export const routes: Routes = [
+    {
+      path: "estudiantes",
+      component: Q10ConsultaDocenteComponent
+
+   },
+   {
+    path: "",
+    component: HomeComponent,
+    
+   },
+   
    {
     path: "auth",
     loadChildren: () => import('./auth/auth.routes'),
@@ -21,12 +33,7 @@ export const routes: Routes = [
       ()=> { console.log('Guard para rutas de auth'); return true; }
     ]
    },
-   {
-    path: "",
-    component: HomeComponent,
-    
-    
-   },
+   
    {
       path: "admin",
       component: DashboardComponent,  
@@ -61,7 +68,7 @@ export const routes: Routes = [
    },
    {
       path: "profesor",
-      canActivate: [isAuthenticatedGuard],
+      canActivate: [isAuthenticatedGuard, ],
       component: AreaprofesorComponent,
    }
 ];
