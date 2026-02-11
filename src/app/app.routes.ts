@@ -10,6 +10,7 @@ import { isAdminGuard } from './auth/guards/is-admin.guard';
 import { isAuthenticatedGuard } from './auth/guards/is-authenticated.guard';
 import { AreaprofesorComponent } from './features/profesor/areaprofesor/areaprofesor.component';
 import { Q10ConsultaDocenteComponent } from './pages/q10-consulta-docente/q10-consulta-docente.component';
+import { ReportesComponent } from './pages/reportes/reportes.component';
 
 
 export const routes: Routes = [
@@ -17,6 +18,10 @@ export const routes: Routes = [
       path: "estudiantes",
       component: Q10ConsultaDocenteComponent
 
+   },
+   {
+      path: "reportes",
+      component: ReportesComponent
    },
    {
     path: "",

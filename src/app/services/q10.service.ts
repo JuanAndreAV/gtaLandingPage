@@ -112,70 +112,121 @@ public todosLosEstudiantes = signal<EstudianteQ10[]>([]);
 public cargandoTodosEstudiantes = signal<boolean>(false);
 
 // Método mejorado con paginación para obtener TODOS los estudiantes
-obtenerTodosLosEstudiantesPeriodo(periodo: number): Observable<EstudianteQ10[]> {
-  this.cargandoTodosEstudiantes.set(true);
+// obtenerTodosLosEstudiantesPeriodo(periodo: number): Observable<EstudianteQ10[]> {
+//   this.cargandoTodosEstudiantes.set(true);
   
-  return this.obtenerEstudiantesPaginados(periodo, 0, []).pipe(
-    tap(todosLosEstudiantes => {
-      console.log(`✅ Total de ${todosLosEstudiantes.length} estudiantes obtenidos para análisis`);
-      this.todosLosEstudiantes.set(todosLosEstudiantes);
-    }),
-    catchError(err => {
-      console.error('❌ Error al obtener todos los estudiantes:', err);
-      return of([]);
-    }),
-    finalize(() => this.cargandoTodosEstudiantes.set(false))
-  );
-}
+//   return this.obtenerEstudiantesPaginados(periodo, 0, []).pipe(
+//     tap(todosLosEstudiantes => {
+//       console.log(`✅ Total de ${todosLosEstudiantes.length} estudiantes obtenidos para análisis`);
+//       this.todosLosEstudiantes.set(todosLosEstudiantes);
+//     }),
+//     catchError(err => {
+//       console.error('❌ Error al obtener todos los estudiantes:', err);
+//       return of([]);
+//     }),
+//     finalize(() => this.cargandoTodosEstudiantes.set(false))
+//   );
+// }
 
-// Método recursivo para obtener todos los estudiantes con paginación
-private obtenerEstudiantesPaginados(
+// // Método recursivo para obtener todos los estudiantes con paginación
+// private obtenerEstudiantesPaginados(
+//   periodo: number, 
+//   offset: number, 
+//   acumulados: EstudianteQ10[]
+// ): Observable<EstudianteQ10[]> {
+//   // Usar el límite máximo que permita tu API
+//   const limit = 600; // Cambia esto según lo que permita tu API
+//   const url = `${this.q10ApiUrl}/estudiantes?Periodo=${periodo}&Limit=${limit}&Offset=${offset}`;
+
+//   console.log(`📄 Página ${Math.floor(offset / limit) + 1}: Offset=${offset}, Limit=${limit}`);
+//   console.log(`   Progreso: ${acumulados.length} estudiantes acumulados`);
+
+//   return this.http.get<EstudianteQ10[]>(url, { 
+//     headers: { 
+//       'Api-key': this.q10ApiKey, 
+//       'Cache-Control': 'no-cache'
+//     }
+//   }).pipe(
+//     switchMap(data => {
+//       const nuevoAcumulado = [...acumulados, ...data];
+      
+//       console.log(`   ✓ Recibidos: ${data.length} registros`);
+//       console.log(`   📊 Total acumulado: ${nuevoAcumulado.length} estudiantes`);
+      
+//       // Continuar si recibimos exactamente 'limit' registros
+//       if (data.length === limit) {
+//         console.log(`   ⏭️ Hay más datos, obteniendo siguiente página...\n`);
+//         // Pequeño delay para no saturar la API (opcional)
+//         return of(null).pipe(
+//           delay(100), // 100ms de delay entre requests
+//           switchMap(() => this.obtenerEstudiantesPaginados(periodo, offset + limit, nuevoAcumulado))
+//         );
+//       } else {
+//         console.log(`\n✅ PAGINACIÓN COMPLETADA`);
+//         console.log(`   Total de páginas: ${Math.floor(offset / limit) + 1}`);
+//         console.log(`   Total de estudiantes: ${nuevoAcumulado.length}`);
+//         console.log(`═══════════════════════════════════════════════════════\n`);
+//         return of(nuevoAcumulado);
+//       }
+//     }),
+//     catchError(err => {
+//       console.error(`\n❌ ERROR en offset ${offset}:`);
+//       console.error(`   Mensaje: ${err.message}`);
+//       console.error(`   Estudiantes recuperados hasta ahora: ${acumulados.length}`);
+//       console.warn(`⚠️ Continuando con los datos obtenidos...\n`);
+//       return of(acumulados);
+//     })
+//   );
+// }
+obtenerTodosLosEstudiantesPeriodo(periodo: number): Observable<EstudianteQ10[]> {
+    this.cargandoTodosEstudiantes.set(true);
+    // Limpiamos la señal para empezar de cero
+    this.todosLosEstudiantes.set([]);
+
+    return this.obtenerEstudiantesPaginados(periodo, 0, []).pipe(
+      tap(completo => {
+        console.log(`✅ Carga finalizada con éxito. Total: ${completo.length}`);
+        this.todosLosEstudiantes.set(completo);
+      }),
+      finalize(() => this.cargandoTodosEstudiantes.set(false))
+    );
+  }
+
+  /**
+   * Lógica recursiva mejorada
+   */
+  private obtenerEstudiantesPaginados(
   periodo: number, 
   offset: number, 
   acumulados: EstudianteQ10[]
 ): Observable<EstudianteQ10[]> {
-  // Usar el límite máximo que permita tu API
-  const limit = 600; // Cambia esto según lo que permita tu API
+  
+  const limit = 600; // Q10 suele tener este tope interno
   const url = `${this.q10ApiUrl}/estudiantes?Periodo=${periodo}&Limit=${limit}&Offset=${offset}`;
 
-  console.log(`📄 Página ${Math.floor(offset / limit) + 1}: Offset=${offset}, Limit=${limit}`);
-  console.log(`   Progreso: ${acumulados.length} estudiantes acumulados`);
-
   return this.http.get<EstudianteQ10[]>(url, { 
-    headers: { 
-      'Api-key': this.q10ApiKey, 
-      'Cache-Control': 'no-cache'
-    }
+    headers: { 'Api-key': this.q10ApiKey, 'Cache-Control': 'no-cache' }
   }).pipe(
     switchMap(data => {
-      const nuevoAcumulado = [...acumulados, ...data];
-      
-      console.log(`   ✓ Recibidos: ${data.length} registros`);
-      console.log(`   📊 Total acumulado: ${nuevoAcumulado.length} estudiantes`);
-      
-      // Continuar si recibimos exactamente 'limit' registros
-      if (data.length === limit) {
-        console.log(`   ⏭️ Hay más datos, obteniendo siguiente página...\n`);
-        // Pequeño delay para no saturar la API (opcional)
-        return of(null).pipe(
-          delay(100), // 100ms de delay entre requests
-          switchMap(() => this.obtenerEstudiantesPaginados(periodo, offset + limit, nuevoAcumulado))
-        );
-      } else {
-        console.log(`\n✅ PAGINACIÓN COMPLETADA`);
-        console.log(`   Total de páginas: ${Math.floor(offset / limit) + 1}`);
-        console.log(`   Total de estudiantes: ${nuevoAcumulado.length}`);
-        console.log(`═══════════════════════════════════════════════════════\n`);
-        return of(nuevoAcumulado);
+      // SI NO HAY DATOS: Detenemos la recursión y devolvemos lo acumulado
+      if (!data || data.length === 0) {
+        console.log(`✅ Carga finalizada. Total acumulado: ${acumulados.length}`);
+        return of(acumulados);
       }
+
+      const nuevoAcumulado = [...acumulados, ...data];
+      console.log(`⏳ Cargando... Offset: ${offset} | Recibidos: ${data.length} | Acumulados: ${nuevoAcumulado.length}`);
+
+      // SI HAY DATOS: Pedimos la siguiente página usando el largo real de lo que recibimos
+      return of(null).pipe(
+        delay(50), // Pequeño respiro para la API
+        switchMap(() => this.obtenerEstudiantesPaginados(periodo, offset + data.length, nuevoAcumulado))
+      );
     }),
     catchError(err => {
-      console.error(`\n❌ ERROR en offset ${offset}:`);
-      console.error(`   Mensaje: ${err.message}`);
-      console.error(`   Estudiantes recuperados hasta ahora: ${acumulados.length}`);
-      console.warn(`⚠️ Continuando con los datos obtenidos...\n`);
+      console.error('❌ Error en paginación, retornando datos parciales', err);
       return of(acumulados);
     })
   );
-}
+ }
 }

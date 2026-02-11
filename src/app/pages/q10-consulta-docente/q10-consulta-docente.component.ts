@@ -1,4 +1,4 @@
-import { Component, signal, computed, inject } from '@angular/core';
+import { Component, signal, computed, inject, OnInit } from '@angular/core';
 import { Q10Service } from '../../services/q10.service';
 import { EstudianteQ10 } from '../../models/estudiante-q10';
 
@@ -32,12 +32,13 @@ interface EstudianteDuplicado {
 
 @Component({
   selector: 'app-q10-consulta-docente',
-  imports: [],
+  standalone: true, // Asegúrate de si es standalone o no según tu proyecto
+  imports: [], 
   templateUrl: './q10-consulta-docente.component.html',
   styleUrl: './q10-consulta-docente.component.css',
 })
-export class Q10ConsultaDocenteComponent {
- public q10Service = inject(Q10Service);
+export class Q10ConsultaDocenteComponent implements OnInit {
+  public q10Service = inject(Q10Service);
   
   public docenteSeleccionado = signal<string>('');
   public cursoActivo = signal<any>(null);
@@ -98,9 +99,6 @@ export class Q10ConsultaDocenteComponent {
       };
     }
 
-    console.log(`🔍 Analizando ${todosEstudiantes.length} estudiantes...`);
-
-    // Agrupar por código de estudiante
     const porEstudiante = new Map<string, any[]>();
     
     todosEstudiantes.forEach(est => {
@@ -111,9 +109,6 @@ export class Q10ConsultaDocenteComponent {
       porEstudiante.get(codigo)?.push(est);
     });
 
-    console.log(`👥 Estudiantes únicos encontrados: ${porEstudiante.size}`);
-
-    // Detectar duplicados
     const duplicados: EstudianteDuplicado[] = [];
     const programasAfectados = new Map<string, number>();
     let conMultiplesProgramas = 0;
@@ -124,17 +119,10 @@ export class Q10ConsultaDocenteComponent {
       if (inscripciones.length > 1) {
         const programasUnicos = new Set(inscripciones.map((i: any) => i.Codigo_programa));
 
-        if (inscripciones.length > maximoInscripciones) {
-          maximoInscripciones = inscripciones.length;
-        }
-
+        if (inscripciones.length > maximoInscripciones) maximoInscripciones = inscripciones.length;
         totalInscripcionesDuplicadas += inscripciones.length;
+        if (programasUnicos.size > 1) conMultiplesProgramas++;
 
-        if (programasUnicos.size > 1) {
-          conMultiplesProgramas++;
-        }
-
-        // Obtener información de los cursos
         const detallesInscripciones: InscripcionDetalle[] = inscripciones.map((est: any) => {
           const cursoInfo = this.obtenerInfoCurso(est);
           return {
@@ -150,7 +138,7 @@ export class Q10ConsultaDocenteComponent {
         });
 
         const primerEstudiante = inscripciones[0];
-        const detalle: EstudianteDuplicado = {
+        duplicados.push({
           codigoEstudiante: codigo,
           nombre: `${primerEstudiante.Primer_nombre || ''} ${primerEstudiante.Segundo_nombre || ''} ${primerEstudiante.Primer_apellido || ''} ${primerEstudiante.Segundo_apellido || ''}`.trim(),
           email: primerEstudiante.Email || 'N/A',
@@ -159,31 +147,17 @@ export class Q10ConsultaDocenteComponent {
           totalCursos: inscripciones.length,
           totalProgramas: programasUnicos.size,
           programas: Array.from(programasUnicos)
-        };
-
-        duplicados.push(detalle);
-
-        // Contar por programa
-        programasUnicos.forEach(programa => {
-          programasAfectados.set(programa as string, (programasAfectados.get(programa as string) || 0) + 1);
         });
+
+        programasUnicos.forEach(p => programasAfectados.set(p as string, (programasAfectados.get(p as string) || 0) + 1));
       }
     });
 
-    // Ordenar por cantidad de inscripciones
     duplicados.sort((a, b) => b.totalCursos - a.totalCursos);
 
-    console.log(`⚠️ Estudiantes con múltiples inscripciones: ${duplicados.length}`);
-    console.log(`📊 Máximo de inscripciones por estudiante: ${maximoInscripciones}`);
-
-    // Determinar severidad
     let severidad: 'baja' | 'media' | 'alta' = 'baja';
     if (duplicados.length > 20) severidad = 'alta';
     else if (duplicados.length > 10) severidad = 'media';
-
-    const promedioInscripciones = duplicados.length > 0 
-      ? totalInscripcionesDuplicadas / duplicados.length 
-      : 0;
 
     return {
       total: duplicados.length,
@@ -195,41 +169,24 @@ export class Q10ConsultaDocenteComponent {
         conMultiplesCursos: duplicados.length,
         conMultiplesProgramas,
         maximoInscripciones,
-        promedioInscripciones: Math.round(promedioInscripciones * 10) / 10
+        promedioInscripciones: duplicados.length > 0 ? Math.round((totalInscripcionesDuplicadas / duplicados.length) * 10) / 10 : 0
       }
     };
   });
 
-  // Estudiantes duplicados en el curso actual
   public estudiantesDuplicados = computed(() => {
     const estudiantesActuales = this.q10Service.estudiantes();
     const analisisGlobal = this.analisisInscripcionesMultiples();
-
     if (estudiantesActuales.length === 0) return [];
-
     return estudiantesActuales
-      .map(est => {
-        const duplicado = analisisGlobal.estudiantes.find(
-          d => d.codigoEstudiante === est.Codigo_estudiante
-        );
-        return duplicado;
-      })
+      .map(est => analisisGlobal.estudiantes.find(d => d.codigoEstudiante === est.Codigo_estudiante))
       .filter(d => d !== undefined) as EstudianteDuplicado[];
   });
 
   ngOnInit() {
     this.q10Service.obtenerCursos().subscribe(() => {
-      const periodoActual = 3;
-      
-      console.log('🔄 Iniciando carga completa de estudiantes...');
-      this.q10Service.obtenerTodosLosEstudiantesPeriodo(periodoActual).subscribe({
-        next: (estudiantes) => {
-          console.log(`✅ Análisis completo: ${estudiantes.length} estudiantes cargados`);
-        },
-        error: (error) => {
-          console.error('❌ Error al cargar estudiantes:', error);
-        }
-      });
+      // Período 3 como definiste originalmente
+      this.q10Service.obtenerTodosLosEstudiantesPeriodo(3).subscribe();
     });
   }
 
@@ -241,139 +198,56 @@ export class Q10ConsultaDocenteComponent {
 
   verAlumnos(curso: any) {
     this.cursoActivo.set(curso);
-    this.q10Service.obtenerEstudiantesPorCurso(
-      curso.Consecutivo_periodo,
-      curso.Consecutivo_sede_jornada,
-      curso.Consecutivo
-    ).subscribe();
+    this.q10Service.obtenerEstudiantesPorCurso(curso.Consecutivo_periodo, curso.Consecutivo_sede_jornada, curso.Consecutivo).subscribe();
   }
 
   private generarAlertasCupo(cursos: any[]): AlertaCupo[] {
-    const alertas: AlertaCupo[] = [];
-
-    cursos.forEach(curso => {
+    return cursos.map(curso => {
       const matriculados = curso.Cantidad_estudiantes_matriculados || 0;
       const cupoMaximo = curso.Cupo_maximo || 0;
-
-      if (cupoMaximo === 0) return;
-
+      if (cupoMaximo === 0) return null;
       const porcentaje = (matriculados / cupoMaximo) * 100;
       let tipo: 'lleno' | 'proximo' | 'normal' = 'normal';
-
-      if (porcentaje >= 100) {
-        tipo = 'lleno';
-      } else if (porcentaje >= 80) {
-        tipo = 'proximo';
-      }
-
-      if (tipo !== 'normal') {
-        alertas.push({ curso, tipo, porcentaje: Math.round(porcentaje) });
-      }
-    });
-
-    return alertas.sort((a, b) => b.porcentaje - a.porcentaje);
+      if (porcentaje >= 100) tipo = 'lleno';
+      else if (porcentaje >= 80) tipo = 'proximo';
+      return tipo !== 'normal' ? { curso, tipo, porcentaje: Math.round(porcentaje) } : null;
+    }).filter(a => a !== null) as AlertaCupo[];
   }
 
-  getEstadoCupo(curso: any): { tipo: string; porcentaje: number; clase: string } {
+  getEstadoCupo(curso: any) {
     const matriculados = curso.Cantidad_estudiantes_matriculados || 0;
     const cupoMaximo = curso.Cupo_maximo || 0;
-
-    if (cupoMaximo === 0) {
-      return { tipo: 'sin-cupo', porcentaje: 0, clase: 'bg-gray-100 text-gray-600' };
-    }
-
-    const porcentaje = (matriculados / cupoMaximo) * 100;
-
-    if (porcentaje >= 100) {
-      return { tipo: 'lleno', porcentaje: 100, clase: 'bg-red-100 text-red-700 border-red-300' };
-    } else if (porcentaje >= 80) {
-      return { tipo: 'proximo', porcentaje: Math.round(porcentaje), clase: 'bg-amber-100 text-amber-700 border-amber-300' };
-    } else if (porcentaje >= 50) {
-      return { tipo: 'medio', porcentaje: Math.round(porcentaje), clase: 'bg-blue-100 text-blue-700 border-blue-300' };
-    } else {
-      return { tipo: 'disponible', porcentaje: Math.round(porcentaje), clase: 'bg-green-100 text-green-700 border-green-300' };
-    }
+    if (cupoMaximo === 0) return { tipo: 'sin-cupo', porcentaje: 0, clase: 'bg-gray-100 text-gray-600' };
+    const porcentaje = Math.round((matriculados / cupoMaximo) * 100);
+    if (porcentaje >= 100) return { tipo: 'lleno', porcentaje, clase: 'bg-red-100 text-red-700 border-red-300' };
+    if (porcentaje >= 80) return { tipo: 'proximo', porcentaje, clase: 'bg-amber-100 text-amber-700 border-amber-300' };
+    return { tipo: 'disponible', porcentaje, clase: 'bg-green-100 text-green-700 border-green-300' };
   }
 
   verificarDuplicadosEstudiante(codigoEstudiante: string): boolean {
-    return this.estudiantesDuplicados().some(dup => 
-      dup.codigoEstudiante === codigoEstudiante
-    );
+    return this.estudiantesDuplicados().some(dup => dup.codigoEstudiante === codigoEstudiante);
   }
 
-  togglePanelAlertas() {
-    this.mostrarPanelAlertas.set(!this.mostrarPanelAlertas());
-  }
-
-  togglePanelDuplicados() {
-    this.mostrarPanelDuplicados.set(!this.mostrarPanelDuplicados());
-  }
+  togglePanelAlertas() { this.mostrarPanelAlertas.update(v => !v); }
+  togglePanelDuplicados() { this.mostrarPanelDuplicados.update(v => !v); }
 
   imprimirReporteDuplicados() {
-    const analisis = this.analisisInscripcionesMultiples();
-    
-    console.log('═══════════════════════════════════════════════════════');
-    console.log('📋 REPORTE COMPLETO DE INSCRIPCIONES MÚLTIPLES');
-    console.log('═══════════════════════════════════════════════════════');
-    console.log(`Total de estudiantes analizados: ${analisis.estadisticas.totalInscripciones}`);
-    console.log(`Estudiantes con múltiples cursos: ${analisis.total}`);
-    console.log(`Estudiantes en múltiples programas: ${analisis.estadisticas.conMultiplesProgramas}`);
-    console.log(`Máximo de inscripciones: ${analisis.estadisticas.maximoInscripciones}`);
-    console.log(`Promedio de inscripciones (duplicados): ${analisis.estadisticas.promedioInscripciones}`);
-    console.log('───────────────────────────────────────────────────────');
-    
-    analisis.estudiantes.forEach((est, index) => {
-      console.log(`\n${index + 1}. ${est.nombre} (${est.codigoEstudiante})`);
-      console.log(`   📧 ${est.email} | 📱 ${est.celular}`);
-      console.log(`   📊 Total: ${est.totalCursos} curso(s) en ${est.totalProgramas} programa(s)`);
-      console.log(`   Inscripciones:`);
-      
-      est.inscripciones.forEach((insc, i) => {
-        console.log(`      ${i + 1}) ${insc.nombreCurso}`);
-        console.log(`         - Programa: ${insc.nombrePrograma} (${insc.codigoPrograma})`);
-        console.log(`         - Docente: ${insc.nombreDocente}`);
-        console.log(`         - Sede/Jornada: ${insc.sede} - ${insc.jornada}`);
-        console.log(`         - Fecha: ${new Date(insc.fechaMatricula).toLocaleDateString()}`);
-      });
-    });
-    
-    console.log('\n═══════════════════════════════════════════════════════');
-    console.log('PROGRAMAS AFECTADOS:');
-    console.log('═══════════════════════════════════════════════════════');
-    
-    analisis.porPrograma.forEach((cantidad, programa) => {
-      console.log(`${programa}: ${cantidad} estudiante(s)`);
-    });
-    
-    console.log('═══════════════════════════════════════════════════════\n');
+    console.log('📋 REPORTE DE DUPLICADOS', this.analisisInscripcionesMultiples());
   }
 
-  private obtenerInfoCurso(estudiante: any): { nombre: string; docente: string; consecutivo: string } {
-    const cursos = this.q10Service.cursos();
-    
-    const cursoEncontrado = cursos.find(c => 
+  private obtenerInfoCurso(estudiante: any) {
+    const cursoEncontrado = this.q10Service.cursos().find(c => 
       c.Codigo_programa === estudiante.Codigo_programa &&
-      c.Consecutivo_sede_jornada === estudiante.Consecutivo_sedejornada &&
-      c.Consecutivo_periodo === estudiante.Consecutivo_periodo
+      c.Consecutivo_sede_jornada === estudiante.Consecutivo_sedejornada
     );
-
-    if (cursoEncontrado) {
-      return {
-        nombre: cursoEncontrado.Nombre,
-        docente: cursoEncontrado.Nombre_docente,
-        consecutivo: cursoEncontrado.Consecutivo.toString()
-      };
-    }
-
     return {
-      nombre: estudiante.Nombre_programa || 'Curso no identificado',
-      docente: 'No asignado',
-      consecutivo: 'N/A'
+      nombre: cursoEncontrado?.Nombre || estudiante.Nombre_programa || 'Curso no identificado',
+      docente: cursoEncontrado?.Nombre_docente || 'No asignado',
+      consecutivo: cursoEncontrado?.Consecutivo?.toString() || 'N/A'
     };
   }
 
-  // Helper para convertir Map a array para el template
-  mapToArray(map: Map<string, number>): Array<{key: string, value: number}> {
+  mapToArray(map: Map<string, number>) {
     return Array.from(map.entries()).map(([key, value]) => ({key, value}));
   }
 }
