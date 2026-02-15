@@ -1,5 +1,6 @@
 import { Component, inject, computed, signal, OnInit} from '@angular/core';
 import { Q10Service } from '../../services/q10.service';
+import { TableComponent } from '../../shared/components/table/table.component';
 
 
 
@@ -25,7 +26,7 @@ interface AnalisisPrograma {
 
 @Component({
   selector: 'app-reportes',
-  imports: [],
+  imports: [TableComponent],
   templateUrl: './reportes.component.html',
   styleUrl: './reportes.component.css',
 })
@@ -40,6 +41,8 @@ export class ReportesComponent implements OnInit {
       this.q10Service.obtenerTodosLosEstudiantesPeriodo(3).subscribe();
     });
   }
+public theadItems = signal<any[]>(['Programa','Cursos','Inscritos','Cupo total','Ocupacion','Docentes']);
+
   // KPIs principales
   public kpis = computed((): MetricaKPI[] => {
     const cursos = this.q10Service.statsAdmin()
@@ -136,15 +139,16 @@ export class ReportesComponent implements OnInit {
   });
 
   // Cursos en riesgo de cierre (baja ocupación)
-  public cursosRiesgoCierre = computed(() => {
+ 
+  public cursosMenorOcupacion = computed(()=>{
     return this.q10Service.cursos()
-      .filter(c => {
-        const ocupacion = c.Cupo_maximo > 0 ? (c.Cantidad_estudiantes_matriculados / c.Cupo_maximo) * 100 : 0;
-        return ocupacion < 30 && c.Estado === 'Activo';
-      })
-      .sort((a, b) => a.Cantidad_estudiantes_matriculados - b.Cantidad_estudiantes_matriculados)
-      .slice(0, 10);
-  });
+    .filter(curso=> {
+      const ocupacion = curso.Cupo_maximo >= 0 ? (curso.Cantidad_estudiantes_matriculados / curso.Cupo_maximo) * 100 : 0;
+      return ocupacion < 30 //&& curso.Estado === 'Activo';
+    })
+    .sort((a, b) => a.Cantidad_estudiantes_matriculados - b.Cantidad_estudiantes_matriculados)
+    //.slice(0, 10);
+  })
 
   // Distribución por sede y jornada
   public distribucionSedeJornada = computed(() => {

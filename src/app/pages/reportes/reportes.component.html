@@ -96,7 +96,8 @@
       </div>
       
       <div class="overflow-x-auto">
-        <table class="w-full">
+        <app-table [theadItems]="theadItems()" [tbodyItems] ="analisisPorPrograma()"></app-table>
+        <!-- <table class="w-full">
           <thead>
             <tr class="border-b-2 border-gray-200">
               <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">Programa</th>
@@ -157,7 +158,7 @@
               </tr>
             }
           </tbody>
-        </table>
+        </table> -->
       </div>
     </div>
 
@@ -203,9 +204,9 @@
           Cursos en Riesgo (Baja Ocupación)
         </h2>
         
-        @if (cursosRiesgoCierre().length >0) {
+        @if (cursosMenorOcupacion().length >0) {
           <div class="space-y-3">
-            @for (curso of cursosRiesgoCierre(); track curso.Consecutivo; let idx = $index) {
+            @for (curso of cursosMenorOcupacion(); track curso.Consecutivo) {
               <div class="flex items-center gap-3 p-3 bg-red-50 rounded-lg border-l-4 border-red-400">
                 <div class="flex-shrink-0 w-8 h-8 bg-red-100 rounded-full flex items-center justify-center text-red-600 font-bold text-sm">
                   !
@@ -292,7 +293,7 @@
               </tr>
             }
           </tbody>
-        </table>
+        </table> 
       </div>
     </div>
 

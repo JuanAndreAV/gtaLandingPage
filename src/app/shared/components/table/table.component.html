@@ -1,0 +1,60 @@
+ <table class="w-full">
+          <thead>
+            <tr class="border-b-2 border-gray-200">   
+            <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">{{theadItems()?.slice(0,1)}}</th>
+            @for (item of theadItems()?.slice(1); track $index) {
+                <th class="text-center py-3 px-4 text-sm font-semibold text-gray-700">{{ item }}</th>
+            }
+            </tr>
+          </thead>
+           <tbody>
+            @for (programa of tbodyItems(); track programa.codigo) {
+              <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                <td class="py-4 px-4">
+                  <div>
+                    <p class="font-semibold text-gray-900">{{ programa.nombre }}</p>
+                    <p class="text-xs text-gray-500">{{ programa.codigo }}</p>
+                  </div>
+                </td>
+                <td class="text-center py-4 px-4 font-semibold text-gray-900">
+                  {{ programa.cursos }}
+                </td>
+                <td class="text-center py-4 px-4">
+                  <span class="inline-block bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-semibold">
+                    {{ programa.inscritos }}
+                  </span>
+                </td>
+                <td class="text-center py-4 px-4 text-gray-600">
+                  {{ programa.cupoTotal }}
+                </td>
+                <td class="text-center py-4 px-4">
+                  <div class="flex items-center justify-center gap-2">
+                    <div class="w-20 bg-gray-200 rounded-full h-2">
+                      <div 
+                        class="h-2 rounded-full transition-all"
+                        [style.width.%]="programa.ocupacion"
+                        [class]="
+                          programa.ocupacion >= 80 ? 'bg-red-500' :
+                          programa.ocupacion >= 60 ? 'bg-amber-500' :
+                          programa.ocupacion >= 40 ? 'bg-blue-500' : 'bg-green-500'
+                        ">
+                      </div>
+                    </div>
+                    <span 
+                      class="text-sm font-bold"
+                      [class]="
+                        programa.ocupacion >= 80 ? 'text-red-600' :
+                        programa.ocupacion >= 60 ? 'text-amber-600' :
+                        programa.ocupacion >= 40 ? 'text-blue-600' : 'text-green-600'
+                      ">
+                      {{ programa.ocupacion.toFixed(2)  }}%
+                    </span>
+                  </div>
+                </td>
+                <td class="text-center py-4 px-4 text-gray-600">
+                  {{ programa.docentes.size }}
+                </td>
+              </tr>
+            }
+          </tbody> 
+        </table>

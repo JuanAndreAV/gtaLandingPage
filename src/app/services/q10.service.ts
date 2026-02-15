@@ -201,7 +201,7 @@ obtenerTodosLosEstudiantesPeriodo(periodo: number): Observable<EstudianteQ10[]> 
   acumulados: EstudianteQ10[]
 ): Observable<EstudianteQ10[]> {
   
-  const limit = 600; // Q10 suele tener este tope interno
+  const limit = 2000; // Q10 suele tener este tope interno
   const url = `${this.q10ApiUrl}/estudiantes?Periodo=${periodo}&Limit=${limit}&Offset=${offset}`;
 
   return this.http.get<EstudianteQ10[]>(url, { 
