@@ -19,6 +19,7 @@ interface AnalisisPrograma {
   nombre: string;
   cursos: number;
   inscritos: number;
+  matriculados?: number;
   cupoTotal: number;
   ocupacion: number;
   docentes: Set<string>;
@@ -37,11 +38,11 @@ export class ReportesComponent implements OnInit {
   public periodoActual = '2026-1';
     ngOnInit() {
     this.q10Service.obtenerCursos().subscribe(() => {
-      
+      //this.q10Service.estudiantes()
       this.q10Service.obtenerTodosLosEstudiantesPeriodo(3).subscribe();
     });
   }
-public theadItems = signal<any[]>(['Programa','Cursos','Inscritos','Cupo total','Ocupacion','Docentes']);
+public theadItems = signal<any[]>(['Programa','Cursos','Inscritos', 'matriculados','Cupo total','Ocupacion','Docentes']);
 
   // KPIs principales
   public kpis = computed((): MetricaKPI[] => {
@@ -65,6 +66,15 @@ public theadItems = signal<any[]>(['Programa','Cursos','Inscritos','Cupo total',
         porcentajeCambio: Math.round(ocupacionGeneral),
         icono: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z',
         color: 'from-blue-500 to-indigo-600'
+      },
+      {
+        titulo: 'Total Matriculados',
+        valor: estudiantes.length,
+        subtitulo: `en ${cursos.totalCursos} cursos`,
+        tendencia: estudiantes.length > 1000 ? 'up' : 'neutral',
+        porcentajeCambio: Math.round((estudiantes.length / (cursos.totalMatriculados || 1)) * 100),
+        icono: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z',
+        color: 'from-green-500 to-teal-600'
       },
       {
         titulo: 'Cursos Activos',
@@ -95,6 +105,7 @@ public theadItems = signal<any[]>(['Programa','Cursos','Inscritos','Cupo total',
   // Análisis por programa
   public analisisPorPrograma = computed(() => {
     const cursos = this.q10Service.cursos();
+    const matriculados = this.q10Service.todosLosEstudiantes();
     const programas = new Map<string, AnalisisPrograma>();
 
     cursos.forEach(curso => {
@@ -106,6 +117,7 @@ public theadItems = signal<any[]>(['Programa','Cursos','Inscritos','Cupo total',
           nombre: curso.Nombre_programa || codigo,
           cursos: 0,
           inscritos: 0,
+          matriculados: 0, //matriculados.filter(m => m.Codigo_programa === codigo).length,
           cupoTotal: 0,
           ocupacion: 0,
           docentes: new Set()
@@ -115,6 +127,7 @@ public theadItems = signal<any[]>(['Programa','Cursos','Inscritos','Cupo total',
       const programa = programas.get(codigo)!;
       programa.cursos++;
       programa.inscritos += curso.Cantidad_estudiantes_matriculados || 0;
+      programa.matriculados = matriculados.filter(m => m.Codigo_programa === codigo).length;
       programa.cupoTotal += curso.Cupo_maximo || 0;
       programa.docentes.add(curso.Nombre_docente);
     });
@@ -122,7 +135,7 @@ public theadItems = signal<any[]>(['Programa','Cursos','Inscritos','Cupo total',
     // Calcular ocupación
     const resultado = Array.from(programas.values()).map(p => ({
       ...p,
-      ocupacion: p.cupoTotal > 0 ? (p.inscritos / p.cupoTotal) * 100 : 0,
+      ocupacion:  p.cupoTotal > 0 ? (Number(p.matriculados) / p.cupoTotal) * 100 : 0,
       numeroDocentes: p.docentes.size
     }));
 

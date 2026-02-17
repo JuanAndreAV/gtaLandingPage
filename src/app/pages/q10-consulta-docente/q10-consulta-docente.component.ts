@@ -49,7 +49,10 @@ export class Q10ConsultaDocenteComponent implements OnInit {
   public misCursos = computed(() => {
     const seleccion = this.docenteSeleccionado();
     return this.q10Service.cursos().filter(c => c.Nombre_docente === seleccion);
-  });
+   
+  })
+
+    
 
   // Estadísticas totales del docente
   public estadisticas = computed(() => {
@@ -129,7 +132,7 @@ export class Q10ConsultaDocenteComponent implements OnInit {
             nombreCurso: cursoInfo.nombre,
             nombrePrograma: est.Nombre_programa || 'N/A',
             codigoPrograma: est.Codigo_programa || 'N/A',
-            nombreDocente: cursoInfo.docente,
+            nombreDocente: cursoInfo.docente || 'N/A',
             sede: est.Nombre_sede || 'N/A',
             jornada: est.Nombre_jornada || 'N/A',
             fechaMatricula: est.Fecha_matricula,
@@ -240,6 +243,8 @@ export class Q10ConsultaDocenteComponent implements OnInit {
       c.Codigo_programa === estudiante.Codigo_programa &&
       c.Consecutivo_sede_jornada === estudiante.Consecutivo_sedejornada
     );
+    
+    //console.log('🔍 Buscando curso para estudiante',cursoEncontrado?.Codigo_asignatura);
     return {
       nombre: cursoEncontrado?.Nombre || estudiante.Nombre_programa || 'Curso no identificado',
       docente: cursoEncontrado?.Nombre_docente || 'No asignado',

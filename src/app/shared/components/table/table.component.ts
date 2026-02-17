@@ -5,6 +5,7 @@ interface AnalisisPrograma {
   nombre: string;
   cursos: number;
   inscritos: number;
+  matriculados?: number;
   cupoTotal: number;
   ocupacion: number;
   docentes: Set<string>;

@@ -77,7 +77,7 @@ export class Q10Service {
   });
 
   // En Q10Service
-obtenerTodosLosEstudiantes(periodo: number): Observable<EstudianteQ10[]> {
+/*obtenerTodosLosEstudiantes(periodo: number): Observable<EstudianteQ10[]> {
   this.isLoading.set(true);
 
   const url = `${this.q10ApiUrl}/estudiantes?Periodo=${periodo}&Limit=1000&Offset=0`;
@@ -97,7 +97,7 @@ obtenerTodosLosEstudiantes(periodo: number): Observable<EstudianteQ10[]> {
     }),
     finalize(() => this.isLoading.set(false))
   );
-}
+}*/
 
 
 
