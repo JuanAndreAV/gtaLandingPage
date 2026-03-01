@@ -11,6 +11,8 @@ import { isAuthenticatedGuard } from './auth/guards/is-authenticated.guard';
 import { AreaprofesorComponent } from './features/profesor/areaprofesor/areaprofesor.component';
 import { Q10ConsultaDocenteComponent } from './pages/q10-consulta-docente/q10-consulta-docente.component';
 import { ReportesComponent } from './pages/reportes/reportes.component';
+import { Q10PoblacionComponent } from './pages/q10-poblacion/q10-poblacion.component';
+import { Q10AsistenciaComponent } from './pages/q10-asistencia/q10-asistencia.component';
 
 
 export const routes: Routes = [
@@ -22,6 +24,14 @@ export const routes: Routes = [
    {
       path: "reportes",
       component: ReportesComponent
+   },
+   {
+      path: "poblacion",
+      component: Q10PoblacionComponent
+   },
+   {
+      path: "asistencia",
+      component: Q10AsistenciaComponent
    },
    {
     path: "",

@@ -76,7 +76,7 @@ export class Q10Service {
     };
   });
 
-  // En Q10Service
+
 /*obtenerTodosLosEstudiantes(periodo: number): Observable<EstudianteQ10[]> {
   this.isLoading.set(true);
 

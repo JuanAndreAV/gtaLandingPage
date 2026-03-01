@@ -189,9 +189,12 @@ export class Q10ConsultaDocenteComponent implements OnInit {
   ngOnInit() {
     this.q10Service.obtenerCursos().subscribe(() => {
       // Período 3 como definiste originalmente
+     
       this.q10Service.obtenerTodosLosEstudiantesPeriodo(3).subscribe();
     });
+    
   }
+  
 
   seleccionarDocente(nombre: string) {
     this.docenteSeleccionado.set(nombre);
@@ -201,6 +204,7 @@ export class Q10ConsultaDocenteComponent implements OnInit {
 
   verAlumnos(curso: any) {
     this.cursoActivo.set(curso);
+
     this.q10Service.obtenerEstudiantesPorCurso(curso.Consecutivo_periodo, curso.Consecutivo_sede_jornada, curso.Consecutivo).subscribe();
   }
 
