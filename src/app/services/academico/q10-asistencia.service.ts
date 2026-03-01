@@ -18,13 +18,13 @@ export class Q10AsistenciaService {
   public isLoading = signal<boolean>(false);
   public error = signal<string | null>(null);
   
-  public obtenerAsistencia(programa: string, curso?: string): Observable<AsistenciaQ10[]>{
+  public obtenerAsistencia(programa: string, asignatura: string, curso?: string): Observable<AsistenciaQ10[]>{
     this.isLoading.set(true);
     this.asistencia.set([]);
     this.error.set(null);
-    let url = `${this.q10ApiUrl}/evaluaciones?Programa=${programa}`;
+    let url = `${this.q10ApiUrl}/evaluaciones/cuantitativo/notas?Consecutivo_periodo=3&Codigo_programa=${programa}&Codigo_asignatura=${asignatura}`;
     if(curso){
-      url += `&Curso=${curso}`;
+      url += `&Consecutivo_curso=${curso}`;
     }
     return this.http.get<AsistenciaQ10[]>(url, {
       headers: {
