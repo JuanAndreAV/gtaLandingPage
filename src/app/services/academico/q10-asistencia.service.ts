@@ -20,8 +20,9 @@ export class Q10AsistenciaService {
   
   public obtenerAsistencia(programa: string, curso?: string): Observable<AsistenciaQ10[]>{
     this.isLoading.set(true);
+    this.asistencia.set([]);
     this.error.set(null);
-    let url = `${this.q10ApiUrl}evaluaciones?Programa=${programa}`;
+    let url = `${this.q10ApiUrl}/evaluaciones?Programa=${programa}`;
     if(curso){
       url += `&Curso=${curso}`;
     }

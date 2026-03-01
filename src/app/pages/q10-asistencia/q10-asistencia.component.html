@@ -1,1 +1,397 @@
-<p>total cursos {{programasCursos().length}}</p>
+<!-- =====================================================
+     REPORTE DE ASISTENCIA Q10
+     ===================================================== -->
+<div class="min-h-screen bg-slate-50 p-4 md:p-8 font-sans">
+
+  <!-- ── Encabezado ── -->
+  <div class="mb-8">
+    <div class="flex items-center gap-3 mb-1">
+      <div class="w-1 h-8 bg-indigo-600 rounded-full"></div>
+      <h1 class="text-2xl md:text-3xl font-bold text-slate-800 tracking-tight">
+        Reporte de Asistencia
+      </h1>
+    </div>
+    <p class="text-slate-500 text-sm ml-4 pl-3">
+      Consulta el porcentaje de inasistencia y evaluación por programa y curso — Q10
+    </p>
+  </div>
+
+  <!-- ── Error global ── -->
+  @if (error()) {
+    <div class="mb-6 flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 rounded-xl p-4">
+      <svg class="w-5 h-5 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <span class="text-sm">{{ error() }}</span>
+    </div>
+  }
+
+  <!-- ════════════════════════════════════════════
+       FILTROS
+  ════════════════════════════════════════════ -->
+  <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 md:p-6 mb-6">
+    <h2 class="text-sm font-semibold text-slate-500 uppercase tracking-widest mb-4">
+      Filtros de consulta
+    </h2>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+
+      <!-- Select: Programa (obligatorio) -->
+      <div class="flex flex-col gap-1.5">
+        <label class="text-sm font-medium text-slate-700 flex items-center gap-1">
+          Programa
+          <span class="text-red-500 text-xs">*</span>
+        </label>
+
+        @if (cargandoCursos()) {
+          <div class="h-10 bg-slate-100 rounded-lg animate-pulse"></div>
+        } @else {
+          <select
+            class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700
+                   shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none
+                   transition disabled:opacity-50 disabled:cursor-not-allowed"
+            [value]="programaSeleccionado()"
+            (change)="onProgramaChange($any($event.target).value)"
+          >
+            <option value="">— Seleccione un programa —</option>
+            @for (prog of programas(); track prog.Codigo_programa) {
+              <option [value]="prog.Codigo_programa">
+                {{ prog.Nombre_programa }}
+              </option>
+            }
+          </select>
+        }
+      </div>
+
+      <!-- Select: Curso (opcional) -->
+      <div class="flex flex-col gap-1.5">
+        <label class="text-sm font-medium text-slate-700 flex items-center gap-1">
+          Curso
+          <span class="text-slate-400 text-xs font-normal">(opcional)</span>
+        </label>
+        <select
+          class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700
+                 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none
+                 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          [value]="cursoSeleccionado()"
+          (change)="onCursoChange($any($event.target).value)"
+          [disabled]="!programaSeleccionado() || cursosFiltrados().length === 0"
+        >
+          <option value="">— Todos los cursos —</option>
+          @for (curso of cursosFiltrados(); track curso.Codigo) {
+            <option [value]="curso.Codigo">
+              {{ curso.Nombre }}
+            </option>
+          }
+        </select>
+        @if (programaSeleccionado() && cursosFiltrados().length === 0 && !cargandoCursos()) {
+          <p class="text-xs text-slate-400">No hay cursos para este programa.</p>
+        }
+      </div>
+
+      <!-- Acciones -->
+      <div class="flex items-end gap-2">
+        <button
+          (click)="generarReporte()"
+          [disabled]="!programaSeleccionado() || cargandoReporte()"
+          class="flex-1 flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5
+                 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 active:scale-95
+                 transition disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          @if (cargandoReporte()) {
+            <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor"
+                d="M4 12a8 8 0 018-8v8H4z"></path>
+            </svg>
+            Generando...
+          } @else {
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586
+                   a1 1 0 01.707.293l5.414 5.414A1 1 0 0119 9.414V19a2 2 0 01-2 2z" />
+            </svg>
+            Generar Reporte
+          }
+        </button>
+
+        @if (reporteGenerado()) {
+          <button
+            (click)="limpiarReporte()"
+            class="rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-slate-600
+                   hover:bg-slate-50 active:scale-95 transition"
+            title="Limpiar filtros"
+          >
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        }
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════
+       RESULTADOS
+  ════════════════════════════════════════════ -->
+  @if (reporteGenerado()) {
+
+    <!-- Título del reporte -->
+    <div class="flex flex-wrap items-baseline gap-2 mb-5">
+      <h2 class="text-lg font-bold text-slate-800">{{ nombrePrograma() }}</h2>
+      @if (nombreCurso()) {
+        <span class="text-slate-400 text-sm">›</span>
+        <span class="text-base font-medium text-indigo-600">{{ nombreCurso() }}</span>
+      }
+      <span class="ml-auto text-xs text-slate-400 font-mono">
+        {{ estudiantesDetalle().length }} registros
+      </span>
+    </div>
+
+    <!-- ── KPIs del programa ── -->
+    @if (resumenPrograma(); as res) {
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+
+        <!-- Estudiantes -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col gap-1">
+          <span class="text-xs text-slate-400 font-medium uppercase tracking-wide">Estudiantes</span>
+          <span class="text-3xl font-bold text-slate-800">{{ res.totalEstudiantes }}</span>
+          <span class="text-xs text-slate-400">Total únicos</span>
+        </div>
+
+        <!-- Inasistencia promedio -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col gap-1"
+             [class.border-red-200]="res.promedioInasistencia > 20"
+             [class.bg-red-50]="res.promedioInasistencia > 30">
+          <span class="text-xs text-slate-400 font-medium uppercase tracking-wide">% Inasistencia</span>
+          <span class="text-3xl font-bold"
+                [class]="colorInasistencia(res.promedioInasistencia)">
+            {{ res.promedioInasistencia }}%
+          </span>
+          <span class="text-xs text-slate-400">Promedio general</span>
+        </div>
+
+        <!-- Promedio evaluación -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col gap-1">
+          <span class="text-xs text-slate-400 font-medium uppercase tracking-wide">Promedio</span>
+          <span class="text-3xl font-bold text-slate-800">{{ res.promedioEvaluacion }}</span>
+          <span class="text-xs text-slate-400">Nota evaluación</span>
+        </div>
+
+        <!-- En riesgo -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col gap-1"
+             [class.border-amber-300]="res.estudiantesEnRiesgo > 0">
+          <span class="text-xs text-slate-400 font-medium uppercase tracking-wide">En Riesgo</span>
+          <span class="text-3xl font-bold"
+                [class]="res.estudiantesEnRiesgo > 0 ? 'text-amber-500' : 'text-emerald-600'">
+            {{ res.estudiantesEnRiesgo }}
+          </span>
+          <span class="text-xs text-slate-400">Inasistencia &gt; 20%</span>
+        </div>
+
+      </div>
+    }
+
+    <!-- ── Resumen por Curso (solo si no hay curso específico) ── -->
+    @if (!cursoSeleccionado() && resumenPorCurso().length > 1) {
+      <div class="bg-white border border-slate-200 rounded-2xl shadow-sm mb-6 overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-100">
+          <h3 class="font-semibold text-slate-700 text-sm">Resumen por Curso</h3>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-slate-50 text-left text-xs text-slate-500 uppercase tracking-wide">
+                <th class="px-4 py-3 font-medium">Curso</th>
+                <th class="px-4 py-3 font-medium text-right">Estudiantes</th>
+                <th class="px-4 py-3 font-medium text-right">% Inasistencia</th>
+                <th class="px-4 py-3 font-medium text-right">Prom. Eval.</th>
+                <th class="px-4 py-3 font-medium text-right">En Riesgo</th>
+                <th class="px-4 py-3 font-medium">Nivel</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              @for (curso of resumenPorCurso(); track curso.codigoCurso) {
+                <tr class="hover:bg-slate-50 transition-colors">
+                  <td class="px-4 py-3">
+                    <div class="font-medium text-slate-800">{{ curso.nombreCurso }}</div>
+                    <div class="text-xs text-slate-400 font-mono">{{ curso.codigoCurso }}</div>
+                  </td>
+                  <td class="px-4 py-3 text-right text-slate-700 font-medium">
+                    {{ curso.totalEstudiantes }}
+                  </td>
+                  <td class="px-4 py-3 text-right">
+                    <span [class]="colorInasistencia(curso.promedioInasistencia)">
+                      {{ curso.promedioInasistencia }}%
+                    </span>
+                  </td>
+                  <td class="px-4 py-3 text-right text-slate-700">
+                    {{ curso.promedioEvaluacion }}
+                  </td>
+                  <td class="px-4 py-3 text-right">
+                    @if (curso.estudiantesEnRiesgo > 0) {
+                      <span class="inline-flex items-center justify-center w-7 h-7 rounded-full
+                                   bg-amber-100 text-amber-700 font-semibold text-xs">
+                        {{ curso.estudiantesEnRiesgo }}
+                      </span>
+                    } @else {
+                      <span class="text-emerald-600 font-medium">—</span>
+                    }
+                  </td>
+                  <td class="px-4 py-3">
+                    <!-- Barra visual -->
+                    <div class="flex items-center gap-2 min-w-[80px]">
+                      <div class="flex-1 bg-slate-100 rounded-full h-2 overflow-hidden">
+                        <div
+                          class="h-full rounded-full transition-all"
+                          [class]="barColor(curso.promedioInasistencia)"
+                          [style.width.%]="curso.promedioInasistencia"
+                        ></div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    <!-- ── Tabla detalle de estudiantes ── -->
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2">
+        <h3 class="font-semibold text-slate-700 text-sm">Detalle por Estudiante</h3>
+        <span class="text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded-full font-mono">
+          {{ estudiantesDetalle().length }} registros
+        </span>
+      </div>
+
+      @if (estudiantesDetalle().length === 0) {
+        <div class="flex flex-col items-center justify-center py-16 text-slate-400 gap-3">
+          <svg class="w-12 h-12 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586
+                 a1 1 0 01.707.293l5.414 5.414A1 1 0 0119 9.414V19a2 2 0 01-2 2z" />
+          </svg>
+          <p class="text-sm">No se encontraron registros de asistencia.</p>
+        </div>
+      } @else {
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-slate-50 text-left text-xs text-slate-500 uppercase tracking-wide">
+                <th class="px-4 py-3 font-medium">Estudiante</th>
+                <th class="px-4 py-3 font-medium hidden md:table-cell">Identificación</th>
+                <th class="px-4 py-3 font-medium hidden lg:table-cell">Asignatura</th>
+                <th class="px-4 py-3 font-medium hidden lg:table-cell">Curso</th>
+                <th class="px-4 py-3 font-medium text-right">% Inasistencia</th>
+                <th class="px-4 py-3 font-medium text-right hidden sm:table-cell">Cant. Inasist.</th>
+                <th class="px-4 py-3 font-medium text-right hidden sm:table-cell">Prom. Eval.</th>
+                <th class="px-4 py-3 font-medium hidden sm:table-cell">Estado</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              @for (est of estudiantesDetalle(); track est.Codigo_estudiante + est.Codigo_asignatura) {
+                <tr class="hover:bg-slate-50 transition-colors"
+                    [class.bg-red-50]="est.Porcentaje_inasistencia > 30"
+                    [class.hover:bg-red-100]="est.Porcentaje_inasistencia > 30">
+                  <td class="px-4 py-3">
+                    <div class="font-medium text-slate-800 leading-tight">{{ est.Nombre_completo }}</div>
+                    <div class="text-xs text-slate-400 font-mono">{{ est.Codigo_estudiante }}</div>
+                    <!-- En mobile muestra info colapsada -->
+                    <div class="mt-1 text-xs text-slate-500 md:hidden">
+                      {{ est.Abreviatura_tipo_identificacion }}. {{ est.Numero_identificacion }}
+                    </div>
+                  </td>
+                  <td class="px-4 py-3 hidden md:table-cell text-slate-600 text-xs">
+                    <span class="font-medium text-slate-700">{{ est.Abreviatura_tipo_identificacion }}</span>
+                    {{ est.Numero_identificacion }}
+                  </td>
+                  <td class="px-4 py-3 hidden lg:table-cell">
+                    <div class="text-slate-700 max-w-[180px] truncate" [title]="est.Nombre_asignatura">
+                      {{ est.Nombre_asignatura }}
+                    </div>
+                    <div class="text-xs text-slate-400 font-mono">{{ est.Codigo_asignatura }}</div>
+                  </td>
+                  <td class="px-4 py-3 hidden lg:table-cell">
+                    <div class="text-slate-700 max-w-[160px] truncate" [title]="est.Nombre_curso">
+                      {{ est.Nombre_curso }}
+                    </div>
+                  </td>
+                  <td class="px-4 py-3 text-right">
+                    <div class="flex flex-col items-end gap-1">
+                      <span class="font-semibold" [class]="colorInasistencia(est.Porcentaje_inasistencia)">
+                        {{ est.Porcentaje_inasistencia | number:'1.1-1' }}%
+                      </span>
+                      <!-- Mini barra -->
+                      <div class="w-16 bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                        <div
+                          class="h-full rounded-full"
+                          [class]="barColor(est.Porcentaje_inasistencia)"
+                          [style.width.%]="est.Porcentaje_inasistencia"
+                        ></div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-4 py-3 text-right hidden sm:table-cell text-slate-600">
+                    {{ est.Cantidad_inasistencia }}
+                  </td>
+                  <td class="px-4 py-3 text-right hidden sm:table-cell">
+                    <span class="font-medium text-slate-700">
+                      {{ est.Promedio_evaluacion | number: '1.1-1' }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3 hidden sm:table-cell">
+                    <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium"
+                          [class]="badgeEstado(est.Estado_matricula_asignatura)">
+                      {{ est.Estado_matricula_asignatura }}
+                    </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+
+    <!-- Leyenda -->
+    <div class="mt-4 flex flex-wrap gap-4 text-xs text-slate-500">
+      <div class="flex items-center gap-1.5">
+        <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+        <span>Inasistencia aceptable (≤ 20%)</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <div class="w-3 h-3 rounded-full bg-amber-400"></div>
+        <span>En riesgo (21% – 30%)</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+        <span>Crítico (&gt; 30%)</span>
+      </div>
+    </div>
+
+  }
+
+  <!-- Estado vacío inicial -->
+  @if (!reporteGenerado() && !cargandoReporte()) {
+    <div class="flex flex-col items-center justify-center py-20 text-slate-300 gap-4">
+      <svg class="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+          d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2
+             h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0119 9.414V19a2 2 0 01-2 2z" />
+      </svg>
+      <p class="text-base font-medium text-slate-400">
+        Selecciona un programa para generar el reporte
+      </p>
+    </div>
+  }
+
+</div>
+
+
