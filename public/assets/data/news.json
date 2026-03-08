@@ -2,8 +2,8 @@
   "news": [
     {
       "id": "1",
-      "title": "Taller de Música",
-      "description": "Inscripciones abiertas para clases de guitarra, piano y canto. Cupos limitados.",
+      "title": "Inscripciones",
+      "description": "En el primer semestres de 2026, recibimos al rededor de 1800 inscripciones a nuestros cursos.",
       "badge": "NUEVO",
       "badgeColor": "yellow",
       "icon": "music",
@@ -15,10 +15,10 @@
     },
     {
       "id": "2",
-      "title": "Artes Plásticas",
-      "description": "Clases de pintura, escultura y dibujo para todas las edades. Materiales incluidos.",
+      "title": "Nuestros cursos",
+      "description": "En 2026 creamos más de 260 cursos en diferentes áreas artísticas, culturales y patrimonailes.",
       "badge": "DESTACADO",
-      "badgeColor": "orange",
+      "badgeColor": "teal",
       "icon": "palette",
       "iconGradient": "from-girardota-yellow to-yellow-500",
       "link": "#inscripciones",
@@ -28,12 +28,12 @@
     },
     {
       "id": "3",
-      "title": "Teatro",
-      "description": "Prepárate para formar parte de nuestro nuevo grupo de teatro. Inscripciones pronto.",
+      "title": "Próximas Inscripciones",
+      "description": "Prepárate para formar parte de nuestra casa de la cultura.",
       "badge": "PRÓXIMAMENTE",
       "badgeColor": "blue",
       "icon": "theater",
-      "iconGradient": "from-girardota-orange to-red-500",
+      "iconGradient": "from-girardota-teal to-girardota-teal-dark",
       "link": "#contacto",
       "linkText": "Mantente informado →",
       "createdAt": "2025-01-05T00:00:00Z",
@@ -50,7 +50,7 @@
       "link": "#contacto",
       "linkText": "Mantente informado →",
       "createdAt": "2025-01-05T00:00:00Z",
-      "active": true
+      "active": false
     }
   ]
 }

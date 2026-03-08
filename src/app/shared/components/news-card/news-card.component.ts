@@ -15,7 +15,7 @@ export class NewsCardComponent {
  getBadgeColorClass(): string {
     const colorMap: Record<string, string> = {
       'yellow': 'bg-girardota-yellow text-girardota-teal-dark',
-      'orange': 'bg-girardota-orange text-white',
+      'orange': 'bg-girardota-amber text-white',
       'blue': 'bg-girardota-blue text-girardota-teal-dark',
       'teal': 'bg-girardota-teal text-white'
     };
