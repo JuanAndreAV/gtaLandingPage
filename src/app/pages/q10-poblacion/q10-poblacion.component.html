@@ -1,1 +1,324 @@
-<h1>{{poblacionQ10.poblacionQ10().length}}</h1>
+<div class="min-h-screen bg-gray-950 text-slate-200 p-8 font-sans">
+
+  <!-- Header -->
+  <div class="mb-8 border-b border-gray-800 pb-6">
+    <span class="text-xs font-bold tracking-widest text-sky-400 bg-sky-400/10 border border-sky-400/20 rounded px-2 py-1">SEMESTRE 2026-1</span>
+    <h1 class="text-3xl font-extrabold mt-3 mb-1 text-white">Análisis de Población Estudiantil</h1>
+    <p class="text-slate-500 text-sm">Total de registros: <span class="text-sky-400 font-bold">{{ poblacionQ10.poblacionQ10().length }}</span></p>
+  </div>
+
+  @if (poblacionQ10.isLoading()) {
+    <div class="flex flex-col items-center justify-center py-32 gap-4 text-slate-500">
+      <div class="w-10 h-10 border-4 border-gray-700 border-t-sky-400 rounded-full animate-spin"></div>
+      <p>Cargando datos de población...</p>
+    </div>
+  }
+
+  @if (!poblacionQ10.isLoading()) {
+
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+      <div class="bg-gray-900 border border-sky-400/20 rounded-2xl p-4 flex items-center gap-3">
+        <span class="text-2xl">👥</span>
+        <div>
+          <p class="text-xs text-slate-500 uppercase tracking-wider">Estudiantes</p>
+          <p class="text-2xl font-extrabold text-sky-400">{{ totalEstudiantes() }}</p>
+        </div>
+      </div>
+      <div class="bg-gray-900 border border-violet-400/20 rounded-2xl p-4 flex items-center gap-3">
+        <span class="text-2xl">🎓</span>
+        <div>
+          <p class="text-xs text-slate-500 uppercase tracking-wider">Programas</p>
+          <p class="text-2xl font-extrabold text-violet-400">{{ programas().length }}</p>
+        </div>
+      </div>
+      <div class="bg-gray-900 border border-pink-400/20 rounded-2xl p-4 flex items-center gap-3">
+        <span class="text-2xl">♀</span>
+        <div>
+          <p class="text-xs text-slate-500 uppercase tracking-wider">Mujeres</p>
+          <p class="text-2xl font-extrabold text-pink-400">{{ porcentajeMujeres() }}%</p>
+        </div>
+      </div>
+      <div class="bg-gray-900 border border-cyan-400/20 rounded-2xl p-4 flex items-center gap-3">
+        <span class="text-2xl">♂</span>
+        <div>
+          <p class="text-xs text-slate-500 uppercase tracking-wider">Hombres</p>
+          <p class="text-2xl font-extrabold text-cyan-400">{{ porcentajeHombres() }}%</p>
+        </div>
+      </div>
+      <div class="bg-gray-900 border border-amber-400/20 rounded-2xl p-4 flex items-center gap-3">
+        <span class="text-2xl">📅</span>
+        <div>
+          <p class="text-xs text-slate-500 uppercase tracking-wider">Edad Prom.</p>
+          <p class="text-2xl font-extrabold text-amber-400">{{ edadPromedio() }}</p>
+        </div>
+      </div>
+      <div class="bg-gray-900 border border-emerald-400/20 rounded-2xl p-4 flex items-center gap-3">
+        <span class="text-2xl">📍</span>
+        <div>
+          <p class="text-xs text-slate-500 uppercase tracking-wider">Municipios</p>
+          <p class="text-2xl font-extrabold text-emerald-400">{{ totalMunicipios() }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+
+      <!-- Género -->
+      <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-5">Distribución por Género</h3>
+        <div class="flex flex-col gap-3">
+          @for (item of conteoGeneroArray(); track item.genero) {
+            <div class="flex items-center gap-3">
+              <span class="text-sm text-slate-400 w-28 truncate">{{ item.genero }}</span>
+              <div class="flex-1 bg-gray-800 rounded-full h-3 overflow-hidden">
+                <div class="h-full rounded-full bg-gradient-to-r from-pink-500 to-violet-500 transition-all duration-500"
+                     [style.width]="(item.cantidad / totalEstudiantes() * 100) + '%'"></div>
+              </div>
+              <span class="text-sm text-slate-500 w-10 text-right">{{ item.cantidad }}</span>
+              <span class="text-sm font-bold text-slate-300 w-12 text-right">
+                {{ (item.cantidad / totalEstudiantes() * 100).toFixed(1) }}%
+              </span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Rangos de edad -->
+      <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-5">Distribución por Edad</h3>
+        <div class="flex flex-col gap-3">
+          @for (grupo of gruposEdad(); track grupo.rango) {
+            <div class="flex items-center gap-3">
+              <span class="text-sm text-slate-400 w-16 text-right">{{ grupo.rango }}</span>
+              <div class="flex-1 bg-gray-800 rounded-full h-3 overflow-hidden">
+                <div class="h-full rounded-full transition-all duration-500"
+                     [style.width]="(grupo.cantidad / maxGrupoEdad() * 100) + '%'"
+                     [style.background]="grupo.color"></div>
+              </div>
+              <span class="text-sm text-slate-500 w-10 text-right">{{ grupo.cantidad }}</span>
+              <span class="text-sm font-bold text-slate-300 w-12">{{grupo.porcentaje}}%</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Top 10 programas -->
+      <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 lg:col-span-2">
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-5">Top 10 Programas por Matrícula</h3>
+        <div class="flex flex-col gap-3">
+          @for (prog of topProgramas(); track prog.nombre; let i = $index) {
+            <div class="flex items-center gap-3">
+              <span class="text-xs font-bold text-gray-600 w-5">{{ i + 1 }}</span>
+              <span class="text-sm text-slate-300 w-64 truncate" [title]="prog.nombre">{{ prog.nombre }}</span>
+              <div class="flex-1 bg-gray-800 rounded-full h-2 overflow-hidden">
+                <div class="h-full rounded-full bg-gradient-to-r from-violet-500 to-sky-400 transition-all duration-500"
+                     [style.width]="(prog.cantidad / topProgramas()[0].cantidad * 100) + '%'"></div>
+              </div>
+              <span class="text-sm font-bold text-sky-400 w-10 text-right">{{ prog.cantidad }}</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Municipios -->
+      <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-5">Top 8 Municipios de Residencia</h3>
+        <div class="flex flex-col gap-3">
+          @for (m of topMunicipios(); track m.nombre; let i = $index) {
+            <div class="flex items-center gap-3">
+              <span class="text-xs font-bold text-gray-600 w-5">{{ i + 1 }}</span>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm text-slate-300 truncate mb-1">{{ m.nombre }}</p>
+                <div class="bg-gray-800 rounded-full h-1.5 overflow-hidden">
+                  <div class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-sky-400 transition-all duration-500"
+                       [style.width]="(m.cantidad / topMunicipios()[0].cantidad * 100) + '%'"></div>
+                </div>
+              </div>
+              <span class="text-sm text-slate-500 w-8 text-right">{{ m.cantidad }}</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Tipos de identificación -->
+      <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-5">Tipo de Identificación</h3>
+        <div class="grid grid-cols-2 gap-3">
+          @for (tipo of tiposIdentificacion(); track tipo.abreviatura) {
+            <div class="bg-gray-950 border border-gray-800 rounded-xl p-3 text-center">
+              <p class="text-2xl font-extrabold text-violet-400">{{ tipo.cantidad }}</p>
+              <p class="text-sm font-bold text-slate-200">{{ tipo.abreviatura }}</p>
+              <p class="text-xs text-slate-500 leading-tight mt-1">{{ tipo.nombre }}</p>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Zona de residencia -->
+      <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Zona de Residencia</h3>
+        <p class="text-xs text-slate-600 mb-5">Rural vs. Urbana según preguntas personalizadas</p>
+        <div class="flex flex-col gap-4">
+          @for (item of zonaResidencia(); track item.zona) {
+            <div>
+              <div class="flex justify-between items-center mb-1.5">
+                <span class="text-sm font-semibold text-slate-200">{{ item.zona }}</span>
+                <div class="flex items-center gap-2">
+                  <span class="text-lg font-extrabold"
+                        [class.text-emerald-400]="item.zona === 'Urbana'"
+                        [class.text-amber-400]="item.zona === 'Rural'"
+                        [class.text-slate-400]="item.zona !== 'Urbana' && item.zona !== 'Rural'">
+                    {{ pctZona(item.cantidad) }}%
+                  </span>
+                  <span class="text-xs text-slate-600">({{ item.cantidad }})</span>
+                </div>
+              </div>
+              <div class="bg-gray-800 rounded-full h-4 overflow-hidden">
+                <div class="h-full rounded-full transition-all duration-500"
+                     [class.bg-gradient-to-r]="true"
+                     [class.from-emerald-600]="item.zona === 'Urbana'"
+                     [class.to-emerald-400]="item.zona === 'Urbana'"
+                     [class.from-amber-600]="item.zona === 'Rural'"
+                     [class.to-amber-400]="item.zona === 'Rural'"
+                     [class.bg-slate-600]="item.zona !== 'Urbana' && item.zona !== 'Rural'"
+                     [style.width]="pctZona(item.cantidad) + '%'"></div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Enfoque poblacional -->
+      <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Enfoque Poblacional</h3>
+        <p class="text-xs text-slate-600 mb-5">
+          <span class="text-sky-400 font-bold">{{ estudiantesConEnfoque() }}</span>
+          estudiantes con enfoque diferencial activo
+        </p>
+        <div class="flex flex-col gap-3">
+          @for (item of enfoquePoblacional(); track item.enfoque) {
+            <div class="flex items-center gap-3">
+              <div class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                   [class.bg-slate-600]="/no aplica/i.test(item.enfoque)"
+                   [class.bg-sky-400]="!/no aplica/i.test(item.enfoque)"></div>
+              <span class="text-sm flex-1 truncate"
+                    [class.text-slate-500]="/no aplica/i.test(item.enfoque)"
+                    [class.text-slate-200]="!/no aplica/i.test(item.enfoque)"
+                    [title]="item.enfoque">
+                {{ item.enfoque }}
+              </span>
+              <div class="w-24 bg-gray-800 rounded-full h-2 overflow-hidden">
+                <div class="h-full rounded-full transition-all duration-500"
+                     [class.bg-slate-600]="/no aplica/i.test(item.enfoque)"
+                     [class.bg-sky-400]="!/no aplica/i.test(item.enfoque)"
+                     [style.width]="(item.cantidad / totalEstudiantes() * 100) + '%'"></div>
+              </div>
+              <span class="text-sm text-slate-500 w-10 text-right">{{ item.cantidad }}</span>
+              <span class="text-xs font-bold w-12 text-right"
+                    [class.text-slate-600]="/no aplica/i.test(item.enfoque)"
+                    [class.text-sky-400]="!/no aplica/i.test(item.enfoque)">
+                {{ (item.cantidad / totalEstudiantes() * 100).toFixed(1) }}%
+              </span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Estado de matrícula -->
+      <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 lg:col-span-2">
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-5">Estado de Matrícula</h3>
+        <div class="flex flex-col gap-3">
+          @for (estado of estadosMatricula(); track estado.nombre) {
+            <div class="flex items-center gap-3">
+              <div class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                   [class.bg-emerald-400]="esActivo(estado.nombre)"
+                   [class.bg-red-400]="esRetirado(estado.nombre)"
+                   [class.bg-amber-400]="esGraduado(estado.nombre)"
+                   [class.bg-slate-500]="esOtro(estado.nombre)"></div>
+              <span class="text-sm text-slate-300 w-48 truncate">{{ estado.nombre }}</span>
+              <div class="flex-1 bg-gray-800 rounded-full h-2 overflow-hidden">
+                <div class="h-full rounded-full transition-all duration-500"
+                     [class.bg-emerald-400]="esActivo(estado.nombre)"
+                     [class.bg-red-400]="esRetirado(estado.nombre)"
+                     [class.bg-amber-400]="esGraduado(estado.nombre)"
+                     [class.bg-slate-500]="esOtro(estado.nombre)"
+                     [style.width]="(estado.cantidad / totalEstudiantes() * 100) + '%'"></div>
+              </div>
+              <span class="text-sm text-slate-500 w-10 text-right">{{ estado.cantidad }}</span>
+              <span class="text-sm font-bold text-slate-300 w-12 text-right">
+                {{ (estado.cantidad / totalEstudiantes() * 100).toFixed(1) }}%
+              </span>
+            </div>
+          }
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Tabla de programas -->
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
+      <div class="flex justify-between items-center p-5 border-b border-gray-800">
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Detalle por Programa</h3>
+        <input type="text" placeholder="Buscar programa..."
+               class="bg-gray-950 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-slate-200 placeholder-gray-600 outline-none focus:border-sky-500 w-56 transition-colors"
+               [(ngModel)]="filtroProgramas" />
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-gray-950 text-left">
+              <th class="px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">#</th>
+              <th class="px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Programa</th>
+              <th class="px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Nivel</th>
+              <th class="px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Sede</th>
+              <th class="px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Jornada</th>
+              <th class="px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Matriculados</th>
+              <th class="px-5 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">% Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of programasFiltrados(); track p.nombre; let i = $index; let count = $count) {
+              <tr class="border-t border-gray-800 hover:bg-gray-800/50 transition-colors">
+                <td class="px-5 py-3 text-xs text-gray-600 font-bold">{{ i + 1 }}</td>
+                <td class="px-5 py-3 text-slate-200 max-w-xs truncate" [title]="p.nombre">{{ p.nombre }}</td>
+                <td class="px-5 py-3">
+                  <span class="text-xs font-semibold text-violet-300 bg-violet-400/10 border border-violet-400/20 rounded-md px-2 py-0.5">
+                    {{ p.nivel }}
+                  </span>
+                </td>
+                <td class="px-5 py-3 text-slate-400">{{ p.sede }}</td>
+                <td class="px-5 py-3 text-slate-400">{{ p.jornada }}</td>
+                <td class="px-5 py-3 text-right font-extrabold text-sky-400">{{ p.cantidad }}</td>
+                <td class="px-5 py-3">
+                  <div class="flex items-center gap-2">
+                    <div class="w-16 bg-gray-800 rounded-full h-1.5 overflow-hidden">
+                      <div class="h-full rounded-full bg-gradient-to-r from-violet-500 to-sky-400"
+                           [style.width]="(p.cantidad / totalEstudiantes() * 100) + '%'"></div>
+                    </div>
+                    <span class="text-xs text-slate-500">
+                      {{ (p.cantidad / totalEstudiantes() * 100).toFixed(1) }}%
+                    </span>
+                  </div>
+                </td>
+              </tr>
+            }
+            @empty {
+              <tr>
+                <td colspan="7" class="px-5 py-10 text-center text-slate-600">
+                  No se encontraron programas con ese criterio.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        <p class="text-xs text-slate-600 px-5 py-3 border-t border-gray-800">
+          Mostrando {{ programasFiltrados().length }} de {{ programas().length }} programas
+        </p>
+      </div>
+    </div>
+
+  }
+
+</div>

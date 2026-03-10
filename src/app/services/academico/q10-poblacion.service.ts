@@ -13,7 +13,7 @@ export class Q10PoblacionService {
   private q10ApiUrl = environment.q10Api;
   private q10ApiKey = environment.q10ApiKey;
 
-  private endpoint = `${this.q10ApiUrl}/comunidad-excel/estudiantes?Fecha_inicio_matricula=2026-02-09&Fecha_fin_matricula=2026-04-11&Estado=T&Incluir_info_adicional=false&Incluir_info_matricula=true&Incluir_info_academica=true&Incluir_info_laboral=false&Incluir_preguntas_personalizadas=true&Incluir_info_familiares=false`;
+  private endpoint = `${this.q10ApiUrl}/comunidad-excel/estudiantes?Fecha_inicio_matricula=2026-01-01&Fecha_fin_matricula=2026-06-11&Estado=T&Incluir_info_adicional=false&Incluir_info_matricula=true&Incluir_info_academica=true&Incluir_info_laboral=false&Incluir_preguntas_personalizadas=true&Incluir_info_familiares=false`;
 
   public isLoading = signal<boolean>(false);
   public error = signal<string | null>(null);
@@ -27,9 +27,9 @@ export class Q10PoblacionService {
   public obtenerPoblacionQ10( offset: number): Observable<PoblacionQ10[]>{
     this.isLoading.set(true);
     this.error.set(null);
-    let limit = 500;
+    let limit = 2000;
     
-    return this.http.get<PoblacionQ10[]>(`${this.endpoint}&Limit=${limit}&Offset=${3}`, {
+    return this.http.get<PoblacionQ10[]>(`${this.endpoint}&Limit=${limit}&Offset=${1}`, {
       headers: {
         'Api-key': this.q10ApiKey,
         'Cache-Control': 'no-cache'

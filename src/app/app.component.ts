@@ -4,11 +4,12 @@ import { HeaderComponent } from './layout/header/header.component';
 import { HomeComponent } from './pages/home/home.component';
 import { FooterComponent } from './layout/footer/footer.component';
 import { Q10ConsultaDocenteComponent } from './pages/q10-consulta-docente/q10-consulta-docente.component';
+import { DevNavComponent } from './shared/components/dev-nav/dev-nav.component';
 
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, HeaderComponent, HomeComponent, FooterComponent],
+  imports: [RouterOutlet, HeaderComponent, HomeComponent, FooterComponent, DevNavComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
