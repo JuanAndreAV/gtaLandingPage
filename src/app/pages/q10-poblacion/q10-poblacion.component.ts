@@ -74,21 +74,17 @@ export class Q10PoblacionComponent implements OnInit {
 
   gruposEdad = computed(() => {
     const grupos = [
-      { rango: '0 - 5',    min: 0,  max: 5,  color: '#818cf8', cantidad: 0, porcentaje: 0 },
-      { rango: '6 – 11', min: 6, max: 11,  color: '#38bdf8', cantidad: 0, porcentaje: 0  },
-      { rango: '12 – 17', min: 12, max: 17,  color: '#34d399', cantidad: 0, porcentaje: 0  },
-      { rango: '18 – 28', min: 18, max: 28,  color: '#fbbf24', cantidad: 0, porcentaje: 0  },
-      { rango: '29 – 59', min: 29, max: 59,  color: '#f97316', cantidad: 0, porcentaje: 0  },
-      { rango: '> 60',    min: 60, max: 999, color: '#f472b6', cantidad: 0, porcentaje: 0  },
+      { rango: '0 - 5',    min: 0,  max: 5,  color: '#818cf8', cantidad: 0 },
+      { rango: '6 – 11', min: 6, max: 11,  color: '#38bdf8', cantidad: 0  },
+      { rango: '12 – 17', min: 12, max: 17,  color: '#34d399', cantidad: 0  },
+      { rango: '18 – 28', min: 18, max: 28,  color: '#fbbf24', cantidad: 0  },
+      { rango: '29 – 59', min: 29, max: 59,  color: '#f97316', cantidad: 0  },
+      { rango: '> 60',    min: 60, max: 999, color: '#f472b6', cantidad: 0  },
     ];
     for (const e of this.estudiantes) {
       if (e.Edad == null) continue;
       const g = grupos.find(g => e.Edad! >= g.min && e.Edad! <= g.max);
-      if (g){
-        g.cantidad++;
-        g.porcentaje = this.totalEstudiantes() ? +(g.cantidad / this.totalEstudiantes() * 100).toFixed(1) : 0;
-      } 
-     
+      if (g) g.cantidad++;
     }
     return grupos;
   });
@@ -149,16 +145,36 @@ export class Q10PoblacionComponent implements OnInit {
   // ── Preguntas personalizadas (helper) ────────────────────────────────────
 
   /**
-   * El JSON real tiene Preguntas_personalizadas como Pregunta[] directo en el estudiante.
-   * Busca por texto de pregunta (case-insensitive) y retorna la primera respuesta.
+   * Patrón de dirección urbana: cra, carrera, calle, cl, avenida, av,
+   * diagonal, diag, transversal, tv — seguidas de número o #
+   */
+  private readonly REGEX_DIR_URBANA = /^(cra|carrera|calle|cl|barrio|avenida|av|diagonal|diag|transversal|tv)\s*[0-9#]/i;
+
+  /**
+   * Busca la respuesta de una pregunta personalizada por texto (case-insensitive).
+   * Para preguntas de zona de residencia, si no hay respuesta aplica fallback:
+   *   - Dirección con patrón urbano → "Urbana"
+   *   - Sin dirección reconocible   → "Rural"
    */
   private respuestaPregunta(estudiante: PoblacionQ10, textoPregunta: string): string | null {
     const preguntas = estudiante.Preguntas_personalizadas as unknown as Pregunta[] | undefined;
-    if (!preguntas?.length) return null;
-    const encontrada = preguntas.find(p =>
-      p.Pregunta?.toLowerCase().includes(textoPregunta.toLowerCase())
-    );
-    return encontrada?.Respuesta?.[0]?.Respuesta ?? null;
+
+    if (preguntas?.length) {
+      const encontrada = preguntas.find(p =>
+        p.Pregunta?.toLowerCase().includes(textoPregunta.toLowerCase())
+      );
+      const respuesta = encontrada?.Respuesta?.[0]?.Respuesta?.trim() ?? null;
+      if (respuesta) return respuesta;
+    }
+
+    // Fallback solo para zona de residencia
+    if (textoPregunta.toLowerCase().includes('zona')) {
+      return this.REGEX_DIR_URBANA.test(estudiante.Direccion?.trim() ?? '')
+        ? 'Urbana'
+        : 'Rural';
+    }
+
+    return null;
   }
 
   // ── Zona de residencia ────────────────────────────────────────────────────
@@ -166,14 +182,9 @@ export class Q10PoblacionComponent implements OnInit {
   zonaResidencia = computed(() => {
     const mapa: Record<string, number> = {};
     for (const e of this.estudiantes) {
-      const raw = this.respuestaPregunta(e, 'zona de residencia');
-      const r = raw?.trim() || 'No especificado';
-      if (raw !== null && raw.trim() === '') {
-        console.log('Zona vacía en estudiante:', e.Codigo_estudiante, '| raw:', JSON.stringify(raw));
-      }
+      const r = this.respuestaPregunta(e, 'zona de residencia') ?? 'No especificado';
       mapa[r] = (mapa[r] ?? 0) + 1;
     }
-    console.table(Object.entries(mapa).map(([zona, cantidad]) => ({ zona, cantidad })));
     return Object.entries(mapa)
       .map(([zona, cantidad]) => ({ zona, cantidad }))
       .sort((a, b) => b.cantidad - a.cantidad);
@@ -187,15 +198,9 @@ export class Q10PoblacionComponent implements OnInit {
   enfoquePoblacional = computed(() => {
     const mapa: Record<string, number> = {};
     for (const e of this.estudiantes) {
-      const raw = this.respuestaPregunta(e, 'enfoque poblacional');
-      const r = raw?.trim() || 'No especificado';
-      if (raw !== null && raw.trim() === '') {
-        console.log('Enfoque vacío en estudiante:', e.Codigo_estudiante, '| raw:', JSON.stringify(raw));
-      }
+      const r = this.respuestaPregunta(e, 'enfoque poblacional') ?? 'No especificado';
       mapa[r] = (mapa[r] ?? 0) + 1;
     }
-    console.log('--- Enfoque poblacional raw values ---');
-    console.table(Object.entries(mapa).map(([enfoque, cantidad]) => ({ enfoque, cantidad })));
     return Object.entries(mapa)
       .map(([enfoque, cantidad]) => ({ enfoque, cantidad }))
       .sort((a, b) => b.cantidad - a.cantidad);

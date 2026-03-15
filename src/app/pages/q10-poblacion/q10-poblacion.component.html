@@ -98,7 +98,7 @@
                      [style.background]="grupo.color"></div>
               </div>
               <span class="text-sm text-slate-500 w-10 text-right">{{ grupo.cantidad }}</span>
-              <span class="text-sm font-bold text-slate-300 w-12">{{grupo.porcentaje}}%</span>
+              <span class="text-sm font-bold text-slate-300 w-12">{{(grupo.cantidad / totalEstudiantes() * 100).toFixed(1)}}%</span>
             </div>
           }
         </div>
@@ -288,8 +288,8 @@
                     {{ p.nivel }}
                   </span>
                 </td>
-                <td class="px-5 py-3 text-slate-400">{{ p.sede }}</td>
-                <td class="px-5 py-3 text-slate-400">{{ p.jornada }}</td>
+                <td class="px-5 py-3 text-slate-400">{{ p }}</td>
+                <td class="px-5 py-3 text-slate-400">{{ p }}</td>
                 <td class="px-5 py-3 text-right font-extrabold text-sky-400">{{ p.cantidad }}</td>
                 <td class="px-5 py-3">
                   <div class="flex items-center gap-2">

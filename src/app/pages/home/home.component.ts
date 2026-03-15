@@ -25,10 +25,10 @@ export class HomeComponent {
   errorEvents = signal('');
 
   statistics = [
-    { value: '1300', label: 'Asistentes en 2025' },
-    { value: '600+', label: 'Artistas en Carnaval' },
-    { value: '100', label: 'Artistas Locales' },
-    { value: '250+', label: 'Personas en Sainetes' }
+    { value: '262', label: 'Cursos ofertados en 2026' },
+    { value: '1500+', label: 'Estudiantes activos' },
+    { value: '30', label: 'Docentes de áreas artísticas' },
+    { value: '1800+', label: 'Personas inscritas en nuestros cursos' }
   ];
 
   ngOnInit(): void {
