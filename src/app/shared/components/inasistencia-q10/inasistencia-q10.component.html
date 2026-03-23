@@ -1,0 +1,482 @@
+<!-- =====================================================
+     REPORTE DE INASISTENCIA Q10
+     ===================================================== -->
+<div class="min-h-screen bg-slate-50 p-4 md:p-8">
+
+  <!-- ── Encabezado ── -->
+  <div class="mb-8">
+    <div class="flex items-center gap-3 mb-1">
+      <div class="w-1 h-8 bg-rose-500 rounded-full"></div>
+      <h1 class="text-2xl md:text-3xl font-bold text-slate-800 tracking-tight">
+        Reporte de Inasistencia
+      </h1>
+    </div>
+    <p class="text-slate-400 text-sm ml-4 pl-3">
+      Consulta de inasistencias por rango de fechas — Q10
+    </p>
+  </div>
+
+  <!-- ── Error de servicio ── -->
+  @if (serviceError) {
+    <div class="mb-6 flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 rounded-xl p-4">
+      <svg class="w-5 h-5 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <span class="text-sm">{{ serviceError }}</span>
+    </div>
+  }
+
+  <!-- ════════════════════════════════════════════
+       FORMULARIO DE FECHAS
+  ════════════════════════════════════════════ -->
+  <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 md:p-6 mb-6">
+    <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-5">
+      Rango de consulta
+    </h2>
+
+    <form [formGroup]="asistenciaForm" (ngSubmit)="obtenerInasistencia()"
+          class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 items-end">
+
+      <!-- Fecha inicio -->
+      <div class="flex flex-col gap-1.5">
+        <label class="text-sm font-medium text-slate-700 flex items-center gap-1">
+          Fecha inicio
+          <span class="text-red-400 text-xs">*</span>
+        </label>
+        <input
+          type="date"
+          formControlName="fechaInicio"
+          class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700
+                 shadow-sm focus:border-rose-400 focus:ring-2 focus:ring-rose-100 outline-none transition"
+        />
+        @if (asistenciaForm.get('fechaInicio')?.touched && asistenciaForm.get('fechaInicio')?.invalid) {
+          <p class="text-xs text-red-500">Campo requerido</p>
+        }
+      </div>
+
+      <!-- Fecha fin -->
+      <div class="flex flex-col gap-1.5">
+        <label class="text-sm font-medium text-slate-700 flex items-center gap-1">
+          Fecha fin
+          <span class="text-red-400 text-xs">*</span>
+        </label>
+        <input
+          type="date"
+          formControlName="fechaFin"
+          class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700
+                 shadow-sm focus:border-rose-400 focus:ring-2 focus:ring-rose-100 outline-none transition"
+        />
+        @if (asistenciaForm.get('fechaFin')?.touched && asistenciaForm.get('fechaFin')?.invalid) {
+          <p class="text-xs text-red-500">Campo requerido</p>
+        }
+      </div>
+
+      <!-- Error de validación cruzada -->
+      <div class="sm:col-span-2 xl:col-span-1 flex flex-col justify-end gap-1.5">
+        @if (mensajeError()) {
+          <p class="text-xs text-red-500 flex items-center gap-1">
+            <svg class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            {{ mensajeError() }}
+          </p>
+        }
+        <div class="flex gap-2">
+          <button
+            type="submit"
+            [disabled]="isLoading"
+            class="flex-1 flex items-center justify-center gap-2 rounded-lg bg-rose-500 px-4 py-2.5
+                   text-sm font-semibold text-white shadow-sm hover:bg-rose-600 active:scale-95
+                   transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            @if (isLoading) {
+              <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+              </svg>
+              Cargando...
+            } @else {
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+              Consultar
+            }
+          </button>
+
+          @if (reporteVisible()) {
+            <button
+              type="button"
+              (click)="limpiar()"
+              class="rounded-lg border border-slate-200 px-3 py-2.5 text-slate-500
+                     hover:bg-slate-50 active:scale-95 transition-all"
+              title="Limpiar"
+            >
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          }
+        </div>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- ════════════════════════════════════════════
+       RESULTADOS
+  ════════════════════════════════════════════ -->
+  @if (reporteVisible()) {
+
+    <!-- ── KPIs ── -->
+    @if (kpis(); as k) {
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+          <p class="text-xs text-slate-400 font-medium uppercase tracking-wide mb-1">Estudiantes</p>
+          <p class="text-3xl font-bold text-slate-800">{{ k.totalEstudiantes }}</p>
+          <p class="text-xs text-slate-400 mt-0.5">Con inasistencias</p>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+          <p class="text-xs text-slate-400 font-medium uppercase tracking-wide mb-1">Total Faltas</p>
+          <p class="text-3xl font-bold text-rose-500">{{ k.totalInasistencias }}</p>
+          <p class="text-xs text-slate-400 mt-0.5">En el período</p>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+          <p class="text-xs text-slate-400 font-medium uppercase tracking-wide mb-1">Justificadas</p>
+          <div class="flex items-end gap-2">
+            <p class="text-3xl font-bold text-emerald-600">{{ k.justificadas }}</p>
+            <p class="text-sm text-emerald-500 mb-1">{{ k.tasaJustificacion }}%</p>
+          </div>
+          <div class="mt-1.5 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+            <div class="h-full bg-emerald-500 rounded-full transition-all duration-700"
+                 [style.width.%]="k.tasaJustificacion"></div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-amber-200 shadow-sm p-4">
+          <p class="text-xs text-slate-400 font-medium uppercase tracking-wide mb-1">Sin Justificar</p>
+          <p class="text-3xl font-bold text-amber-500">{{ k.sinJustificar }}</p>
+          <p class="text-xs text-slate-400 mt-0.5 truncate" [title]="k.topEstudianteNombre">
+            Top: {{ k.topEstudianteNombre }} ({{ k.topEstudianteCantidad }})
+          </p>
+        </div>
+
+      </div>
+    }
+
+    <!-- ── Tabs de vista ── -->
+    <div class="flex items-center gap-1 bg-slate-100 rounded-xl p-1 mb-5 w-fit">
+      @for (tab of [
+        { id: 'estudiantes', label: 'Por Estudiante', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z' },
+        { id: 'cursos',      label: 'Por Curso',      icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' },
+        { id: 'cronologia',  label: 'Cronología',     icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' }
+      ]; track tab.id) {
+        <button
+          (click)="cambiarVista($any(tab.id))"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+          [class.bg-white]="vistaActiva() === tab.id"
+          [class.text-slate-700]="vistaActiva() === tab.id"
+          [class.shadow-sm]="vistaActiva() === tab.id"
+          [class.text-slate-400]="vistaActiva() !== tab.id"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="tab.icon"/>
+          </svg>
+          {{ tab.label }}
+        </button>
+      }
+    </div>
+
+    <!-- ════════════════════════════
+         VISTA: POR ESTUDIANTE
+    ════════════════════════════ -->
+    @if (vistaActiva() === 'estudiantes') {
+      <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+          <h3 class="text-sm font-semibold text-slate-700">Detalle por Estudiante</h3>
+          <span class="text-xs bg-slate-100 text-slate-500 px-2.5 py-1 rounded-full font-mono">
+            {{ filasEstudiantes().length }} estudiantes
+          </span>
+        </div>
+
+        <div class="divide-y divide-slate-100">
+          @for (est of filasEstudiantes(); track est.identificacion) {
+
+            <!-- Fila principal -->
+            <div>
+              <button
+                class="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50
+                       transition-colors text-left"
+                (click)="toggleExpandido(est.identificacion)"
+              >
+                <!-- Chevron -->
+                <svg class="w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200"
+                     [class.rotate-90]="est.expandido"
+                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+
+                <!-- Nombre e identificación -->
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="font-medium text-slate-800 text-sm">{{ est.nombreCompleto }}</span>
+                    <span class="inline-flex px-1.5 py-0.5 rounded text-xs font-medium"
+                          [class]="sexoBadge(est.sexo)">
+                      {{ est.sexo === 'F' ? 'Femenino' : 'Masculino' }}
+                    </span>
+                  </div>
+                  <div class="flex items-center gap-3 mt-0.5">
+                    <span class="text-xs text-slate-400 font-mono">{{ est.identificacion }}</span>
+                    <span class="text-xs text-slate-300 hidden sm:inline">·</span>
+                    <span class="text-xs text-slate-400 hidden sm:inline truncate max-w-[180px]">
+                      {{ est.correo }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Stats rápidas -->
+                <div class="flex items-center gap-4 shrink-0">
+                  <div class="text-center hidden sm:block">
+                    <p class="text-xs text-slate-400">Cursos</p>
+                    <p class="text-sm font-semibold text-slate-700">{{ est.totalCursos }}</p>
+                  </div>
+                  <div class="text-center">
+                    <p class="text-xs text-slate-400">Faltas</p>
+                    <p class="text-sm" [class]="colorInasistencia(est.totalInasistencias)">
+                      {{ est.totalInasistencias }}
+                    </p>
+                  </div>
+                  <div class="text-center hidden md:block">
+                    <p class="text-xs text-slate-400">Justif.</p>
+                    <p class="text-sm font-medium text-emerald-600">{{ est.justificadas }}</p>
+                  </div>
+                  <div class="text-center hidden md:block">
+                    <p class="text-xs text-slate-400">Sin just.</p>
+                    <p class="text-sm font-medium"
+                       [class]="est.sinJustificar > 0 ? 'text-amber-500' : 'text-slate-400'">
+                      {{ est.sinJustificar }}
+                    </p>
+                  </div>
+                </div>
+              </button>
+
+              <!-- Detalle expandible: cursos del estudiante -->
+              @if (est.expandido) {
+                <div class="bg-slate-50 border-t border-slate-100 px-4 py-3 space-y-3">
+                  @for (curso of est.cursos; track curso.Codigo_curso) {
+                    <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+
+                      <!-- Encabezado del curso -->
+                      <div class="px-4 py-2.5 border-b border-slate-100 flex items-center
+                                  justify-between flex-wrap gap-2">
+                        <div>
+                          <p class="text-sm font-medium text-slate-700">{{ curso.Nombre_curso }}</p>
+                          <p class="text-xs text-slate-400">
+                            {{ curso.Nombre_modulo }} · {{ curso.Nombre_docente }}
+                          </p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                          @if (curso.Observaciones) {
+                            <span class="text-xs bg-amber-50 border border-amber-200 text-amber-600
+                                         rounded-lg px-2 py-0.5 max-w-[200px] truncate"
+                                  [title]="curso.Observaciones">
+                              💬 {{ curso.Observaciones }}
+                            </span>
+                          }
+                          <span class="text-xs bg-rose-100 text-rose-700 font-semibold
+                                       rounded-full px-2.5 py-0.5">
+                            {{ curso.Cantidad_inasistencia }} faltas
+                          </span>
+                        </div>
+                      </div>
+
+                      <!-- Inasistencias del curso -->
+                      <div class="divide-y divide-slate-50">
+                        @for (inas of curso.Inasistencias; track inas.Fecha + inas.Hora) {
+                          <div class="px-4 py-2 flex items-center gap-3 text-xs">
+                            <div class="w-20 shrink-0">
+                              <p class="font-medium text-slate-700">{{ inas.Fecha }}</p>
+                              <p class="text-slate-400">{{ inas.Dia }}</p>
+                            </div>
+                            <span class="text-slate-400 shrink-0">{{ inas.Hora }}</span>
+                            <span class="flex-1"></span>
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium"
+                                  [class]="badgeJustificacion(inas.Justificacion)">
+                              {{ inas.Justificacion ? '✓ Justificada' : '✗ Sin justificar' }}
+                            </span>
+                            @if (inas.Detalle_justificacion) {
+                              <span class="text-slate-400 italic max-w-[160px] truncate hidden md:inline"
+                                    [title]="inas.Detalle_justificacion">
+                                {{ inas.Detalle_justificacion }}
+                              </span>
+                            }
+                          </div>
+                        }
+                      </div>
+
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ════════════════════════════
+         VISTA: POR CURSO
+    ════════════════════════════ -->
+    @if (vistaActiva() === 'cursos') {
+      <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+          <h3 class="text-sm font-semibold text-slate-700">Inasistencias por Curso</h3>
+          <span class="text-xs bg-slate-100 text-slate-500 px-2.5 py-1 rounded-full font-mono">
+            {{ resumenCursos().length }} cursos
+          </span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-slate-50 text-xs text-slate-500 uppercase tracking-wide text-left">
+                <th class="px-4 py-3 font-medium">Curso / Módulo</th>
+                <th class="px-4 py-3 font-medium hidden md:table-cell">Docente</th>
+                <th class="px-4 py-3 font-medium hidden lg:table-cell">Período</th>
+                <th class="px-4 py-3 font-medium text-right">Estudiantes</th>
+                <th class="px-4 py-3 font-medium text-right">Total Faltas</th>
+                <th class="px-4 py-3 font-medium text-right hidden sm:table-cell">Justificadas</th>
+                <th class="px-4 py-3 font-medium text-right hidden sm:table-cell">Sin Justif.</th>
+                <th class="px-4 py-3 font-medium hidden md:table-cell">Nivel</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              @for (curso of resumenCursos(); track curso.codigoCurso) {
+                <tr class="hover:bg-slate-50 transition-colors">
+                  <td class="px-4 py-3">
+                    <p class="font-medium text-slate-800 leading-tight">{{ curso.nombreCurso }}</p>
+                    <p class="text-xs text-slate-400">{{ curso.nombreModulo }}</p>
+                  </td>
+                  <td class="px-4 py-3 hidden md:table-cell text-xs text-slate-500">
+                    {{ curso.nombreDocente }}
+                  </td>
+                  <td class="px-4 py-3 hidden lg:table-cell text-xs text-slate-500">
+                    {{ curso.periodo }}
+                  </td>
+                  <td class="px-4 py-3 text-right text-slate-700 font-medium">
+                    {{ curso.estudiantes }}
+                  </td>
+                  <td class="px-4 py-3 text-right">
+                    <span [class]="colorInasistencia(curso.totalInasistencias)">
+                      {{ curso.totalInasistencias }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3 text-right hidden sm:table-cell text-emerald-600 font-medium">
+                    {{ curso.justificadas }}
+                  </td>
+                  <td class="px-4 py-3 text-right hidden sm:table-cell">
+                    <span [class]="curso.sinJustificar > 0 ? 'text-amber-500 font-semibold' : 'text-slate-400'">
+                      {{ curso.sinJustificar }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3 hidden md:table-cell">
+                    <div class="flex items-center gap-2 min-w-[80px]">
+                      <div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div class="h-full rounded-full"
+                             [class]="curso.sinJustificar > curso.justificadas ? 'bg-amber-400' : 'bg-emerald-500'"
+                             [style.width.%]="curso.totalInasistencias > 0
+                               ? (curso.sinJustificar / curso.totalInasistencias) * 100 : 0">
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    <!-- ════════════════════════════
+         VISTA: CRONOLOGÍA
+    ════════════════════════════ -->
+    @if (vistaActiva() === 'cronologia') {
+      <div class="space-y-4">
+        @if (cronologiaEntradas().length === 0) {
+          <div class="bg-white border border-slate-200 rounded-2xl p-12 text-center text-slate-400">
+            Sin inasistencias en el período seleccionado.
+          </div>
+        }
+
+        @for (entrada of cronologiaEntradas(); track entrada[0]) {
+          <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+
+            <!-- Encabezado de fecha -->
+            <div class="px-5 py-3 bg-slate-50 border-b border-slate-100
+                        flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                <span class="text-sm font-semibold text-slate-700">{{ entrada[0] }}</span>
+                @if (entrada[1][0]?.dia) {
+                  <span class="text-xs text-slate-400">— {{ entrada[1][0].dia }}</span>
+                }
+              </div>
+              <span class="text-xs bg-rose-100 text-rose-600 font-semibold
+                           rounded-full px-2.5 py-0.5">
+                {{ entrada[1].length }} faltas
+              </span>
+            </div>
+
+            <!-- Lista de inasistencias del día -->
+            <div class="divide-y divide-slate-50">
+              @for (inas of entrada[1]; track inas.hora + inas.nombreCurso) {
+                <div class="px-5 py-3 flex items-center gap-4 text-sm flex-wrap">
+                  <span class="text-xs font-mono text-slate-500 w-14 shrink-0">{{ inas.hora }}</span>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-medium text-slate-700 truncate">{{ inas.nombreCurso }}</p>
+                    <p class="text-xs text-slate-400">{{ inas.nombreDocente }}</p>
+                  </div>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium shrink-0"
+                        [class]="badgeJustificacion(inas.justificada)">
+                    {{ inas.justificada ? '✓ Justificada' : '✗ Sin justificar' }}
+                  </span>
+                  @if (inas.detalle) {
+                    <span class="text-xs text-slate-400 italic hidden lg:inline max-w-[200px] truncate"
+                          [title]="inas.detalle">
+                      {{ inas.detalle }}
+                    </span>
+                  }
+                </div>
+              }
+            </div>
+
+          </div>
+        }
+      </div>
+    }
+
+  }
+
+  <!-- ── Estado vacío ── -->
+  @if (!reporteVisible && !isLoading) {
+    <div class="flex flex-col items-center justify-center py-20 gap-4 text-slate-300">
+      <svg class="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+      </svg>
+      <p class="text-sm font-medium text-slate-400">
+        Selecciona un rango de fechas para ver las inasistencias
+      </p>
+    </div>
+  }
+
+</div>

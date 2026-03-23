@@ -13,9 +13,14 @@ import { Q10ConsultaDocenteComponent } from './pages/q10-consulta-docente/q10-co
 import { ReportesComponent } from './pages/reportes/reportes.component';
 import { Q10PoblacionComponent } from './pages/q10-poblacion/q10-poblacion.component';
 import { Q10AsistenciaComponent } from './pages/q10-asistencia/q10-asistencia.component';
+import { InasistenciaQ10Component } from './shared/components/inasistencia-q10/inasistencia-q10.component';
 
 
 export const routes: Routes = [
+   {
+      path: "inasistencia",
+      component: InasistenciaQ10Component
+   },
     {
       path: "estudiantes",
       component: Q10ConsultaDocenteComponent
@@ -31,8 +36,10 @@ export const routes: Routes = [
    },
    {
       path: "asistencia",
-      component: Q10AsistenciaComponent
+      component: Q10AsistenciaComponent,
+
    },
+  
    {
     path: "",
     component: HomeComponent,
