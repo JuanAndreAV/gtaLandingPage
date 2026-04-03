@@ -14,6 +14,7 @@ import { ReportesComponent } from './pages/reportes/reportes.component';
 import { Q10PoblacionComponent } from './pages/q10-poblacion/q10-poblacion.component';
 import { Q10AsistenciaComponent } from './pages/q10-asistencia/q10-asistencia.component';
 import { InasistenciaQ10Component } from './shared/components/inasistencia-q10/inasistencia-q10.component';
+import { AnalisisAiComponent } from './features/admin/analisis-ai/analisis-ai.component';
 
 
 export const routes: Routes = [
@@ -84,6 +85,10 @@ export const routes: Routes = [
          {
             path: 'inscripciones',
             component: RegistrationComponent
+         },{
+            path: 'analisis-ai',
+            component: AnalisisAiComponent
+
          }
 
       ] 

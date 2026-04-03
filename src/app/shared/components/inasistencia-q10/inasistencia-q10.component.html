@@ -2,7 +2,7 @@
      REPORTE DE INASISTENCIA Q10
      ===================================================== -->
 <div class="min-h-screen bg-slate-50 p-4 md:p-8">
-
+<button (click)="obtenerDatosExtra()">Obtener Datos</button>
   <!-- ── Encabezado ── -->
   <div class="mb-8">
     <div class="flex items-center gap-3 mb-1">
@@ -143,6 +143,8 @@
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
           <p class="text-xs text-slate-400 font-medium uppercase tracking-wide mb-1">Total Faltas</p>
           <p class="text-3xl font-bold text-rose-500">{{ k.totalInasistencias }}</p>
+          <p>{{k.hombresInasistentes}} hombres</p>
+          <p>{{k.mujeresInasistentes}} mujeres</p>
           <p class="text-xs text-slate-400 mt-0.5">En el período</p>
         </div>
 

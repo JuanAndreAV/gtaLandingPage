@@ -1,0 +1,333 @@
+<!-- ============================================================
+     ESTILOS PARA EXPORTACIÓN PDF (solo activos al imprimir)
+     ============================================================ -->
+<style>
+  @media print {
+    .no-print { display: none !important; }
+    .print-area { box-shadow: none !important; border: none !important; }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    @page { margin: 2cm 1.5cm; size: A4; }
+  }
+</style>
+
+<div class="min-h-screen bg-slate-50 p-4 md:p-8">
+  <div class="max-w-5xl mx-auto space-y-6">
+
+    <!-- ══════════════════════════════════════════════════════════
+         PANEL DE CONTROL  (no se imprime)
+         ══════════════════════════════════════════════════════════ -->
+    <div class="no-print bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-5">
+
+      <!-- Encabezado del panel -->
+      <div class="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 class="text-lg font-semibold text-slate-800 flex items-center gap-2">
+            <span class="text-blue-600">✦</span>
+            Análisis de Inasistencia con IA
+          </h1>
+          <p class="text-sm text-slate-500 mt-0.5">
+            Selecciona el período, carga los datos y genera el reporte con Gemini.
+          </p>
+        </div>
+
+        <!-- Badges de contexto -->
+        <div class="flex flex-wrap gap-2 text-xs font-medium">
+          <span class="bg-blue-50 text-blue-700 px-3 py-1 rounded-full">
+            {{ poblacionService.poblacionQ10().length }} matriculados
+          </span>
+          <span class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full">
+            {{ reportesService.todosLosEstudiantes().length }} inscritos
+          </span>
+          <span class="bg-violet-50 text-violet-700 px-3 py-1 rounded-full">
+            {{ reportesService.statsAdmin().totalCursos }} cursos
+          </span>
+        </div>
+      </div>
+
+      <!-- Formulario de fechas -->
+      <form [formGroup]="asistenciaForm" (ngSubmit)="obtenerInasistencia()"
+            class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+        <div class="space-y-1">
+          <label for="fechaInicio"
+                 class="block text-xs font-semibold uppercase tracking-wider text-slate-500">
+            Fecha inicio
+          </label>
+          <input
+            id="fechaInicio"
+            type="date"
+            formControlName="fechaInicio"
+            class="w-full px-3 py-2.5 text-sm border rounded-xl text-slate-800
+                   border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500
+                   focus:border-transparent transition"
+            [class.border-red-400]="asistenciaForm.get('fechaInicio')?.invalid && asistenciaForm.get('fechaInicio')?.touched"
+          />
+          @if (asistenciaForm.get('fechaInicio')?.invalid && asistenciaForm.get('fechaInicio')?.touched) {
+            <p class="text-xs text-red-500">Campo requerido.</p>
+          }
+        </div>
+
+        <div class="space-y-1">
+          <label for="fechaFin"
+                 class="block text-xs font-semibold uppercase tracking-wider text-slate-500">
+            Fecha fin
+          </label>
+          <input
+            id="fechaFin"
+            type="date"
+            formControlName="fechaFin"
+            class="w-full px-3 py-2.5 text-sm border rounded-xl text-slate-800
+                   border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500
+                   focus:border-transparent transition"
+            [class.border-red-400]="asistenciaForm.get('fechaFin')?.invalid && asistenciaForm.get('fechaFin')?.touched"
+          />
+          @if (asistenciaForm.get('fechaFin')?.invalid && asistenciaForm.get('fechaFin')?.touched) {
+            <p class="text-xs text-red-500">Campo requerido.</p>
+          }
+        </div>
+      </form>
+
+      <!-- Error de validación -->
+      @if (mensajeError()) {
+        <div class="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700
+                    text-sm rounded-xl px-4 py-3">
+          <span class="text-base">⚠</span>
+          {{ mensajeError() }}
+        </div>
+      }
+
+      <!-- Botones de acción -->
+      <div class="flex flex-wrap items-center gap-3 pt-1">
+
+        <!-- 1. Cargar inasistencia -->
+        <button
+          type="button"
+          (click)="obtenerInasistencia()"
+          [disabled]="asistenciaService.isLoading()"
+          class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium
+                 bg-slate-800 text-white hover:bg-slate-700 active:scale-95
+                 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+          @if (asistenciaService.isLoading()) {
+            <span class="inline-block w-4 h-4 border-2 border-white/30 border-t-white
+                         rounded-full animate-spin"></span>
+            Cargando datos...
+          } @else {
+            ↓ Cargar inasistencia
+          }
+        </button>
+
+        <!-- 2. Generar análisis IA (disponible solo si hay datos) -->
+        @if (reporteVisible()) {
+          <button
+            type="button"
+            (click)="generarAnalisisAI()"
+            [disabled]="aiService.isLoading()"
+            class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium
+                   bg-blue-600 text-white hover:bg-blue-500 active:scale-95
+                   disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm">
+            @if (aiService.isLoading()) {
+              <span class="inline-block w-4 h-4 border-2 border-white/30 border-t-white
+                           rounded-full animate-spin"></span>
+              Analizando con IA...
+            } @else {
+              <span>✦</span> Generar análisis IA
+            }
+          </button>
+        }
+
+        <!-- 3. Exportar PDF (disponible solo si hay respuesta) -->
+        @if (aiService.respuestaAI()) {
+          <button
+            type="button"
+            (click)="exportarPDF()"
+            class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium
+                   border border-blue-300 text-blue-700 bg-blue-50 hover:bg-blue-100
+                   active:scale-95 transition-all">
+            ⬇ Exportar PDF
+          </button>
+        }
+      </div>
+
+      <!-- Resumen rápido de datos cargados -->
+      @if (asistenciaService.datosInasistencia(); as datos) {
+        <div class="border-t border-slate-100 pt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="text-center">
+            <p class="text-xl font-bold text-slate-800">
+              {{ datos.estadisticasPersonas.totalConFaltas }}
+            </p>
+            <p class="text-xs text-slate-500 mt-0.5">Personas con faltas</p>
+          </div>
+          <div class="text-center">
+            <p class="text-xl font-bold text-red-600">
+              {{ datos.estadisticasPersonas.tasaAfectacionCiudadana }}%
+            </p>
+            <p class="text-xs text-slate-500 mt-0.5">Tasa de afectación</p>
+          </div>
+          <div class="text-center">
+            <p class="text-xl font-bold text-slate-800">
+              {{ datos.estadisticasCupos.totalFaltasRegistradas }}
+            </p>
+            <p class="text-xs text-slate-500 mt-0.5">Faltas totales</p>
+          </div>
+          <div class="text-center">
+            <p class="text-xl font-bold text-slate-800">
+              {{ datos.estadisticasCupos.promedioFaltasPorPersona }}
+            </p>
+            <p class="text-xs text-slate-500 mt-0.5">Promedio por persona</p>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+         ESTADO: CARGANDO IA
+         ══════════════════════════════════════════════════════════ -->
+    @if (aiService.isLoading()) {
+      <div class="no-print bg-white rounded-2xl border border-blue-100 p-10 text-center space-y-4">
+        <div class="w-12 h-12 border-4 border-blue-100 border-t-blue-600 rounded-full
+                    animate-spin mx-auto"></div>
+        <div>
+          <p class="font-medium text-slate-800">Gemini está procesando los datos…</p>
+          <p class="text-sm text-slate-500 mt-1">Esto puede tomar unos segundos</p>
+        </div>
+      </div>
+    }
+
+    <!-- ══════════════════════════════════════════════════════════
+         ERROR DE IA
+         ══════════════════════════════════════════════════════════ -->
+    @if (aiService.isError()) {
+      <div class="no-print bg-red-50 border border-red-200 rounded-2xl p-5 text-sm text-red-700">
+        <strong>Error al generar el análisis:</strong> {{ aiService.isError() }}
+      </div>
+    }
+
+    <!-- ══════════════════════════════════════════════════════════
+         REPORTE GENERADO POR IA
+         ══════════════════════════════════════════════════════════ -->
+    @if (aiService.respuestaAI()) {
+      <div class="print-area bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+
+        <!-- Encabezado del reporte -->
+        <div class="bg-slate-800 text-white px-8 py-6 flex flex-col sm:flex-row
+                    sm:items-center justify-between gap-4">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center
+                        text-sm font-bold tracking-wide shrink-0">
+              CDC
+            </div>
+            <div>
+              <h2 class="text-xl font-bold">Reporte de Inasistencia</h2>
+              <p class="text-sm text-slate-300 mt-0.5">
+                Casa de la Cultura Pedrito Ruiz · Escuela de Artes
+              </p>
+            </div>
+          </div>
+          <div class="text-right text-sm text-slate-300 space-y-1">
+            <p>
+              {{ asistenciaForm.value.fechaInicio }} —
+              {{ asistenciaForm.value.fechaFin }}
+            </p>
+            <p class="text-blue-300 font-medium">✦ Análisis generado con Gemini AI</p>
+          </div>
+        </div>
+
+        <!-- Métricas clave (si hay datos cargados) -->
+        @if (asistenciaService.datosInasistencia(); as datos) {
+          <div class="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y sm:divide-y-0
+                      divide-slate-100 border-b border-slate-100">
+            <div class="px-6 py-5 text-center">
+              <p class="text-2xl font-bold text-slate-800">
+                {{ datos.estadisticasPersonas.totalConFaltas }}
+              </p>
+              <p class="text-xs text-slate-500 mt-1">Personas con faltas</p>
+            </div>
+            <div class="px-6 py-5 text-center">
+              <p class="text-2xl font-bold text-red-600">
+                {{ datos.estadisticasPersonas.tasaAfectacionCiudadana }}%
+              </p>
+              <p class="text-xs text-slate-500 mt-1">Tasa de afectación</p>
+            </div>
+            <div class="px-6 py-5 text-center">
+              <p class="text-2xl font-bold text-slate-800">
+                {{ datos.estadisticasCupos.totalFaltasRegistradas }}
+              </p>
+              <p class="text-xs text-slate-500 mt-1">Faltas registradas</p>
+            </div>
+            <div class="px-6 py-5 text-center">
+              <p class="text-2xl font-bold text-slate-800">
+                {{ datos.estadisticasCupos.promedioFaltasPorPersona }}
+              </p>
+              <p class="text-xs text-slate-500 mt-1">Promedio por persona</p>
+            </div>
+          </div>
+
+          <!-- Top cursos críticos -->
+          @if (datos.cursosCriticos.length) {
+            <div class="px-8 py-6 border-b border-slate-100">
+              <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4
+                         flex items-center gap-2">
+                <span class="inline-block w-5 h-0.5 bg-red-500"></span>
+                Cursos con mayor inasistencia
+              </h3>
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead>
+                    <tr class="border-b border-slate-100">
+                      <th class="text-left py-2 pr-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">#</th>
+                      <th class="text-left py-2 pr-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Curso</th>
+                      <th class="text-left py-2 pr-4 text-xs font-semibold text-slate-400 uppercase tracking-wider hidden sm:table-cell">Docente</th>
+                      <th class="text-right py-2 pr-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Alumnos</th>
+                      <th class="text-right py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">Faltas</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-50">
+                    @for (c of datos.cursosCriticos.slice(0, 10); track c.curso; let i = $index) {
+                      <tr [class.bg-red-50]="i < 3" class="hover:bg-slate-50 transition-colors">
+                        <td class="py-2.5 pr-4 text-slate-400 font-mono text-xs">
+                          {{ i + 1 }}
+                        </td>
+                        <td class="py-2.5 pr-4 font-medium text-slate-800">{{ c.curso }}</td>
+                        <td class="py-2.5 pr-4 text-slate-500 text-xs hidden sm:table-cell">
+                          {{ c.profesor }}
+                        </td>
+                        <td class="py-2.5 pr-4 text-right text-slate-600">{{ c.alumnos }}</td>
+                        <td class="py-2.5 text-right font-bold"
+                            [class.text-red-600]="i < 3"
+                            [class.text-slate-700]="i >= 3">
+                          {{ c.inasistencias }}
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          }
+        }
+
+        <!-- ── Análisis de Gemini (texto libre) ── -->
+        <div class="px-8 py-6 border-b border-slate-100">
+          <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4
+                     flex items-center gap-2">
+            <span class="inline-block w-5 h-0.5 bg-blue-500"></span>
+            Análisis generado por IA
+          </h3>
+
+          <!-- Renderizado del texto: preserva saltos de línea y espaciado -->
+         <markdown
+            [data]="aiService.respuestaAI()"
+            class="prose prose-slate prose-sm max-w-none text-slate-700">
+        </markdown>
+        </div>
+
+        <!-- Pie del reporte -->
+        <div class="px-8 py-4 bg-slate-50 text-center text-xs text-slate-400 space-y-0.5">
+          <p>Reporte generado automáticamente con Gemini AI · Sistema Q10</p>
+          <p>Casa de la Cultura Pedrito Ruiz · Girardota, Antioquia</p>
+        </div>
+      </div>
+    }
+
+  </div>
+</div>

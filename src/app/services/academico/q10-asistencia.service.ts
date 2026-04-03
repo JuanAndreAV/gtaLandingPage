@@ -18,6 +18,10 @@ export class Q10AsistenciaService {
   public asistencia = signal<AsistenciaQ10[]>([]);
   public inasistencia = signal<InasistenciaQ10[]>([]);
 
+  public totalPersonasMatriculadas = signal<number>(0);//1531
+  public totalInscripcionesActivas = signal<number>(0);//1782
+  public totalCursosOfertados = signal<number>(0);//303
+
   public isLoading = signal<boolean>(false);
   public error = signal<string | null>(null);
   
@@ -52,7 +56,7 @@ export class Q10AsistenciaService {
     this.isLoading.set(true);
     this.inasistencia.set([]);
     this.error.set(null);
-    const url = `${this.q10ApiUrl}/inasistencias?Fecha_inicio_inasistencia=${fechaInicio}&Fecha_fin_inasistencia=${fechaFin}`;
+    const url = `${this.q10ApiUrl}/inasistencias?Fecha_inicio_inasistencia=${fechaInicio}&Fecha_fin_inasistencia=${fechaFin}&Limit=1000&Offset=0`;
  if(fechaInicio && fechaFin){
   return this.http.get<InasistenciaQ10[]>(url, {
     headers: {
@@ -69,10 +73,93 @@ export class Q10AsistenciaService {
   );
  }
   return of([]);
-
+}
+actualizarDatos(personasMatriculadas: number, inscripcionesActivas: number, cursosOfertados: number){
+  this.totalPersonasMatriculadas.update(() => personasMatriculadas);
+  this.totalInscripcionesActivas.update(() => inscripcionesActivas);
+  this.totalCursosOfertados.update(() => cursosOfertados);
 }
 
-
-}
+datosInasistencia = computed(() => {
+  const data = this.inasistencia(); // Array de estudiantes que han faltado
   
+  
+  const totalPersonasMatriculadas = this.totalPersonasMatriculadas();
+  const totalInscripcionesActivas = this.totalInscripcionesActivas();
+  const totalCursosOfertados = this.totalCursosOfertados();
+  if (!data || !data.length) return null;
+
+  // --- 1. CÁLCULOS DE PERSONAS (ALCANCE SOCIAL) ---
+  const personasConFaltas = data.length;
+  const hombresInasistentes = data.filter(e => e.Sexo === 'M').length;
+  const mujeresInasistentes = data.filter(e => e.Sexo === 'F').length;
+
+  // --- 2. CÁLCULOS DE INSCRIPCIONES Y FALTAS ---
+  let totalFaltasAbsolutas = 0;
+  let cuposAfectadosPorFaltas = 0;
+  const mapaCursos: { [key: string]: { curso: string, inasistencias: number, alumnos: number, profesor: string } } = {};
+
+  data.forEach(estudiante => {
+    // Cada elemento en 'Cursos' representa una inscripción de esa persona
+    cuposAfectadosPorFaltas += estudiante.Cursos.length;
+
+    estudiante.Cursos.forEach(curso => {
+      // Sumamos la intensidad de las faltas
+      totalFaltasAbsolutas += curso.Cantidad_inasistencia;
+
+      // Agrupamos por nombre de curso para el Top Críticos
+      if (!mapaCursos[curso.Nombre_curso]) {
+        mapaCursos[curso.Nombre_curso] = { 
+          curso: curso.Nombre_curso, 
+          inasistencias: 0, 
+          alumnos: 0 ,
+          profesor: curso.Nombre_docente
+        };
+      }
+      mapaCursos[curso.Nombre_curso].inasistencias += curso.Cantidad_inasistencia;
+      mapaCursos[curso.Nombre_curso].alumnos += 1;
+    });
+  });
+
+  // --- 3. ORDENAMIENTO DE CURSOS CRÍTICOS (TOP 10) ---
+  const cursosCriticos = Object.values(mapaCursos)
+    .sort((a, b) => b.inasistencias - a.inasistencias)
+    .slice(0, 10);
+
+  // --- 4. CÁLCULO DE TASAS (PORCENTAJES REALES) ---
+  // % de ciudadanos de la Casa de la Cultura que han faltado al menos una vez
+  const tasaAlcanceInasistencia = +((personasConFaltas / totalPersonasMatriculadas) * 100).toFixed(1);
+  
+  // % de cupos/inscripciones que presentan inasistencia
+  const tasaInscripcionesAfectadas = +((cuposAfectadosPorFaltas / totalInscripcionesActivas) * 100).toFixed(1);
+
+  // Frecuencia: ¿Cuántas veces falta en promedio un alumno que ya empezó a faltar?
+  const promedioFaltasPorPersona = +(totalFaltasAbsolutas / personasConFaltas).toFixed(1);
+
+  // --- OBJETO FINAL PARA LA IA ---
+  return {
+    reporteGeneral: {
+      totalPersonasMatriculadas,
+      totalInscripcionesActivas,
+      totalCursosOfertados
+    },
+    estadisticasPersonas: {
+      totalConFaltas: personasConFaltas,
+      hombres: hombresInasistentes,
+      mujeres: mujeresInasistentes,
+      tasaAfectacionCiudadana: tasaAlcanceInasistencia // Ej: "El 38% de los matriculados ha faltado"
+    },
+    estadisticasCupos: {
+      totalCuposAfectados: cuposAfectadosPorFaltas,
+      tasaDesercionCupos: tasaInscripcionesAfectadas, // Ej: "El 25% de los cupos tiene inasistencias"
+      totalFaltasRegistradas: totalFaltasAbsolutas,
+      promedioFaltasPorPersona
+    },
+    cursosCriticos, // Array Top 10
+    resumenImpacto: `Se han registrado ${totalFaltasAbsolutas} inasistencias que afectan al ${tasaInscripcionesAfectadas}% de los cupos totales de la institución.`
+  };
+});
+
+
+}
   

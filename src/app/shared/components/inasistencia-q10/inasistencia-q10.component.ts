@@ -61,6 +61,8 @@ export class InasistenciaQ10Component {
   reporteVisible = signal<boolean>(false);
   vistaActiva   = signal<'estudiantes' | 'cursos' | 'cronologia'>('estudiantes');
 
+ 
+
   // Filas expandidas en la tabla de estudiantes
   private expandidos = signal<Set<string>>(new Set());
 
@@ -103,6 +105,8 @@ export class InasistenciaQ10Component {
       const fb = b.Cursos.reduce((s, c) => s + c.Cantidad_inasistencia, 0);
       return fb - fa;
     })[0];
+    const hombresInasistentes = data.filter(e => e.Sexo === 'M').length;
+    const mujeresInasistentes = data.filter(e => e.Sexo === 'F').length;
 
     return {
       totalEstudiantes:  data.length,
@@ -116,6 +120,8 @@ export class InasistenciaQ10Component {
       topEstudianteCantidad: topEstudiante
         ? topEstudiante.Cursos.reduce((s, c) => s + c.Cantidad_inasistencia, 0)
         : 0,
+      hombresInasistentes,
+      mujeresInasistentes,
     };
   });
 
@@ -267,5 +273,13 @@ export class InasistenciaQ10Component {
 
   cambiarVista(v: 'estudiantes' | 'cursos' | 'cronologia') {
     this.vistaActiva.set(v);
+  }
+  obtenerDatosExtra(){
+    const data = this.inasistenciaService.datosInasistencia();  
+   
+    
+    console.log(data);
+   
+    
   }
 }
