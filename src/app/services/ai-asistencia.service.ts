@@ -21,7 +21,7 @@ public analizarAsistencia(datos: any) {
   this.http.post(
     `${this.apiUrl}/ai/prompts`,
     { prompt: JSON.stringify(datos) },
-    { responseType: 'text' }   // ← esto resuelve el error
+    { responseType: 'text' }   
   ).subscribe({
     next: (response) => {
       this.respuestaAI.set(response);

@@ -15,9 +15,11 @@ import { Q10PoblacionComponent } from './pages/q10-poblacion/q10-poblacion.compo
 import { Q10AsistenciaComponent } from './pages/q10-asistencia/q10-asistencia.component';
 import { InasistenciaQ10Component } from './shared/components/inasistencia-q10/inasistencia-q10.component';
 import { AnalisisAiComponent } from './features/admin/analisis-ai/analisis-ai.component';
+import { ReporteNovedadesComponent } from './features/profesor/reporte-novedades/reporte-novedades.component';
 
 
 export const routes: Routes = [
+  
    {
       path: "inasistencia",
       component: InasistenciaQ10Component
@@ -95,7 +97,13 @@ export const routes: Routes = [
    },
    {
       path: "profesor",
-      canActivate: [isAuthenticatedGuard, ],
-      component: AreaprofesorComponent,
+       component: AreaprofesorComponent,
+      canActivate: [isAuthenticatedGuard],
+      children: [
+          {path: 'reporte-novedades',
+         component: ReporteNovedadesComponent},
+      ]
+      
+     
    }
 ];

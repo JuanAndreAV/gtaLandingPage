@@ -1,0 +1,233 @@
+<!-- Estado: éxito -->
+@if (enviado()) {
+  <div class="flex flex-col items-center justify-center py-20 text-center">
+    <div class="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mb-4">
+      <svg class="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+      </svg>
+    </div>
+    <h2 class="text-xl font-semibold text-gray-800 mb-2">Novedad registrada</h2>
+    <p class="text-sm text-gray-500 mb-6">
+      El coordinador fue notificado y revisará tu solicitud pronto.
+    </p>
+    <button
+      (click)="nuevaNovedad()"
+      class="px-5 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+    >
+      Registrar otra novedad
+    </button>
+  </div>
+}
+
+<!-- Estado: formulario -->
+@if (!enviado()) {
+  <div class="max-w-xl mx-auto py-6 px-4">
+
+    <!-- Encabezado -->
+    <div class="mb-6">
+      <h1 class="text-2xl font-semibold text-gray-900">Registrar novedad</h1>
+      <p class="text-sm text-gray-500 mt-1">
+        Informa al coordinador sobre un cambio de horario o una incapacidad.
+      </p>
+    </div>
+
+    <form [formGroup]="reporteForm" >
+
+      <!-- ── Tipo de novedad ─────────────────────────────── -->
+      <div class="grid grid-cols-2 gap-3 mb-6">
+
+        <button
+          type="button"
+          (click)="seleccionarTipo('cambio_horario')"
+          [class]="tipo() === 'cambio_horario'
+            ? 'flex flex-col items-start gap-1 p-4 rounded-xl border-2 border-amber-400 bg-amber-50 text-left transition-all'
+            : 'flex flex-col items-start gap-1 p-4 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 text-left transition-all'"
+        >
+          <span class="text-2xl">🔄</span>
+          <span class="text-sm font-medium text-gray-800">Cambio de horario</span>
+          <span class="text-xs text-gray-500">Mover clase a otra fecha u hora</span>
+        </button>
+
+        <button
+          type="button"
+          (click)="seleccionarTipo('incapacidad')"
+          [class]="tipo() === 'incapacidad'
+            ? 'flex flex-col items-start gap-1 p-4 rounded-xl border-2 border-teal-400 bg-teal-50 text-left transition-all'
+            : 'flex flex-col items-start gap-1 p-4 rounded-xl border-2 border-gray-200 bg-white hover:border-gray-300 text-left transition-all'"
+        >
+          <span class="text-2xl">🏥</span>
+          <span class="text-sm font-medium text-gray-800">Incapacidad</span>
+          <span class="text-xs text-gray-500">Ausencia por motivo médico</span>
+        </button>
+
+      </div>
+
+      <!-- Error tipo no seleccionado -->
+      @if (campoInvalido('tipoNovedad')) {
+        <p class="text-xs text-red-500 -mt-4 mb-4">Selecciona un tipo de novedad.</p>
+      }
+
+      <!-- ── Campos comunes ──────────────────────────────── -->
+      <div class="flex flex-col gap-4">
+
+        <!-- Docente (readonly) -->
+        <div>
+          <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5">
+            Docente <span class="text-red-400">*</span>
+          </label>
+          <input
+            formControlName="nombreDocente"
+            type="text"
+            [class]="campoInvalido('curso')
+              ? 'w-full px-3 py-2.5 border border-red-300 rounded-lg text-sm focus:outline-none focus:border-red-400 bg-red-50'
+              : 'w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-amber-400 bg-white'"
+          />
+          @if (campoInvalido('nombreDocente')) {
+            <p class="text-xs text-red-500 mt-1">El nombre es obligatorio.</p>
+          }
+          
+        </div>
+
+        <!-- Curso -->
+        <div>
+          <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5">
+            Curso / grupo <span class="text-red-400">*</span>
+          </label>
+          <input
+            formControlName="curso"
+            type="text"
+            placeholder="Ej. Música — Nivel 2"
+            [class]="campoInvalido('curso')
+              ? 'w-full px-3 py-2.5 border border-red-300 rounded-lg text-sm focus:outline-none focus:border-red-400 bg-red-50'
+              : 'w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-amber-400 bg-white'"
+          />
+          @if (campoInvalido('curso')) {
+            <p class="text-xs text-red-500 mt-1">El curso es obligatorio.</p>
+          }
+        </div>
+
+        <!-- ── Campos cambio de horario ────────────────── -->
+        @if (tipo() === 'cambio_horario') {
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5">
+                Fecha y hora original <span class="text-red-400">*</span>
+              </label>
+              <input
+                formControlName="fechaOriginal"
+                type="datetime-local"
+                [class]="campoInvalido('fechaOriginal')
+                  ? 'w-full px-3 py-2.5 border border-red-300 rounded-lg text-sm focus:outline-none focus:border-red-400 bg-red-50'
+                  : 'w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-amber-400 bg-white'"
+              />
+              @if (campoInvalido('fechaOriginal')) {
+                <p class="text-xs text-red-500 mt-1">Requerido.</p>
+              }
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5">
+                Nueva fecha y hora <span class="text-red-400">*</span>
+              </label>
+              <input
+                formControlName="nuevaFecha"
+                type="datetime-local"
+                [class]="campoInvalido('nuevaFecha')
+                  ? 'w-full px-3 py-2.5 border border-red-300 rounded-lg text-sm focus:outline-none focus:border-red-400 bg-red-50'
+                  : 'w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-amber-400 bg-white'"
+              />
+              @if (campoInvalido('nuevaFecha')) {
+                <p class="text-xs text-red-500 mt-1">Requerido.</p>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- ── Campos incapacidad ──────────────────────── -->
+        @if (tipo() === 'incapacidad') {
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5">
+                Inicio incapacidad <span class="text-red-400">*</span>
+              </label>
+              <input
+                formControlName="fechaInicioIncapacidad"
+                type="date"
+                [class]="campoInvalido('fechaInicioIncapacidad')
+                  ? 'w-full px-3 py-2.5 border border-red-300 rounded-lg text-sm focus:outline-none focus:border-red-400 bg-red-50'
+                  : 'w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-400 bg-white'"
+              />
+              @if (campoInvalido('fechaInicioIncapacidad')) {
+                <p class="text-xs text-red-500 mt-1">Requerido.</p>
+              }
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5">
+                Fin incapacidad <span class="text-red-400">*</span>
+              </label>
+              <input
+                formControlName="fechaFinIncapacidad"
+                type="date"
+                [class]="campoInvalido('fechaFinIncapacidad')
+                  ? 'w-full px-3 py-2.5 border border-red-300 rounded-lg text-sm focus:outline-none focus:border-red-400 bg-red-50'
+                  : 'w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-teal-400 bg-white'"
+              />
+              @if (campoInvalido('fechaFinIncapacidad')) {
+                <p class="text-xs text-red-500 mt-1">Requerido.</p>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Motivo (siempre visible) -->
+        @if (tipo() ) {
+          <div>
+            <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5">
+              Motivo <span class="text-red-400">*</span>
+            </label>
+            <textarea
+              formControlName="motivo"
+              rows="3"
+              placeholder="Describe brevemente el motivo..."
+              [class]="campoInvalido('motivo')
+                ? 'w-full px-3 py-2.5 border border-red-300 rounded-lg text-sm focus:outline-none focus:border-red-400 bg-red-50 resize-none'
+                : 'w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-amber-400 bg-white resize-none'"
+            ></textarea>
+            @if (campoInvalido('motivo')) {
+              <p class="text-xs text-red-500 mt-1">El motivo es obligatorio.</p>
+            }
+          </div>
+        }
+
+      </div>
+
+      <!-- Error de envío -->
+      @if (error()) {
+        <div class="mt-4 px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
+          {{ error() }}
+        </div>
+      }
+
+      <!-- Botón enviar -->
+      <button
+        type="button"
+        (click)="enviarReporte()"
+        [disabled]="cargando()"
+        class="mt-6 w-full py-3 px-4 rounded-xl text-sm font-medium transition-all
+               bg-gray-900 text-white hover:bg-gray-700
+               disabled:opacity-50 disabled:cursor-not-allowed
+               flex items-center justify-center gap-2"
+      >
+        @if (cargando()) {
+          <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+          </svg>
+          Enviando...
+        } @else {
+          Enviar novedad
+        }
+      </button>
+
+    </form>
+  </div>
+}
