@@ -1,233 +1,254 @@
-<div class="min-h-screen bg-gray-50 p-4 md:p-6">
+<div class="min-h-screen bg-gray-50">
+  <div class="max-w-3xl mx-auto px-4 py-6">
 
-  <!-- ── Encabezado ─────────────────────────────────────────────── -->
-  <div class="mb-6">
-    <h1 class="text-2xl font-semibold text-gray-900">Panel de novedades</h1>
-    <p class="text-sm text-gray-500 mt-1">Gestiona las solicitudes de los docentes</p>
-  </div>
-
-  <!-- ── Contadores ─────────────────────────────────────────────── -->
-  <div class="grid grid-cols-3 gap-3 mb-6">
-
-    <div class="bg-white border border-gray-200 rounded-xl p-4 text-center">
-      <div class="text-3xl font-semibold text-amber-500">{{ totalPendientes() }}</div>
-      <div class="text-xs text-gray-400 mt-1">Pendientes</div>
+    <!-- Encabezado -->
+    <div class="mb-6">
+      <h1 class="text-2xl font-semibold text-gray-900">Panel de novedades</h1>
+      <p class="text-sm text-gray-500 mt-0.5">Gestiona las solicitudes de los docentes</p>
     </div>
 
-    <div class="bg-white border border-gray-200 rounded-xl p-4 text-center">
-      <div class="text-3xl font-semibold text-emerald-500">{{ totalAprobados() }}</div>
-      <div class="text-xs text-gray-400 mt-1">Aprobadas</div>
-    </div>
-
-    <div class="bg-white border border-gray-200 rounded-xl p-4 text-center">
-      <div class="text-3xl font-semibold text-red-400">{{ totalRechazados() }}</div>
-      <div class="text-xs text-gray-400 mt-1">Rechazadas</div>
-    </div>
-
-  </div>
-
-  <!-- ── Filtros ─────────────────────────────────────────────────── -->
-  <div class="flex gap-2 mb-4 flex-wrap">
-
-    @for (f of [
-      { val: 'todos',     label: 'Todas' },
-      { val: 'pendiente', label: 'Pendientes' },
-      { val: 'aprobado',  label: 'Aprobadas' },
-      { val: 'rechazado', label: 'Rechazadas' }
-    ]; track f.val) {
-      <button
-        (click)="setFiltro(f.val)"
-        [class]="filtroEstado() === f.val
-          ? 'px-4 py-1.5 rounded-full text-sm font-medium bg-gray-900 text-white transition-all'
-          : 'px-4 py-1.5 rounded-full text-sm font-medium bg-white border border-gray-200 text-gray-600 hover:border-gray-400 transition-all'"
-      >
-        {{ f.label }}
-      </button>
-    }
-
-  </div>
-
-  <!-- ── Cargando ────────────────────────────────────────────────── -->
-  @if (novedadService.isLoading()) {
-    <div class="flex items-center justify-center py-16 text-gray-400 text-sm gap-2">
-      <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
-      </svg>
-      Cargando novedades...
-    </div>
-  }
-
-  <!-- ── Error ───────────────────────────────────────────────────── -->
-  @if (novedadService.error()) {
-    <div class="px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600 mb-4">
-      {{ novedadService.error() }}
-    </div>
-  }
-
-  <!-- ── Lista ───────────────────────────────────────────────────── -->
-  @if (!novedadService.isLoading()) {
-
-    @if (novedadesFiltradas().length === 0) {
-      <div class="text-center py-16 text-gray-400">
-        <div class="text-4xl mb-3">📭</div>
-        <p class="text-sm">No hay novedades en esta categoría.</p>
+    <!-- Contadores -->
+    <div class="grid grid-cols-3 gap-3 mb-6">
+      <div class="bg-white border border-gray-200 rounded-xl p-4 text-center">
+        <div class="text-3xl font-semibold text-amber-500">{{ totalPendientes() }}</div>
+        <div class="text-xs text-gray-400 mt-1">Pendientes</div>
       </div>
-    }
+      <div class="bg-white border border-gray-200 rounded-xl p-4 text-center">
+        <div class="text-3xl font-semibold text-emerald-500">{{ totalAprobados() }}</div>
+        <div class="text-xs text-gray-400 mt-1">Aprobadas</div>
+      </div>
+      <div class="bg-white border border-gray-200 rounded-xl p-4 text-center">
+        <div class="text-3xl font-semibold text-red-400">{{ totalRechazados() }}</div>
+        <div class="text-xs text-gray-400 mt-1">Rechazadas</div>
+      </div>
+    </div>
 
-    <div class="flex flex-col gap-3">
-      @for (novedad of novedadesFiltradas(); track novedad._id) {
-
-        <div
-          class="bg-white border border-gray-200 rounded-xl p-4 flex items-start gap-3 cursor-pointer hover:shadow-sm transition-shadow"
-          (click)="abrirModal(novedad)"
+    <!-- Filtros → cada clic llama al backend -->
+    <div class="flex gap-2 mb-5 flex-wrap">
+      @for (f of filtros; track f.val) {
+        <button
+          (click)="cargar(f.val)"
+          [class]="filtroActivo() === f.val
+            ? 'px-4 py-1.5 rounded-full text-sm font-medium bg-gray-900 text-white transition-all'
+            : 'px-4 py-1.5 rounded-full text-sm font-medium bg-white border border-gray-200 text-gray-600 hover:border-gray-400 transition-all'"
         >
-          <!-- Ícono tipo -->
-          <div [class]="novedad.tipoNovedad === 'cambio_horario'
-            ? 'w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center text-lg flex-shrink-0'
-            : 'w-10 h-10 rounded-lg bg-teal-50 flex items-center justify-center text-lg flex-shrink-0'">
-            {{ novedad.tipoNovedad === 'cambio_horario' ? '🔄' : '🏥' }}
-          </div>
-
-          <!-- Contenido -->
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2 flex-wrap mb-1">
-              <span class="font-medium text-sm text-gray-900">{{ novedad.nombreDocente }}</span>
-              <span class="text-xs text-gray-400">{{ novedad.curso }}</span>
-
-              <!-- Badge tipo -->
-              <span [class]="novedad.tipoNovedad === 'cambio_horario'
-                ? 'text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 font-medium'
-                : 'text-xs px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 font-medium'">
-                {{ novedad.tipoNovedad === 'cambio_horario' ? 'Cambio horario' : 'Incapacidad' }}
-              </span>
-            </div>
-
-            <!-- Fechas según tipo -->
-            @if (novedad.tipoNovedad === 'cambio_horario') {
-              <p class="text-xs text-gray-500">
-                {{ novedad.fechaOriginal | date:'d MMM yyyy, HH:mm' : '' : 'es' }}
-                <span class="mx-1">→</span>
-                {{ novedad.nuevaFecha | date:'d MMM yyyy, HH:mm' : '' : 'es' }}
-              </p>
-            } @else {
-              <p class="text-xs text-gray-500">
-                {{ novedad.fechaInicioIncapacidad | date:'d MMM yyyy' : '' : 'es' }}
-                <span class="mx-1">—</span>
-                {{ novedad.fechaFinIncapacidad | date:'d MMM yyyy' : '' : 'es' }}
-              </p>
-            }
-
-            <p class="text-xs text-gray-400 mt-1">
-              Registrado {{ novedad.createdAt | date:'d MMM yyyy' : '' : 'es' }}
-            </p>
-          </div>
-
-          <!-- Badge estado -->
-          <span [class]="
-            novedad.estado === 'pendiente' ? 'text-xs px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 font-medium flex-shrink-0' :
-            novedad.estado === 'aprobado'  ? 'text-xs px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-medium flex-shrink-0' :
-                                             'text-xs px-2.5 py-1 rounded-full bg-red-50 text-red-600 font-medium flex-shrink-0'
-          ">
-            {{ novedad.estado }}
-          </span>
-
-        </div>
+          {{ f.label }}
+        </button>
       }
     </div>
 
-  }
+    <!-- Cargando -->
+    @if (novedadService.isLoading()) {
+      <div class="flex items-center justify-center gap-2 py-20 text-sm text-gray-400">
+        <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+        </svg>
+        Cargando...
+      </div>
+    }
 
+    <!-- Error -->
+    @if (novedadService.error() && !novedadService.isLoading()) {
+      <div class="px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600 mb-4">
+        {{ novedadService.error() }}
+      </div>
+    }
+
+    <!-- Lista -->
+    @if (!novedadService.isLoading() && !novedadService.error()) {
+
+      @if (novedadesPagina().length === 0) {
+        <div class="text-center py-20 text-gray-400">
+          <div class="text-4xl mb-3">📭</div>
+          <p class="text-sm">No hay novedades en esta categoría.</p>
+        </div>
+      }
+
+      <div class="flex flex-col gap-3">
+        @for (n of novedadesPagina(); track n._id) {
+          <div
+            (click)="abrirModal(n)"
+            class="bg-white border border-gray-200 rounded-xl p-4 flex items-start gap-3 cursor-pointer hover:shadow-sm hover:border-gray-300 transition-all"
+          >
+            <!-- Ícono -->
+            <div [class]="n.tipoNovedad === 'cambio_horario'
+              ? 'w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center text-lg flex-shrink-0 mt-0.5'
+              : 'w-10 h-10 rounded-lg bg-teal-50 flex items-center justify-center text-lg flex-shrink-0 mt-0.5'">
+              {{ n.tipoNovedad === 'cambio_horario' ? '🔄' : '🏥' }}
+            </div>
+
+            <!-- Contenido -->
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 flex-wrap mb-1">
+                <span class="font-medium text-sm text-gray-900">{{ n.nombreDocente }}</span>
+                <span class="text-xs text-gray-400">{{ n.curso }}</span>
+                <span [class]="n.tipoNovedad === 'cambio_horario'
+                  ? 'text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 font-medium'
+                  : 'text-xs px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 font-medium'">
+                  {{ n.tipoNovedad === 'cambio_horario' ? 'Cambio horario' : 'Incapacidad' }}
+                </span>
+              </div>
+
+              <!-- Fechas condicionales -->
+              @if (n.tipoNovedad === 'cambio_horario') {
+                <p class="text-xs text-gray-500">
+                  {{ n.fechaOriginal | date:'d MMM yyyy, HH:mm' }}
+                  <span class="mx-1 text-gray-300">→</span>
+                  {{ n.nuevaFecha | date:'d MMM yyyy, HH:mm' }}
+                </p>
+              } @else {
+                <p class="text-xs text-gray-500">
+                  {{ n.fechaInicioIncapacidad | date:'d MMM yyyy' }}
+                  <span class="mx-1 text-gray-300">—</span>
+                  {{ n.fechaFinIncapacidad | date:'d MMM yyyy' }}
+                </p>
+              }
+
+              <p class="text-xs text-gray-400 mt-1">
+                Registrado el {{ n.createdAt | date:'d MMM yyyy' }}
+              </p>
+            </div>
+
+            <!-- Badge estado -->
+            <span [class]="
+              n.estado === 'pendiente' ? 'text-xs px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 font-medium flex-shrink-0 self-center' :
+              n.estado === 'aprobado'  ? 'text-xs px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-medium flex-shrink-0 self-center' :
+                                         'text-xs px-2.5 py-1 rounded-full bg-red-50 text-red-600 font-medium flex-shrink-0 self-center'">
+              {{ n.estado }}
+            </span>
+          </div>
+        }
+      </div>
+
+      <!-- Paginador -->
+      @if (totalPaginas() > 1) {
+        <div class="flex items-center justify-center gap-1 mt-6">
+
+          <button
+            (click)="paginaAnterior()"
+            [disabled]="paginaActual() === 1"
+            class="w-8 h-8 rounded-lg border border-gray-200 text-gray-500 text-sm flex items-center justify-center hover:border-gray-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          >‹</button>
+
+          @for (p of paginasVisibles(); track $index) {
+            @if (p === '...') {
+              <span class="w-8 h-8 flex items-center justify-center text-gray-400 text-sm">…</span>
+            } @else {
+              <button
+                (click)="irAPagina(p)"
+                [class]="paginaActual() === p
+                  ? 'w-8 h-8 rounded-lg bg-gray-900 text-white text-sm font-medium transition-all'
+                  : 'w-8 h-8 rounded-lg border border-gray-200 text-gray-600 text-sm hover:border-gray-400 transition-all'"
+              >{{ p }}</button>
+            }
+          }
+
+          <button
+            (click)="paginaSiguiente()"
+            [disabled]="paginaActual() === totalPaginas()"
+            class="w-8 h-8 rounded-lg border border-gray-200 text-gray-500 text-sm flex items-center justify-center hover:border-gray-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          >›</button>
+
+        </div>
+
+        <p class="text-center text-xs text-gray-400 mt-2">
+          Página {{ paginaActual() }} de {{ totalPaginas() }}
+          · {{ novedadService.updates().length }} registros
+        </p>
+      }
+
+    }
+  </div>
 </div>
 
-<!-- ══════════════════════════════════════
+<!-- ══════════════════════════════════
      MODAL
-══════════════════════════════════════ -->
-@if (novedadActual()) {
-  <!-- Backdrop -->
+══════════════════════════════════ -->
+@if (novedadModal()) {
   <div
     class="fixed inset-0 bg-black/40 z-40 flex items-end sm:items-center justify-center p-4"
     (click)="cerrarModal()"
   >
-    <!-- Panel -->
     <div
-      class="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto z-50"
+      class="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto"
       (click)="$event.stopPropagation()"
     >
       <div class="p-5">
 
-        <!-- Cabecera modal -->
+        <!-- Cabecera -->
         <div class="flex items-start justify-between mb-4">
           <div>
-            <h2 class="font-semibold text-gray-900">
-              {{ novedadActual()!.tipoNovedad === 'cambio_horario' ? '🔄 Cambio de horario' : '🏥 Incapacidad' }}
+            <h2 class="font-semibold text-gray-900 text-lg">
+              {{ novedadModal()!.tipoNovedad === 'cambio_horario' ? '🔄 Cambio de horario' : '🏥 Incapacidad' }}
             </h2>
             <p class="text-sm text-gray-500 mt-0.5">
-              {{ novedadActual()!.nombreDocente }} · {{ novedadActual()!.curso }}
+              {{ novedadModal()!.nombreDocente }} · {{ novedadModal()!.curso }}
             </p>
           </div>
-          <button (click)="cerrarModal()" class="text-gray-400 hover:text-gray-600 text-xl leading-none">✕</button>
+          <button
+            (click)="cerrarModal()"
+            class="text-gray-400 hover:text-gray-600 text-xl leading-none p-1"
+          >✕</button>
         </div>
 
         <!-- Detalle -->
-        <div class="flex flex-col gap-2 mb-4">
+        <div class="flex flex-col gap-3 mb-4 text-sm">
 
-          <div class="flex gap-2 text-sm">
-            <span class="text-gray-400 w-36 flex-shrink-0">Estado</span>
+          <div class="flex gap-3">
+            <span class="text-gray-400 w-32 flex-shrink-0">Estado</span>
             <span [class]="
-              novedadActual()!.estado === 'pendiente' ? 'font-medium text-amber-600' :
-              novedadActual()!.estado === 'aprobado'  ? 'font-medium text-emerald-600' :
-                                                        'font-medium text-red-500'">
-              {{ novedadActual()!.estado }}
+              novedadModal()!.estado === 'pendiente' ? 'font-medium text-amber-600' :
+              novedadModal()!.estado === 'aprobado'  ? 'font-medium text-emerald-600' :
+                                                       'font-medium text-red-500'">
+              {{ novedadModal()!.estado }}
             </span>
           </div>
 
-          <div class="flex gap-2 text-sm">
-            <span class="text-gray-400 w-36 flex-shrink-0">Motivo</span>
-            <span class="text-gray-700">{{ novedadActual()!.motivo }}</span>
+          <div class="flex gap-3">
+            <span class="text-gray-400 w-32 flex-shrink-0">Motivo</span>
+            <span class="text-gray-700">{{ novedadModal()!.motivo }}</span>
           </div>
 
-          @if (novedadActual()!.tipoNovedad === 'cambio_horario') {
-            <div class="flex gap-2 text-sm">
-              <span class="text-gray-400 w-36 flex-shrink-0">Fecha original</span>
-              <span class="text-gray-700">
-                {{ novedadActual()!.fechaOriginal | date:'d MMM yyyy, HH:mm' : '' : 'es' }}
-              </span>
+          @if (novedadModal()!.tipoNovedad === 'cambio_horario') {
+            <div class="flex gap-3">
+              <span class="text-gray-400 w-32 flex-shrink-0">Fecha original</span>
+              <span class="text-gray-700">{{ novedadModal()!.fechaOriginal | date:'d MMM yyyy, HH:mm' }}</span>
             </div>
-            <div class="flex gap-2 text-sm">
-              <span class="text-gray-400 w-36 flex-shrink-0">Nueva fecha</span>
-              <span class="text-gray-700">
-                {{ novedadActual()!.nuevaFecha | date:'d MMM yyyy, HH:mm' : '' : 'es' }}
-              </span>
+            <div class="flex gap-3">
+              <span class="text-gray-400 w-32 flex-shrink-0">Nueva fecha</span>
+              <span class="text-gray-700">{{ novedadModal()!.nuevaFecha | date:'d MMM yyyy, HH:mm' }}</span>
             </div>
           } @else {
-            <div class="flex gap-2 text-sm">
-              <span class="text-gray-400 w-36 flex-shrink-0">Inicio</span>
-              <span class="text-gray-700">
-                {{ novedadActual()!.fechaInicioIncapacidad | date:'d MMM yyyy' : '' : 'es' }}
-              </span>
+            <div class="flex gap-3">
+              <span class="text-gray-400 w-32 flex-shrink-0">Inicio</span>
+              <span class="text-gray-700">{{ novedadModal()!.fechaInicioIncapacidad | date:'d MMM yyyy' }}</span>
             </div>
-            <div class="flex gap-2 text-sm">
-              <span class="text-gray-400 w-36 flex-shrink-0">Fin</span>
-              <span class="text-gray-700">
-                {{ novedadActual()!.fechaFinIncapacidad | date:'d MMM yyyy' : '' : 'es' }}
-              </span>
+            <div class="flex gap-3">
+              <span class="text-gray-400 w-32 flex-shrink-0">Fin</span>
+              <span class="text-gray-700">{{ novedadModal()!.fechaFinIncapacidad | date:'d MMM yyyy' }}</span>
             </div>
           }
 
-          @if (novedadActual()!.notaCoordinador) {
-            <div class="flex gap-2 text-sm">
-              <span class="text-gray-400 w-36 flex-shrink-0">Nota previa</span>
-              <span class="text-gray-700">{{ novedadActual()!.notaCoordinador }}</span>
+          @if (novedadModal()!.notaCoordinador) {
+            <div class="flex gap-3">
+              <span class="text-gray-400 w-32 flex-shrink-0">Nota previa</span>
+              <span class="text-gray-700 italic">{{ novedadModal()!.notaCoordinador }}</span>
             </div>
           }
+
+          <div class="flex gap-3">
+            <span class="text-gray-400 w-32 flex-shrink-0">Registrado</span>
+            <span class="text-gray-500">{{ novedadModal()!.createdAt | date:'d MMM yyyy, HH:mm' }}</span>
+          </div>
 
         </div>
 
         <hr class="border-gray-100 mb-4">
 
-        <!-- Nota del coordinador -->
-        @if (novedadActual()!.estado === 'pendiente') {
+        <!-- Solo pendientes muestran acciones -->
+        @if (novedadModal()!.estado === 'pendiente') {
+
           <div class="mb-4">
             <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5">
               Nota para el docente (opcional)
@@ -241,28 +262,24 @@
             ></textarea>
           </div>
 
-          <!-- Mensaje éxito -->
-          @if (mensajeExito()) {
+          @if (mensajeModal()) {
             <div class="mb-3 px-3 py-2 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-700">
-              {{ mensajeExito() }}
+              {{ mensajeModal() }}
             </div>
           }
 
-          <!-- Acciones -->
           <div class="flex gap-2">
             <button
               (click)="cerrarModal()"
-              class="flex-none px-4 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-            >
-              Cancelar
-            </button>
+              class="px-4 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+            >Cancelar</button>
+
             <button
               (click)="gestionar('rechazado')"
               [disabled]="guardando()"
               class="flex-1 py-2.5 border border-red-300 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 transition-colors disabled:opacity-50"
-            >
-              Rechazar
-            </button>
+            >Rechazar</button>
+
             <button
               (click)="gestionar('aprobado')"
               [disabled]="guardando()"
@@ -277,14 +294,12 @@
               Aprobar
             </button>
           </div>
+
         } @else {
-          <!-- Ya gestionada: solo cerrar -->
           <button
             (click)="cerrarModal()"
             class="w-full py-2.5 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-          >
-            Cerrar
-          </button>
+          >Cerrar</button>
         }
 
       </div>

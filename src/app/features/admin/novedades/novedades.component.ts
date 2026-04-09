@@ -3,6 +3,8 @@ import { NovedadService } from '../../../services/novedad.service';
 import { respuestaNovedad } from '../../../models/novedad';
 import { DatePipe } from '@angular/common';
 
+type Filtro = 'todos' | 'pendiente' | 'aprobado' | 'rechazado';
+
 @Component({
   selector: 'app-novedades',
   imports: [DatePipe],
@@ -12,78 +14,108 @@ export class NovedadesComponent implements OnInit {
 
   novedadService = inject(NovedadService);
 
-  // ── Estado local ────────────────────────────────────────────────
-  filtroEstado   = signal<string>('todos');
-  novedadActual  = signal<respuestaNovedad | null>(null);
-  notaInput      = signal<string>('');
-  guardando      = signal(false);
-  mensajeExito   = signal<string | null>(null);
+  filtroActivo  = signal<Filtro>('todos');
+  novedadModal  = signal<respuestaNovedad | null>(null);
+  notaInput     = signal('');
+  guardando     = signal(false);
+  mensajeModal  = signal<string | null>(null);
 
-  // ── Lista filtrada (computed sobre el signal del servicio) ──────
-  novedadesFiltradas = computed(() => {
-    const estado = this.filtroEstado();
-    const todas  = this.novedadService.updates();
-    if (estado === 'todos') return todas;
-    return todas.filter(n => n.estado === estado);
+  readonly filtros: { val: Filtro; label: string }[] = [
+    { val: 'todos',     label: 'Todas' },
+    { val: 'pendiente', label: 'Pendientes' },
+    { val: 'aprobado',  label: 'Aprobadas' },
+    { val: 'rechazado', label: 'Rechazadas' },
+  ];
+
+  // ── Paginación ────────────────────────────────────────────────────
+  paginaActual    = computed(() => this.novedadService.paginaActual());
+  totalPaginas    = computed(() => this.novedadService.totalPaginas());
+
+  novedadesPagina = computed(() => {
+    const pagina = this.paginaActual();
+    const por    = this.novedadService.porPagina;
+    const inicio = (pagina - 1) * por;
+    return this.novedadService.updates().slice(inicio, inicio + por);
   });
 
-  // ── Contadores ──────────────────────────────────────────────────
+  // ── Contadores ────────────────────────────────────────────────────
   totalPendientes = computed(() =>
-    this.novedadService.updates().filter(n => n.estado === 'pendiente').length
-  );
-  totalAprobados = computed(() =>
-    this.novedadService.updates().filter(n => n.estado === 'aprobado').length
-  );
+    this.novedadService.updates().filter(n => n.estado === 'pendiente').length);
+  totalAprobados  = computed(() =>
+    this.novedadService.updates().filter(n => n.estado === 'aprobado').length);
   totalRechazados = computed(() =>
-    this.novedadService.updates().filter(n => n.estado === 'rechazado').length
-  );
+    this.novedadService.updates().filter(n => n.estado === 'rechazado').length);
 
-  ngOnInit() {
-    this.novedadService.getAllUpdates().subscribe();
+  // ── Páginas visibles ──────────────────────────────────────────────
+  paginasVisibles = computed(() => {
+    const total  = this.totalPaginas();
+    const actual = this.paginaActual();
+    const pages: (number | '...')[] = [];
+    if (total <= 5) {
+      for (let i = 1; i <= total; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (actual > 3) pages.push('...');
+      for (let i = Math.max(2, actual - 1); i <= Math.min(total - 1, actual + 1); i++) pages.push(i);
+      if (actual < total - 2) pages.push('...');
+      pages.push(total);
+    }
+    return pages;
+  });
+
+  ngOnInit() { this.cargar('todos'); }
+
+  // ── Filtro → backend ──────────────────────────────────────────────
+  cargar(filtro: Filtro) {
+    this.filtroActivo.set(filtro);
+    const obs = filtro === 'todos'
+      ? this.novedadService.getAllUpdates()
+      : this.novedadService.getByEstado(filtro);
+    obs.subscribe();
   }
 
-  // ── Filtro ──────────────────────────────────────────────────────
-  setFiltro(estado: string) {
-    this.filtroEstado.set(estado);
+  // ── Paginación ────────────────────────────────────────────────────
+  irAPagina(p: number | '...') {
+    if (typeof p === 'number') this.novedadService.paginaActual.set(p);
+  }
+  paginaAnterior() {
+    if (this.paginaActual() > 1) this.novedadService.paginaActual.update(p => p - 1);
+  }
+  paginaSiguiente() {
+    if (this.paginaActual() < this.totalPaginas()) this.novedadService.paginaActual.update(p => p + 1);
   }
 
-  // ── Modal ───────────────────────────────────────────────────────
+  // ── Modal ─────────────────────────────────────────────────────────
   abrirModal(novedad: respuestaNovedad) {
-    this.novedadActual.set(novedad);
+    this.novedadModal.set(novedad);
     this.notaInput.set(novedad.notaCoordinador ?? '');
-    this.mensajeExito.set(null);
+    this.mensajeModal.set(null);
   }
-
   cerrarModal() {
-    this.novedadActual.set(null);
-    this.notaInput.set('');
+    this.novedadModal.set(null);
+    this.mensajeModal.set(null);
   }
 
-  // ── Gestionar (aprobar / rechazar) ──────────────────────────────
+  // ── Gestionar ─────────────────────────────────────────────────────
   gestionar(estado: 'aprobado' | 'rechazado') {
-    const novedad = this.novedadActual();
+    const novedad = this.novedadModal();
     if (!novedad) return;
-
     this.guardando.set(true);
 
     this.novedadService.updateNovedad(novedad._id, {
-      notaCoordinador: this.notaInput() || undefined,
+      estado,
+      notaCoordinador: this.notaInput().trim() || undefined,
     }).subscribe({
-      next: () => {
-        // Actualiza el item en el signal local sin recargar todo
+      next: (actualizada) => {
         this.novedadService.updates.update(lista =>
-          lista.map(n => n._id === novedad._id
-            ? { ...n, estado, notaCoordinador: this.notaInput() || undefined }
-            : n
-          )
+          lista.map(n => n._id === actualizada._id ? actualizada : n)
         );
-        this.mensajeExito.set(
-          estado === 'aprobado' ? 'Novedad aprobada.' : 'Novedad rechazada.'
-        );
+        this.mensajeModal.set(estado === 'aprobado' ? '✓ Aprobada.' : '✓ Rechazada.');
         this.guardando.set(false);
-        setTimeout(() => this.cerrarModal(), 1200);
+        setTimeout(() => this.cerrarModal(), 1000);
       },
       error: () => {
+        this.mensajeModal.set('Error al actualizar. Intenta de nuevo.');
         this.guardando.set(false);
       },
     });
