@@ -16,9 +16,14 @@ import { Q10AsistenciaComponent } from './pages/q10-asistencia/q10-asistencia.co
 import { InasistenciaQ10Component } from './shared/components/inasistencia-q10/inasistencia-q10.component';
 import { AnalisisAiComponent } from './features/admin/analisis-ai/analisis-ai.component';
 import { ReporteNovedadesComponent } from './features/profesor/reporte-novedades/reporte-novedades.component';
+import { NovedadesComponent } from './features/admin/novedades/novedades.component';
 
 
 export const routes: Routes = [
+   {
+      path: "novedades",
+      component: NovedadesComponent
+   },
   
    {
       path: "inasistencia",
@@ -103,7 +108,6 @@ export const routes: Routes = [
           {path: 'reporte-novedades',
          component: ReporteNovedadesComponent},
       ]
-      
-     
+
    }
 ];
