@@ -29,7 +29,7 @@ export class Q10PoblacionService {
     this.error.set(null);
     let limit = 2000;
     
-    return this.http.get<PoblacionQ10[]>(`${this.endpoint}&Limit=${limit}&Offset=${1}`, {
+    return this.http.get<PoblacionQ10[]>(`${this.endpoint}&Limit=${limit}&Offset=${offset}`, {
       headers: {
         'Api-key': this.q10ApiKey,
         'Cache-Control': 'no-cache'

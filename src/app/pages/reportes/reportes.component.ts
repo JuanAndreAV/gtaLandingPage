@@ -1,6 +1,7 @@
 import { Component, inject, computed, signal, OnInit} from '@angular/core';
 import { Q10Service } from '../../services/q10.service';
 import { TableComponent } from '../../shared/components/table/table.component';
+import { Q10PoblacionService } from '../../services/academico/q10-poblacion.service';
 
 
 
@@ -33,6 +34,7 @@ interface AnalisisPrograma {
 })
 export class ReportesComponent implements OnInit {
   public q10Service = inject(Q10Service);
+  public q10PoblacionService = inject(Q10PoblacionService);
   
   public fechaGeneracion = new Date();
   public periodoActual = '2026-1';
@@ -40,6 +42,7 @@ export class ReportesComponent implements OnInit {
     this.q10Service.obtenerCursos().subscribe(() => {
       //this.q10Service.estudiantes()
       this.q10Service.obtenerTodosLosEstudiantesPeriodo(3).subscribe();
+      this.q10PoblacionService.obtenerPoblacionQ10(0).subscribe();
     });
   }
 public theadItems = signal<any[]>(['Programa','Cursos','Inscritos', 'matriculados','Cupo total','Ocupacion','Docentes']);
@@ -48,6 +51,7 @@ public theadItems = signal<any[]>(['Programa','Cursos','Inscritos', 'matriculado
   public kpis = computed((): MetricaKPI[] => {
     const cursos = this.q10Service.statsAdmin()
     const estudiantes = this.q10Service.todosLosEstudiantes();
+    const poblacion = this.q10PoblacionService.poblacionQ10();
 
     
     
@@ -68,7 +72,16 @@ public theadItems = signal<any[]>(['Programa','Cursos','Inscritos', 'matriculado
         color: 'from-blue-500 to-indigo-600'
       },
       {
-        titulo: 'Total Matriculados',
+        titulo: 'Total Estudiantes en Población Q10',
+        valor: poblacion.length,
+        subtitulo: `registrados en el periodo ${this.periodoActual}`,
+        tendencia: poblacion.length > 1000 ? 'up' : 'neutral',
+        porcentajeCambio: Math.round((poblacion.length / (cupoTotal || 1)) * 100),
+        icono: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z',
+        color: 'from-green-600 to-teal-800'
+      },
+      {
+        titulo: 'Total Matriculas registradas',
         valor: estudiantes.length,
         subtitulo: `en ${cursos.totalCursos} cursos`,
         tendencia: estudiantes.length > 1000 ? 'up' : 'neutral',
@@ -77,9 +90,9 @@ public theadItems = signal<any[]>(['Programa','Cursos','Inscritos', 'matriculado
         color: 'from-green-500 to-teal-600'
       },
       {
-        titulo: 'Cursos Activos',
+        titulo: 'Cursos Ofrecidos',
         valor: cursos.totalCursos,
-        subtitulo: `${this.q10Service.cursos().filter(c => c.Estado === 'Abierto').length} activos`,
+        subtitulo: `${this.top10CursosDemandados().length} activos`, //`${this.q10Service.cursos().filter(c => c.Estado === 'Abierto').length} activos`,
         //tendencia: , //`${cursos.filter(c => c.Estado === 'Activo').length} activos`,
         icono: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253',
         color: 'from-purple-500 to-pink-600'
@@ -148,7 +161,7 @@ public theadItems = signal<any[]>(['Programa','Cursos','Inscritos', 'matriculado
     return this.q10Service.cursos()
       .filter(c => c.Cantidad_estudiantes_matriculados > 0)
       .sort((a, b) => b.Cantidad_estudiantes_matriculados - a.Cantidad_estudiantes_matriculados)
-      .slice(0, 10);
+      //.slice(0, 10);
   });
 
   // Cursos en riesgo de cierre (baja ocupación)
@@ -156,8 +169,8 @@ public theadItems = signal<any[]>(['Programa','Cursos','Inscritos', 'matriculado
   public cursosMenorOcupacion = computed(()=>{
     return this.q10Service.cursos()
     .filter(curso=> {
-      const ocupacion = curso.Cupo_maximo >= 0 ? (curso.Cantidad_estudiantes_matriculados / curso.Cupo_maximo) * 100 : 0;
-      return ocupacion < 30 //&& curso.Estado === 'Activo';
+      const ocupacion = curso.Cupo_maximo === 0 ? 0 : (curso.Cantidad_estudiantes_matriculados / curso.Cupo_maximo) * 100;
+      return ocupacion === 0 //&& curso.Estado === 'Activo';
     })
     .sort((a, b) => a.Cantidad_estudiantes_matriculados - b.Cantidad_estudiantes_matriculados)
     //.slice(0, 10);

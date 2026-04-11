@@ -21,6 +21,10 @@ import { NovedadesComponent } from './features/admin/novedades/novedades.compone
 
 export const routes: Routes = [
    {
+      path: "novedades-profesor",
+      component: ReporteNovedadesComponent
+   },
+   {
       path: "novedades",
       component: NovedadesComponent
    },
