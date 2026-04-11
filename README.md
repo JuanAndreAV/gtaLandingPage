@@ -12,6 +12,14 @@ Plataforma web integral de gestión académica y administrativa para la Casa de 
 
 **Aplicación Desplegada:** [https://giaradotaescultura.web.app](https://giaradotaescultura.web.app)
 
+### 🔑 Credenciales de Prueba
+Para probar la aplicación sin necesidad de crear una cuenta:
+
+Usuario: [admin@admin.com]
+Contraseña: [123456]
+
+ **Nota**: Estas credenciales son solo para demostración y tienen permisos limitados.
+
 ## 📋 Descripción
 
 Sistema completo que centraliza y automatiza procesos administrativos y académicos de la Casa de la Cultura Pedrito Ruiz. Integra datos de múltiples fuentes, proporciona análisis inteligentes con IA y facilita la gestión administrativa para coordinadores y personal docente.
@@ -120,34 +128,7 @@ VALUES ('Administrador', 'admin@admin.com', '$2a$10$8.UnVuG9HHgffUDAlk8qfOuVGkqR
 ## 📦 Estructura del Proyecto
 
 ### Frontend (Angular)
-```
-# 🎨 Sistema de Gestión Académica - Casa de la Cultura Pedrito Ruiz
 
-Plataforma web integral de gestión académica y administrativa para la Casa de la Cultura de Girardota, Antioquia. Sistema desarrollado para automatizar reportes, gestionar novedades docentes y analizar datos académicos mediante inteligencia artificial.
-
-[![Deploy](https://img.shields.io/badge/deploy-firebase-orange)](https://giaradotaescultura.web.app)
-[![Angular](https://img.shields.io/badge/Angular-19.2.12-red)](https://angular.io)
-[![NestJS](https://img.shields.io/badge/NestJS-Latest-ea2845)](https://nestjs.com)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-
-## 🌐 Demo en Vivo
-
-**Aplicación Desplegada:** [https://giaradotaescultura.web.app](https://giaradotaescultura.web.app)
-
-### 🔑 Credenciales de Prueba
-
-Para probar la aplicación sin necesidad de crear una cuenta:
-
-```
-Usuario: [USUARIO_DEMO]
-Contraseña: [CONTRASEÑA_DEMO]
-```
-
-> **Nota**: Estas credenciales son solo para demostración y tienen permisos limitados.
-
-## 📋 Descripción
-
-Sistema completo que centraliza y automatiza procesos administrativos y académicos de la Casa de la Cultura Pedrito Ruiz. Integra datos de múltiples fuentes, proporciona análisis inteligentes con IA y facilita la gestión administrativa para coordinadores y personal docente.
 
 ## ✨ Características Principales
 
@@ -344,12 +325,11 @@ npm install
 Crear `src/environments/environment.ts`:
 ```typescript
 export const environment = {
-  production: false,
-  apiSupabaseUrl: 'https://tu-api-supabase-url.com',
-  apiNovedadesUrl: 'https://tu-api-novedades-url.com',
-  apiQ10Url: 'https://api-q10-url.com',
-  supabaseKey: 'tu-supabase-anon-key',
-  geminiApiKey: 'tu-gemini-api-key'
+   baseUrl: 'https://nest-backend',
+    q10Api: 'https://',
+    q10ApiKey: '7',
+    culturaEventosApi: 'https://cultura-nest-api',
+    production: true
 };
 ```
 
@@ -614,8 +594,66 @@ const analyzeAttendance = async (courseId: string, dateRange: DateRange) => {
 };
 ```
 
+## 📖 API Endpoints
 
+### API Supabase
+```
+GET    /api/auth/login
+POST   /api/auth/register
+GET    /api/cursos
+GET    /api/estudiantes
+GET    /api/profesores
+GET    /api/reportes/poblacional
+GET    /api/reportes/cursos
+```
 
+### API Novedades
+```
+GET    /api/novedades
+POST   /api/novedades
+PUT    /api/novedades/:id/aprobar
+PUT    /api/novedades/:id/rechazar
+POST   /api/gemini/analyze-attendance
+```
+
+### API Spring Boot (Local)
+```
+POST   /api/auth/login          # Autenticación JWT
+POST   /api/auth/register       # Registro de usuario
+GET    /api/users/profile       # Perfil del usuario
+GET    /api/cursos              # Listar cursos
+GET    /api/estudiantes         # Listar estudiantes
+POST   /api/novedades           # Crear novedad
+```
+
+#### Ejemplo de Autenticación JWT (Spring Boot)
+
+**Login Request:**
+```json
+POST /api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "Admin123!"
+}
+```
+
+**Response:**
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "type": "Bearer",
+  "username": "admin",
+  "roles": ["ADMIN"]
+}
+```
+
+**Uso del Token:**
+```
+GET /api/users/profile
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
 
 ## 👥 Roles y Permisos
 
@@ -922,27 +960,9 @@ const analyzeAttendance = async (courseId: string, dateRange: DateRange) => {
 };
 ```
 
-## 📖 API Endpoints
 
-### API Supabase
-```
-GET    /api/auth/login
-POST   /api/auth/register
-GET    /api/cursos
-GET    /api/estudiantes
-GET    /api/profesores
-GET    /api/reportes/poblacional
-GET    /api/reportes/cursos
-```
 
-### API Novedades
-```
-GET    /api/novedades
-POST   /api/novedades
-PUT    /api/novedades/:id/aprobar
-PUT    /api/novedades/:id/rechazar
-POST   /api/gemini/analyze-attendance
-```
+
 
 ## 👥 Roles y Permisos
 
