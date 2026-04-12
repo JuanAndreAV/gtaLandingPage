@@ -15,7 +15,7 @@ Plataforma web integral de gestión académica y administrativa para la Casa de 
 ### 🔑 Credenciales de Prueba
 Para probar la aplicación sin necesidad de crear una cuenta:
 
-Usuario: [admin@admin.com]
+Usuario: [profesor@prueba.com]
 Contraseña: [123456]
 
  **Nota**: Estas credenciales son solo para demostración y tienen permisos limitados.
@@ -594,50 +594,7 @@ const analyzeAttendance = async (courseId: string, dateRange: DateRange) => {
 };
 ```
 
-## 📖 API Endpoints
 
-### API Supabase
-```
-GET    /api/auth/login
-POST   /api/auth/register
-GET    /api/cursos
-GET    /api/estudiantes
-GET    /api/profesores
-GET    /api/reportes/poblacional
-GET    /api/reportes/cursos
-```
-
-### API Novedades
-```
-GET    /api/novedades
-POST   /api/novedades
-PUT    /api/novedades/:id/aprobar
-PUT    /api/novedades/:id/rechazar
-POST   /api/gemini/analyze-attendance
-```
-
-### API Spring Boot (Local)
-```
-POST   /api/auth/login          # Autenticación JWT
-POST   /api/auth/register       # Registro de usuario
-GET    /api/users/profile       # Perfil del usuario
-GET    /api/cursos              # Listar cursos
-GET    /api/estudiantes         # Listar estudiantes
-POST   /api/novedades           # Crear novedad
-```
-
-#### Ejemplo de Autenticación JWT (Spring Boot)
-
-**Login Request:**
-```json
-POST /api/auth/login
-Content-Type: application/json
-
-{
-  "username": "admin",
-  "password": "Admin123!"
-}
-```
 
 **Response:**
 ```json

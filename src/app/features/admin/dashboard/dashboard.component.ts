@@ -14,11 +14,15 @@ import { NavigateOptionsComponent } from '../../shared/components/navigate-optio
 export class DashboardComponent   {
  
 rutas = signal<any[]>([
-    { nombre: 'Dashboard', ruta: '/admin/reports' },
+  { nombre: 'Analisis-AI', ruta: '/admin/analisis-ai' },
+  { nombre: 'Novedades-profesores', ruta: '/admin/novedades' },
+  { nombre: 'Dashboard', ruta: '/admin/reports' },
+  { nombre: 'Inasistencias', ruta: '/inasistencia' },
+
     { nombre: 'Gestión de Cursos', ruta: '/admin/cursos' },
     { nombre: 'Gestión de Usuarios', ruta: '/admin/usuarios' },
-    { nombre: 'Inscripciones', ruta: '/admin/inscripciones' },  
-      { nombre: 'Analisis-AI', ruta: '/admin/analisis-ai' },
+    //{ nombre: 'Inscripciones', ruta: '/admin/inscripciones' },  
+      
   ]
   )
 

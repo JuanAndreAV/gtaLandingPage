@@ -24,10 +24,7 @@ export const routes: Routes = [
       path: "novedades-profesor",
       component: ReporteNovedadesComponent
    },
-   {
-      path: "novedades",
-      component: NovedadesComponent
-   },
+   
   
    {
       path: "inasistencia",
@@ -78,7 +75,7 @@ export const routes: Routes = [
       children: [
          {
               path: '',
-              redirectTo: 'reports',
+              redirectTo: 'novedades',
               pathMatch: 'full'
          },
          {
@@ -100,7 +97,11 @@ export const routes: Routes = [
             path: 'analisis-ai',
             component: AnalisisAiComponent
 
-         }
+         },
+         {
+      path: "novedades",
+      component: NovedadesComponent
+   },
 
       ] 
    },
@@ -109,7 +110,7 @@ export const routes: Routes = [
        component: AreaprofesorComponent,
       canActivate: [isAuthenticatedGuard],
       children: [
-          {path: 'reporte-novedades',
+          {path: 'novedades-profesor',
          component: ReporteNovedadesComponent},
       ]
 
