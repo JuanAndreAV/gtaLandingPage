@@ -14,7 +14,7 @@ export class AreaprofesorComponent {
 
   user = signal(this.authService.user());
   routes = signal([
-    { nombre: 'Reporte novedades', ruta: '/profesor/reporte-novedades' },
+    { nombre: 'Reporte novedades', ruta: '/profesor/novedades-profesor' },
     { nombre: 'Reportes de Asistencia', ruta: '/inasistencia' },
     
   ]);
