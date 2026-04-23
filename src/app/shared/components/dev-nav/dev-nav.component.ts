@@ -25,6 +25,8 @@ export class DevNavComponent {
     { path: '/reportes',    label: 'Reportes',     icon: '📊' },
     { path: '/estudiantes', label: 'Estudiantes',  icon: '🎓' },
     { path: '/asistencia',  label: 'Asistencia',   icon: '📋' },
+    {path: '/novedades-profesores', label: 'Novedades-Profesores',     icon: '📰' },
+    
   ];
 
   toggle() {

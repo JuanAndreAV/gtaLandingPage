@@ -7,7 +7,7 @@ import { inject } from "@angular/core";
 export function authInterceptor(req: HttpRequest<unknown>, next: HttpHandlerFn) {
   // Inject the current `AuthService` and use it to get an authentication token:
   const authToken = inject(AuthService).token() || localStorage.getItem('token');
-  console.log(authToken);
+  //console.log(authToken);
 
   if (!authToken) {
     return next(req);

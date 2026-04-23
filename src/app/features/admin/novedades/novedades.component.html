@@ -3,8 +3,8 @@
 
     <!-- Encabezado -->
     <div class="mb-6">
-      <h1 class="text-2xl font-semibold text-gray-900">Panel de novedades</h1>
-      <p class="text-sm text-gray-500 mt-0.5">Gestiona las solicitudes de los docentes</p>
+      <h1 class="text-2xl font-semibold text-gray-900">{{ title() }}</h1>
+      <p class="text-sm text-gray-500 mt-0.5">{{ subtitle() }}</p>
     </div>
 
     <!-- Contadores -->
@@ -229,13 +229,14 @@
               <span class="text-gray-700">{{ novedadModal()!.fechaFinIncapacidad | date:'d MMM yyyy' }}</span>
             </div>
           }
-
-          @if (novedadModal()!.notaCoordinador) {
-            <div class="flex gap-3">
-              <span class="text-gray-400 w-32 flex-shrink-0">Nota previa</span>
-              <span class="text-gray-700 italic">{{ novedadModal()!.notaCoordinador }}</span>
-            </div>
-          }
+          
+            @if (novedadModal()!.notaCoordinador) {
+              <div class="flex gap-3">
+                <span class="text-gray-400 w-32 flex-shrink-0">Nota previa</span>
+                <span class="text-gray-700 italic">{{ novedadModal()!.notaCoordinador }}</span>
+              </div>
+            }
+          
 
           <div class="flex gap-3">
             <span class="text-gray-400 w-32 flex-shrink-0">Registrado</span>
@@ -247,7 +248,8 @@
         <hr class="border-gray-100 mb-4">
 
         <!-- Solo pendientes muestran acciones -->
-        @if (novedadModal()!.estado === 'pendiente') {
+
+        @if (novedadModal()!.estado === 'pendiente' && isAdmin()) {
 
           <div class="mb-4">
             <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5">

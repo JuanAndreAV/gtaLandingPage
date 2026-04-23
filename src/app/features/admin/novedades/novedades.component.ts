@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { Component, inject, OnInit, signal, computed, input } from '@angular/core';
 import { NovedadService } from '../../../services/novedad.service';
 import { respuestaNovedad } from '../../../models/novedad';
 import { DatePipe } from '@angular/common';
@@ -13,6 +13,10 @@ type Filtro = 'todos' | 'pendiente' | 'aprobado' | 'rechazado';
 export class NovedadesComponent implements OnInit {
 
   novedadService = inject(NovedadService);
+
+  title = input<string>("Panel de novedades");
+  subtitle = input<string>("Gestiona las solicitudes de los docentes");
+  isAdmin = input<boolean>(true);
 
   filtroActivo  = signal<Filtro>('todos');
   novedadModal  = signal<respuestaNovedad | null>(null);

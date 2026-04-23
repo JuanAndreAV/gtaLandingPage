@@ -15,7 +15,7 @@ export class ReporteNovedadesComponent {
   authService = inject(AuthService);
   novedadService = inject(NovedadService);
 
-   enviado  = signal(false);
+  enviado  = signal(false);
   cargando = signal(false);
   error    = signal<string | null>(null);
   tipo = signal<'cambio_horario' | 'incapacidad'>('cambio_horario');

@@ -17,12 +17,18 @@ import { InasistenciaQ10Component } from './shared/components/inasistencia-q10/i
 import { AnalisisAiComponent } from './features/admin/analisis-ai/analisis-ai.component';
 import { ReporteNovedadesComponent } from './features/profesor/reporte-novedades/reporte-novedades.component';
 import { NovedadesComponent } from './features/admin/novedades/novedades.component';
+import { TeacherNewsComponent } from './pages/teacher-news/teacher-news.component';
 
 
 export const routes: Routes = [
    {
-      path: "novedades-profesor",
+      path: "registro-novedades",
       component: ReporteNovedadesComponent
+   },
+   {
+      path: 'novedades-profesores',
+      component: TeacherNewsComponent
+
    },
    
   
