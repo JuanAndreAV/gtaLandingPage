@@ -3,7 +3,7 @@ import { NovedadService } from '../../../services/novedad.service';
 import { respuestaNovedad } from '../../../models/novedad';
 import { DatePipe } from '@angular/common';
 
-type Filtro = 'todos' | 'pendiente' | 'aprobado' | 'rechazado';
+type Filtro = 'hoy' | 'todos' | 'pendiente' | 'aprobado' | 'rechazado';
 
 @Component({
   selector: 'app-novedades',
@@ -25,6 +25,7 @@ export class NovedadesComponent implements OnInit {
   mensajeModal  = signal<string | null>(null);
 
   readonly filtros: { val: Filtro; label: string }[] = [
+    { val: 'hoy',       label: 'Hoy' },
     { val: 'todos',     label: 'Todas' },
     { val: 'pendiente', label: 'Pendientes' },
     { val: 'aprobado',  label: 'Aprobadas' },
@@ -67,7 +68,7 @@ export class NovedadesComponent implements OnInit {
     return pages;
   });
 
-  ngOnInit() { this.cargar('todos'); }
+  ngOnInit() { this.cargar('hoy'); }
 
   // ── Filtro → backend ──────────────────────────────────────────────
   cargar(filtro: Filtro) {

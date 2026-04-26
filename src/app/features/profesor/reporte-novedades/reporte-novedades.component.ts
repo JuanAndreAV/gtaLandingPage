@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, input, signal } from '@angular/core';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../auth/services/auth.service';
 import { Novedad } from '../../../models/novedad';
@@ -19,7 +19,7 @@ export class ReporteNovedadesComponent {
   cargando = signal(false);
   error    = signal<string | null>(null);
   tipo = signal<'cambio_horario' | 'incapacidad'>('cambio_horario');
-
+  
   reporteForm = new FormGroup({
     nombreDocente: new FormControl<string>(this.authService.user()?.user_metadata.nombre || '', [Validators.required]),
     curso: new FormControl<string>('', [Validators.required]),
@@ -32,7 +32,7 @@ export class ReporteNovedadesComponent {
   })
 enviarReporte() {
   if (this.reporteForm.invalid) {
-    this.reporteForm.markAllAsTouched(); // Esto activa los mensajes de error rojos en el HTML
+    this.reporteForm.markAllAsTouched(); //  activa los mensajes de error rojos en el HTML
     this.error.set('Por favor, completa todos los campos obligatorios.');
     return;
   }

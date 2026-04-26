@@ -4,6 +4,7 @@ import { environment } from '../../environments/environment';
 import { Novedad, respuestaNovedad } from '../models/novedad';
 import { catchError, finalize, Observable, tap, throwError } from 'rxjs';
 
+
 @Injectable({ providedIn: 'root' })
 export class NovedadService {
 
@@ -27,8 +28,11 @@ export class NovedadService {
     this.error.set(null);
     this.updates.set([]);
     this.paginaActual.set(1);
+    const url = `${this.apiUrl}/cambio-horario`;
 
-    return this.http.get<respuestaNovedad[]>(`${this.apiUrl}/cambio-horario`).pipe(
+    
+
+    return this.http.get<respuestaNovedad[]>(url).pipe(
       tap(data => {
         this.updates.set(data);
         this.totalPaginas.set(Math.ceil(data.length / this.porPagina));
@@ -54,7 +58,8 @@ export class NovedadService {
         this.totalPaginas.set(Math.ceil(data.length / this.porPagina));
       }),
       catchError(err => {
-        this.error.set('Error al cargar las novedades.');
+        const { message } = err.error ;
+        this.error.set( message ? `${message}` : 'Error al cargar las novedades por estado.');
         return throwError(() => err);
       }),
       finalize(() => this.isLoading.set(false))

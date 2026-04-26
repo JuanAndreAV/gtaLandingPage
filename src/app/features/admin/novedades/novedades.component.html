@@ -50,15 +50,16 @@
 
     <!-- Error -->
     @if (novedadService.error() && !novedadService.isLoading()) {
-      <div class="px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600 mb-4">
-        {{ novedadService.error() }}
-      </div>
+       <div class="text-center py-20 text-gray-400">
+          <div class="text-4xl mb-3">📭</div>
+          <p class="text-sm">{{ novedadService.error() }}</p>
+        </div>
     }
 
     <!-- Lista -->
     @if (!novedadService.isLoading() && !novedadService.error()) {
 
-      @if (novedadesPagina().length === 0) {
+      @if (novedadesPagina().length === 0 ) {
         <div class="text-center py-20 text-gray-400">
           <div class="text-4xl mb-3">📭</div>
           <p class="text-sm">No hay novedades en esta categoría.</p>
