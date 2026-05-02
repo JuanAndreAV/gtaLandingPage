@@ -18,6 +18,7 @@ import { AnalisisAiComponent } from './features/admin/analisis-ai/analisis-ai.co
 import { ReporteNovedadesComponent } from './features/profesor/reporte-novedades/reporte-novedades.component';
 import { NovedadesComponent } from './features/admin/novedades/novedades.component';
 import { TeacherNewsComponent } from './pages/teacher-news/teacher-news.component';
+import { ObservatorioComponent } from './pages/observatorio/observatorio.component';
 
 
 export const routes: Routes = [
@@ -52,6 +53,11 @@ export const routes: Routes = [
    {
       path: "asistencia",
       component: Q10AsistenciaComponent,
+
+   },
+   {
+      path: "observatorio",
+      component: ObservatorioComponent
 
    },
   
