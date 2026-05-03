@@ -1,11 +1,7 @@
 <div class="min-h-screen bg-gray-950 text-slate-200 p-8 font-sans">
 
   <!-- Header -->
-  <div class="mb-8 border-b border-gray-800 pb-6">
-    <span class="text-xs font-bold tracking-widest text-sky-400 bg-sky-400/10 border border-sky-400/20 rounded px-2 py-1">SEMESTRE 2026-1</span>
-    <h1 class="text-3xl font-extrabold mt-3 mb-1 text-white">Análisis de Población Estudiantil</h1>
-    <p class="text-slate-500 text-sm">Total de registros: <span class="text-sky-400 font-bold">{{ poblacionQ10.poblacionQ10().length }}</span></p>
-  </div>
+  <app-title title="Q10 - Análisis de Población Estudiantil"  subtitle="Total de registros: " span="{{ poblacionQ10.poblacionQ10().length }}" titleClass="text-white"></app-title>
 
   @if (poblacionQ10.isLoading()) {
     <div class="flex flex-col items-center justify-center py-32 gap-4 text-slate-500">

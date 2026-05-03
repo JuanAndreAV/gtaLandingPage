@@ -2,12 +2,13 @@ import { Component, inject, OnInit, signal, computed, input } from '@angular/cor
 import { NovedadService } from '../../../services/novedad.service';
 import { respuestaNovedad } from '../../../models/novedad';
 import { DatePipe } from '@angular/common';
+import { TitleComponent } from '../../../shared/components/title/title.component';
 
 type Filtro = 'hoy' | 'todos' | 'pendiente' | 'aprobado' | 'rechazado';
 
 @Component({
   selector: 'app-novedades',
-  imports: [DatePipe],
+  imports: [DatePipe, TitleComponent],
   templateUrl: './novedades.component.html',
 })
 export class NovedadesComponent implements OnInit {

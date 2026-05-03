@@ -4,10 +4,11 @@ import { Q10PoblacionService } from '../../services/academico/q10-poblacion.serv
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { PoblacionQ10, Pregunta } from '../../models/poblacion-q10';
+import { TitleComponent } from '../../shared/components/title/title.component';
 
 @Component({
   selector: 'app-q10-poblacion',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TitleComponent],
   templateUrl: './q10-poblacion.component.html',
   styleUrl: './q10-poblacion.component.css',
 })

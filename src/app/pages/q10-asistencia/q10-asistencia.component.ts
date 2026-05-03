@@ -12,6 +12,7 @@ import { Q10AsistenciaService } from '../../services/academico/q10-asistencia.se
 import { CursoQ10 } from '../../models/curso-q10';
 import { AsistenciaQ10, Estudiante } from '../../models/asistencia-q10';
 import { InasistenciaQ10Component } from '../../shared/components/inasistencia-q10/inasistencia-q10.component';
+import { TitleComponent } from '../../shared/components/title/title.component';
 
 // ── Interfaces locales para vistas computadas ──────────────────────────────
 
@@ -40,7 +41,7 @@ export interface ResumenCurso {
 
 @Component({
   selector: 'app-q10-asistencia',
-  imports: [CommonModule, FormsModule, DecimalPipe, InasistenciaQ10Component],
+  imports: [CommonModule, FormsModule, TitleComponent, DecimalPipe, InasistenciaQ10Component],
   templateUrl: './q10-asistencia.component.html',
   styleUrl: './q10-asistencia.component.css',
 })

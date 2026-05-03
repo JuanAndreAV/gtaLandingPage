@@ -1,6 +1,7 @@
 import { Component, signal, computed, inject, OnInit } from '@angular/core';
 import { Q10Service } from '../../services/q10.service';
 import { EstudianteQ10 } from '../../models/estudiante-q10';
+import { TitleComponent } from '../../shared/components/title/title.component';
 
 interface AlertaCupo {
   curso: any;
@@ -33,7 +34,7 @@ interface EstudianteDuplicado {
 @Component({
   selector: 'app-q10-consulta-docente',
   standalone: true, // Asegúrate de si es standalone o no según tu proyecto
-  imports: [], 
+  imports: [TitleComponent], 
   templateUrl: './q10-consulta-docente.component.html',
   styleUrl: './q10-consulta-docente.component.css',
 })

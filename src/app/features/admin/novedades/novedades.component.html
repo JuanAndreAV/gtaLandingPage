@@ -1,11 +1,11 @@
-<div class="min-h-screen bg-gray-50">
-  <div class="max-w-3xl mx-auto px-4 py-6">
+<div class="min-h-screen bg-slate-50 p-4 md:p-8">
+
+  <!-- ── Encabezado ── -->
+  <div class="mb-8">
 
     <!-- Encabezado -->
-    <div class="mb-6">
-      <h1 class="text-2xl font-semibold text-gray-900">{{ title() }}</h1>
-      <p class="text-sm text-gray-500 mt-0.5">{{ subtitle() }}</p>
-    </div>
+     <app-title [title]="title()" [subtitle]="subtitle()" span="" titleClass="text-gray-900"></app-title>
+    
 
     <!-- Contadores -->
     <div class="grid grid-cols-3 gap-3 mb-6">

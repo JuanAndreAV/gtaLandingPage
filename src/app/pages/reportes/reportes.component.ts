@@ -2,6 +2,7 @@ import { Component, inject, computed, signal, OnInit} from '@angular/core';
 import { Q10Service } from '../../services/q10.service';
 import { TableComponent } from '../../shared/components/table/table.component';
 import { Q10PoblacionService } from '../../services/academico/q10-poblacion.service';
+import { TitleComponent } from '../../shared/components/title/title.component';
 
 
 
@@ -28,7 +29,7 @@ interface AnalisisPrograma {
 
 @Component({
   selector: 'app-reportes',
-  imports: [TableComponent],
+  imports: [TableComponent, TitleComponent],
   templateUrl: './reportes.component.html',
   styleUrl: './reportes.component.css',
 })

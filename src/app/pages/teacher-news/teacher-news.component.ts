@@ -13,8 +13,8 @@ type Filtro = 'todos' | 'pendiente' | 'aprobado' | 'rechazado';
   styleUrl: './teacher-news.component.css',
 })
 export class TeacherNewsComponent  {
-title = signal<string>("Novedades de profesores (en desarrollo)");
-subtitle = signal<string>("novedades de prueba");
+title = signal<string>("Novedades de profesores");
+subtitle = signal<string>("Encuentra aquí las últimas novedades reportadas por los docentes, como cambios de horario o incapacidades. Mantente informado sobre las actualizaciones que pueden afectar tus cursos y horarios.");
 readonly  isAdmin = signal<boolean>(false);
   
 
