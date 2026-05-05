@@ -1,5 +1,5 @@
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import { provideMarkdown } from 'ngx-markdown';
 
@@ -11,7 +11,7 @@ import { logginInterceptor } from './shared/interceptors/loggin.interceptor';
 import { authInterceptor } from './auth/interceptor/auth.interceptor';
 
 export const appConfig: ApplicationConfig = {
-  providers: [provideZoneChangeDetection({ eventCoalescing: true }), provideRouter(routes), provideHttpClient(withJsonpSupport(),
+  providers: [provideZoneChangeDetection({ eventCoalescing: true }), provideRouter(routes, withInMemoryScrolling({ scrollPositionRestoration: 'enabled' })), provideHttpClient(withJsonpSupport(),
   withInterceptors([logginInterceptor, authInterceptor])
   ),
   provideCharts(withDefaultRegisterables()), provideMarkdown()
