@@ -8,6 +8,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { Q10AsistenciaService } from '../../../services/academico/q10-asistencia.service';
 import { InasistenciaQ10, Curso, Inasistencia } from '../../../models/inasistencia-q10';
+import { SpinnerComponent } from '../spinner/spinner.component';
 
 // ── Interfaces para vistas computadas ────────────────────────────────────
 
@@ -49,7 +50,7 @@ interface InasistenciaDia {
 
 @Component({
   selector: 'app-inasistencia-q10',
-  imports: [CommonModule, ReactiveFormsModule, DecimalPipe],
+  imports: [CommonModule, ReactiveFormsModule, DecimalPipe, SpinnerComponent],
   templateUrl: './inasistencia-q10.component.html',
   styleUrl: './inasistencia-q10.component.css',
 })

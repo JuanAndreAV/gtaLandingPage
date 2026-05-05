@@ -2,10 +2,11 @@ import { Component, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
+import { SpinnerComponent } from '../../../shared/components/spinner/spinner.component';
 
 @Component({
   selector: 'app-login-page',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, SpinnerComponent],
   templateUrl: './login-page.component.html',
   styleUrl: './login-page.component.css',
   standalone: true
@@ -14,6 +15,7 @@ export class LoginPageComponent {
   private router = inject(Router);
   fb = inject(FormBuilder);
   hasError = signal(false);
+  isLoading = signal(false);
   isPosting = signal(false);
   errorMessage= signal('Por favor verifica la información ingresada');
 
@@ -25,10 +27,12 @@ export class LoginPageComponent {
   });
 
   onSubmit(): void {
+    this.isLoading.set(true);
     if (this.loginForm.invalid) {
       this.hasError.set(true);
       setTimeout(() => {
         this.hasError.set(false);
+        this.isLoading.set(false);
       }, 3000);
       return;
     }
@@ -37,10 +41,12 @@ export class LoginPageComponent {
       //console.log(isAuthenticated);
       if (isAuthenticated) {
        // console.log(this.authService.user());
+       this.isLoading.set(false);
           this.router.navigateByUrl('/admin');
           return;
       } else {
         this.hasError.set(true);
+        this.isLoading.set(false);
       }
     })
   }

@@ -5,10 +5,11 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { PoblacionQ10, Pregunta } from '../../models/poblacion-q10';
 import { TitleComponent } from '../../shared/components/title/title.component';
+import { SpinnerComponent } from '../../shared/components/spinner/spinner.component';
 
 @Component({
   selector: 'app-q10-poblacion',
-  imports: [CommonModule, FormsModule, TitleComponent],
+  imports: [CommonModule, FormsModule, TitleComponent, SpinnerComponent],
   templateUrl: './q10-poblacion.component.html',
   styleUrl: './q10-poblacion.component.css',
 })

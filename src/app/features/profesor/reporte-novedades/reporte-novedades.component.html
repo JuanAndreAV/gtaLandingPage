@@ -21,16 +21,12 @@
 
 <!-- Estado: formulario -->
 @if (!enviado()) {
-  <div class="max-w-xl mx-auto py-6 px-4">
+  <div class="min-h-screen bg-slate-50 p-4 md:p-8">
 
     <!-- Encabezado -->
-    <div class="mb-6">
-      <h1 class="text-2xl font-semibold text-gray-900">Registrar novedad</h1>
-      <p class="text-sm text-gray-500 mt-1">
-        Informa al coordinador sobre un cambio de horario o una incapacidad.
-      </p>
-    </div>
-
+      <app-title title="Registrar novedad" subtitle="Informa al coordinador sobre un cambio de horario o una incapacidad." span="" titleClass="text-gray-900"></app-title>
+      
+<div class="max-w-2xl mx-auto mt-6 p-6 bg-white rounded-xl shadow-md">
     <form [formGroup]="reporteForm" >
 
       <!-- ── Tipo de novedad ─────────────────────────────── -->
@@ -108,7 +104,7 @@
 
         <!-- ── Campos cambio de horario ────────────────── -->
         @if (tipo() === 'cambio_horario') {
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1  gap-3">
             <div>
               <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5">
                 Fecha y hora original <span class="text-red-400">*</span>
@@ -229,5 +225,6 @@
       </button>
 
     </form>
+  </div>  
   </div>
 }

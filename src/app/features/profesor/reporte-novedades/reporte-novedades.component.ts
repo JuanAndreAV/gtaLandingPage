@@ -3,10 +3,11 @@ import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } 
 import { AuthService } from '../../../auth/services/auth.service';
 import { Novedad } from '../../../models/novedad';
 import { NovedadService } from '../../../services/novedad.service';
+import { TitleComponent } from '../../../shared/components/title/title.component';
 
 @Component({
   selector: 'app-reporte-novedades',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, TitleComponent],
   templateUrl: './reporte-novedades.component.html',
  
 })

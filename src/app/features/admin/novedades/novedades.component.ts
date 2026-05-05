@@ -3,17 +3,20 @@ import { NovedadService } from '../../../services/novedad.service';
 import { respuestaNovedad } from '../../../models/novedad';
 import { DatePipe } from '@angular/common';
 import { TitleComponent } from '../../../shared/components/title/title.component';
+import { Router, RouterLink, RouterModule } from '@angular/router';
+import { SpinnerComponent } from '../../../shared/components/spinner/spinner.component';
 
 type Filtro = 'hoy' | 'todos' | 'pendiente' | 'aprobado' | 'rechazado';
 
 @Component({
   selector: 'app-novedades',
-  imports: [DatePipe, TitleComponent],
+  imports: [DatePipe, TitleComponent, RouterLink, SpinnerComponent],
   templateUrl: './novedades.component.html',
 })
 export class NovedadesComponent implements OnInit {
 
   novedadService = inject(NovedadService);
+  router = inject(Router);
 
   title = input<string>("Panel de novedades");
   subtitle = input<string>("Gestiona las solicitudes de los docentes");
