@@ -6,24 +6,75 @@ import { CommonModule } from '@angular/common';
 import { PoblacionQ10, Pregunta } from '../../models/poblacion-q10';
 import { TitleComponent } from '../../shared/components/title/title.component';
 import { SpinnerComponent } from '../../shared/components/spinner/spinner.component';
+import { FilterComponent } from '../../shared/components/filter/filter.component';
 
 @Component({
   selector: 'app-q10-poblacion',
-  imports: [CommonModule, FormsModule, TitleComponent, SpinnerComponent],
+  imports: [CommonModule, FormsModule, TitleComponent, SpinnerComponent, FilterComponent],
   templateUrl: './q10-poblacion.component.html',
   styleUrl: './q10-poblacion.component.css',
 })
 export class Q10PoblacionComponent implements OnInit {
   public poblacionQ10 = inject(Q10PoblacionService);
+  public grupoEdadSeleccionado = signal<string>('');
   public filtroProgramas = '';
+  //public estudiantesSeleccionados = signal<PoblacionQ10[]>([]);
 
   ngOnInit() {
     this.poblacionQ10.obtenerPoblacionQ10(0).subscribe();
+   
   }
 
   private get estudiantes(): PoblacionQ10[] {
     return this.poblacionQ10.poblacionQ10() ?? [];
   }
+    rangosEdad = [
+    { val: '0-5', label: '0-5 años' },
+    { val: '6-13', label: '6-13 años' },
+    { val: '14-28', label: '14-28 años' },
+    { val: '29-59', label: '29-59 años' },
+    { val: '>60', label: '60+ años' },
+    { val: '', label: 'Todos' },
+    ]
+
+
+   estudiantesActivos = computed(() => {
+  const rango = this.grupoEdadSeleccionado();
+  if (!rango) return this.estudiantes;
+  return this.estudiantes.filter(e => {
+    if (e.Edad == null) return false;
+    if (rango === '0-5')   return e.Edad <= 5;
+    if (rango === '6-13')  return e.Edad >= 6  && e.Edad <= 13;
+    if (rango === '14-28') return e.Edad >= 14 && e.Edad <= 28;
+    if (rango === '29-59') return e.Edad >= 29 && e.Edad <= 59;
+    if (rango === '>60')   return e.Edad >= 60;
+    return true;
+  });
+});
+filtroEdad(item: { val: string }): void {
+  this.grupoEdadSeleccionado.set(item.val);
+}
+
+   /*estudiantesPorRangoEdad(rango?: string): PoblacionQ10[] {
+
+    const grupos: Record<string, PoblacionQ10[]> = {
+      '0-5': [],
+      '6-13': [],
+      '14-28': [],
+      '29-59': [],
+      '60+': []
+    };
+   
+    for (const e of this.estudiantes) {
+      if (e.Edad == null) continue;
+      if (e.Edad <= 5) grupos['0-5'].push(e);
+      else if (e.Edad <= 13) grupos['6-13'].push(e);
+      else if (e.Edad <= 28) grupos['14-28'].push(e);
+      else if (e.Edad <= 59) grupos['29-59'].push(e);
+      else grupos['60+'].push(e);
+    }
+    return rango ? grupos[rango] : this.estudiantes;
+  }*/
 
   // ── KPIs ─────────────────────────────────────────────────────────────────
 
@@ -44,7 +95,7 @@ export class Q10PoblacionComponent implements OnInit {
 
   private conteoGenero = computed(() => {
     const mapa: Record<string, number> = {};
-    for (const e of this.estudiantes) {
+    for (const e of this.estudiantesActivos() ) {
       const g = e.Genero ?? e.Codigo_genero ?? 'No especificado';
       mapa[g] = (mapa[g] ?? 0) + 1;
     }
@@ -76,12 +127,11 @@ export class Q10PoblacionComponent implements OnInit {
 
   gruposEdad = computed(() => {
     const grupos = [
-      { rango: '0 - 5',    min: 0,  max: 5,  color: '#818cf8', cantidad: 0 },
-      { rango: '6 – 11', min: 6, max: 11,  color: '#38bdf8', cantidad: 0  },
-      { rango: '12 – 17', min: 12, max: 17,  color: '#34d399', cantidad: 0  },
-      { rango: '18 – 28', min: 18, max: 28,  color: '#fbbf24', cantidad: 0  },
-      { rango: '29 – 59', min: 29, max: 59,  color: '#f97316', cantidad: 0  },
-      { rango: '> 60',    min: 60, max: 999, color: '#f472b6', cantidad: 0  },
+      { rango: '0-5',    min: 0,  max: 5,  color: '#818cf8', cantidad: 0 },
+      { rango: '6-13', min: 6, max: 13,  color: '#38bdf8', cantidad: 0  },
+      { rango: '14-28', min: 14, max: 28,  color: '#34d399', cantidad: 0  },
+      { rango: '29-59', min: 29, max: 59,  color: '#f97316', cantidad: 0  },
+      { rango: '>60',    min: 60, max: 999, color: '#f472b6', cantidad: 0  },
     ];
     for (const e of this.estudiantes) {
       if (e.Edad == null) continue;
@@ -97,7 +147,7 @@ export class Q10PoblacionComponent implements OnInit {
 
   programas = computed(() => {
     const mapa = new Map<string, { nombre: string; cantidad: number; nivel: string; sede: string; jornada: string }>();
-    for (const e of this.estudiantes) {
+    for (const e of this.estudiantesActivos()) {
       for (const m of e.Informacion_matricula ?? []) {
         const key = m.Codigo_programa;
         if (!mapa.has(key)) {
@@ -109,7 +159,7 @@ export class Q10PoblacionComponent implements OnInit {
     return [...mapa.values()].sort((a, b) => b.cantidad - a.cantidad);
   });
 
-  topProgramas = computed(() => this.programas().slice(0, 10));
+  topProgramas = computed(() => this.programas().slice(0, 15));
 
   programasFiltrados = computed(() => {
     const f = this.filtroProgramas.toLowerCase();
@@ -134,7 +184,7 @@ export class Q10PoblacionComponent implements OnInit {
 
   tiposIdentificacion = computed(() => {
     const mapa = new Map<string, { abreviatura: string; nombre: string; cantidad: number }>();
-    for (const e of this.estudiantes) {
+    for (const e of this.estudiantesActivos()) {
       const key = e.Codigo_tipo_identificacion;
       if (!mapa.has(key)) {
         mapa.set(key, { abreviatura: e.Abreviatura_tipo_identificacion, nombre: e.Nombre_tipo_identificacion, cantidad: 0 });
@@ -183,7 +233,7 @@ export class Q10PoblacionComponent implements OnInit {
 
   zonaResidencia = computed(() => {
     const mapa: Record<string, number> = {};
-    for (const e of this.estudiantes) {
+    for (const e of this.estudiantesActivos()) {
       const r = this.respuestaPregunta(e, 'zona de residencia') ?? 'No especificado';
       mapa[r] = (mapa[r] ?? 0) + 1;
     }
@@ -199,7 +249,7 @@ export class Q10PoblacionComponent implements OnInit {
 
   enfoquePoblacional = computed(() => {
     const mapa: Record<string, number> = {};
-    for (const e of this.estudiantes) {
+    for (const e of this.estudiantesActivos()) {
       const r = this.respuestaPregunta(e, 'enfoque poblacional') ?? 'No especificado';
       mapa[r] = (mapa[r] ?? 0) + 1;
     }

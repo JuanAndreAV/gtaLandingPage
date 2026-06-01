@@ -1,10 +1,15 @@
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable, signal } from '@angular/core';
+import { inject, Injectable, signal, computed } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { Novedad, respuestaNovedad } from '../models/novedad';
 import { catchError, finalize, Observable, tap, throwError } from 'rxjs';
 
-
+export interface MetricaDocente {
+  nombreDocente: string;
+  totalNovedades: number;
+  cambiosHorario: number;
+  incapacidades: number;
+}
 @Injectable({ providedIn: 'root' })
 export class NovedadService {
 
@@ -43,7 +48,13 @@ export class NovedadService {
       }),
       finalize(() => this.isLoading.set(false))
     );
-  }
+  };
+
+ // novedades estadisticas por mes
+ getMetricasMensuales(mes: number): Observable<MetricaDocente[]> {
+  const url = `${this.apiUrl}/cambio-horario/metricas?mes=${mes}`;
+  return this.http.get<MetricaDocente[]>(url);
+}
 
   // ── GET por estado ──────────────────────────────────────────────
   getByEstado(estado: string): Observable<respuestaNovedad[]> {

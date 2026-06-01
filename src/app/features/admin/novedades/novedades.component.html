@@ -30,20 +30,12 @@
     </div>
 
     <!-- Filtros → cada clic llama al backend -->
-     <div class="flex justify-center">
-    <div class="flex gap-2  mb-5 flex-wrap">
-      @for (f of filtros; track f.val) {
-        <button
-          (click)="cargar(f.val)"
-          [class]="filtroActivo() === f.val
-            ? 'px-4 py-1.5 rounded-full text-sm font-medium bg-gray-900 text-white transition-all'
-            : 'px-4 py-1.5 rounded-full text-sm font-medium bg-white border border-gray-200 text-gray-600 hover:border-gray-400 transition-all'"
-        >
-          {{ f.label }}
-        </button>
-      }
-    </div>
-  </div>
+   
+  <app-filter
+    [items]="filtros"
+    [activeClass]="filtroActivo()"
+    (selected)="cargar($event.val)"
+  ></app-filter>
 
     <!-- Cargando -->
     @if (novedadService.isLoading()) {
@@ -167,6 +159,81 @@
     }
   </div>
 </div>
+</div>  
+<!-- ── Métricas mensuales por docente ── -->
+@if (isAdmin()) {
+<div class="bg-gray-900 border border-gray-800  rounded-2xl p-6 lg:col-span-2 shadow-xl">
+  
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-gray-800">
+    <div>
+      <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Análisis de Novedades</h3>
+      <p class="text-xs text-slate-500 mt-1">Año en curso (2026)</p>
+    </div>
+    
+    <div class="flex items-center gap-2">
+      <label for="select-mes" class="text-xs font-semibold text-slate-400">Filtrar por Mes:</label>
+      <select 
+        id="select-mes"
+        (change)="getMetricas($any($event.target).value)"
+        
+        class="bg-gray-800 border border-gray-700 text-slate-200 text-xs rounded-lg focus:ring-violet-500 focus:border-violet-500 p-2 cursor-pointer outline-none">
+         <option value="">-- Selecciona el mes --</option>
+        @for (mes of meses; track mes.numero) {
+          <option [value]="mes.numero">{{ mes.nombre }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <div class="flex flex-col gap-4">
+    @for (nov of metricasDocentes(); track nov.nombreDocente; let i = $index) {
+      <div class="flex items-center gap-4 p-2 rounded-xl hover:bg-gray-850/50 transition-colors duration-200">
+        
+        <span class="text-xs font-bold text-slate-500 w-5 text-center">{{ i + 1 }}</span>
+        
+        <div class="w-56 flex flex-col min-w-0">
+          <span class="text-sm font-medium text-slate-200 truncate" [title]="nov.nombreDocente">
+            {{ nov.nombreDocente }}
+          </span>
+          <span class="text-[10px] text-slate-500 mt-0.5">
+            Horarios: {{ nov.cambiosHorario }} • Incap: {{ nov.incapacidades }}
+          </span>
+        </div>
+        
+        <div class="flex-1 bg-gray-800 rounded-full h-2.5 overflow-hidden shadow-inner">
+          <div 
+            class="h-full rounded-full bg-gradient-to-r from-violet-500 to-sky-400 transition-all duration-700 ease-out"
+            [style.width.%]="(nov.totalNovedades / maxNovedades()) * 100">
+          </div>
+        </div>
+        
+        <div class="w-12 text-right">
+          <span class="text-sm font-bold text-sky-400">
+            {{ nov.totalNovedades }}
+          </span>
+          <span class="text-[10px] block text-slate-500 -mt-1">Reg.</span>
+        </div>
+
+      </div>
+    } @empty {
+      <div class="text-center py-8 border border-dashed border-gray-800 rounded-xl">
+        @if(cargando()){
+          <div class="flex items-center justify-center gap-2 py-4 text-sm text-gray-400">
+            <app-spinner></app-spinner>
+            Cargando métricas...
+          </div>
+        }
+        @if(mensajeModal()){
+          <div class="mb-3 px-3 py-2 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-700">
+            {{ mensajeModal() }}
+          </div>
+        } 
+        <p class="text-sm text-slate-500 font-medium">No hay novedades registradas en este mes.</p>
+      </div>
+    }
+  </div>
+
+</div>}
 
 <!-- ══════════════════════════════════
      MODAL
@@ -284,16 +351,16 @@
 
             <button
               (click)="gestionar('rechazado')"
-              [disabled]="guardando()"
+              [disabled]="cargando()"
               class="flex-1 py-2.5 border border-red-300 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 transition-colors disabled:opacity-50"
             >Rechazar</button>
 
             <button
               (click)="gestionar('aprobado')"
-              [disabled]="guardando()"
+              [disabled]="cargando()"
               class="flex-1 py-2.5 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
             >
-              @if (guardando()) {
+              @if (cargando()) {
                 <app-spinner></app-spinner>
               }
               Aprobar

@@ -1,0 +1,14 @@
+<div class="flex justify-center">
+    <div class="flex gap-2  mb-5 flex-wrap">
+      @for (f of items(); track f.val) {
+        <button
+          (click)="selected.emit(f)"
+          [class]="activeClass() === f.val
+            ? 'px-4 py-1.5 rounded-full text-sm font-medium bg-gray-900 text-white transition-all'
+            : 'px-4 py-1.5 rounded-full text-sm font-medium bg-white border border-gray-200 text-gray-600 hover:border-gray-400 transition-all'"
+        >
+          {{ f.label }}
+        </button>
+      }
+    </div>
+  </div>

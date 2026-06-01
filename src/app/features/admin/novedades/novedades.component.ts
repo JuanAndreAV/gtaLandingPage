@@ -5,12 +5,21 @@ import { DatePipe } from '@angular/common';
 import { TitleComponent } from '../../../shared/components/title/title.component';
 import { Router, RouterLink, RouterModule } from '@angular/router';
 import { SpinnerComponent } from '../../../shared/components/spinner/spinner.component';
+import { FilterComponent } from '../../../shared/components/filter/filter.component';
 
+import { catchError, finalize, tap, throwError } from 'rxjs';
+
+export interface MetricaDocente {
+  nombreDocente: string;
+  totalNovedades: number;
+  cambiosHorario: number;
+  incapacidades: number;
+}
 type Filtro = 'hoy' | 'todos' | 'pendiente' | 'aprobado' | 'rechazado';
 
 @Component({
   selector: 'app-novedades',
-  imports: [DatePipe, TitleComponent, RouterLink, SpinnerComponent],
+  imports: [DatePipe, TitleComponent, RouterLink, SpinnerComponent, FilterComponent, ],
   templateUrl: './novedades.component.html',
 })
 export class NovedadesComponent implements OnInit {
@@ -22,11 +31,14 @@ export class NovedadesComponent implements OnInit {
   subtitle = input<string>("Gestiona las solicitudes de los docentes");
   isAdmin = input<boolean>(true);
 
-  filtroActivo  = signal<Filtro>('todos');
+  filtroActivo  = signal<any>('todos');
   novedadModal  = signal<respuestaNovedad | null>(null);
   notaInput     = signal('');
-  guardando     = signal(false);
+  cargando     = signal(false);
   mensajeModal  = signal<string | null>(null);
+
+  metricasDocentes = signal<MetricaDocente[]>([]);
+ 
 
   readonly filtros: { val: Filtro; label: string }[] = [
     { val: 'hoy',       label: 'Hoy' },
@@ -75,7 +87,7 @@ export class NovedadesComponent implements OnInit {
   ngOnInit() { this.cargar('hoy'); }
 
   // ── Filtro → backend ──────────────────────────────────────────────
-  cargar(filtro: Filtro) {
+  cargar(filtro: any) {
     this.filtroActivo.set(filtro);
     const obs = filtro === 'todos'
       ? this.novedadService.getAllUpdates()
@@ -109,7 +121,7 @@ export class NovedadesComponent implements OnInit {
   gestionar(estado: 'aprobado' | 'rechazado') {
     const novedad = this.novedadModal();
     if (!novedad) return;
-    this.guardando.set(true);
+    this.cargando.set(true);
 
     this.novedadService.updateNovedad(novedad._id, {
       estado,
@@ -120,13 +132,47 @@ export class NovedadesComponent implements OnInit {
           lista.map(n => n._id === actualizada._id ? actualizada : n)
         );
         this.mensajeModal.set(estado === 'aprobado' ? '✓ Aprobada.' : '✓ Rechazada.');
-        this.guardando.set(false);
+        this.cargando.set(false);
         setTimeout(() => this.cerrarModal(), 1000);
       },
       error: () => {
         this.mensajeModal.set('Error al actualizar. Intenta de nuevo.');
-        this.guardando.set(false);
+        this.cargando.set(false);
       },
     });
   }
+  //Metricac
+  getMetricas(mes: number){
+    this.mensajeModal.set(null);
+    this.cargando.set(true);
+
+   return   this.novedadService.getMetricasMensuales(mes).subscribe({
+      next: (data) => {
+        this.metricasDocentes.set(data);
+        this.cargando.set(false);
+      },
+      error: (err) => {
+        console.error('❌ Error:', err);
+        this.mensajeModal.set('Error al cargar métricas');
+        this.cargando.set(false);
+      }
+    });
+    
+  };
+ 
+  meses = [
+    
+    { numero: 5, nombre: 'Mayo' },
+    { numero: 6, nombre: 'Junio' },
+    
+  ];
+  
+
+
+// Esto calcula automáticamente el tope del mes (ej: si el máximo de novedades fue 4, maxNovedades será 4)
+maxNovedades = computed(() => {
+  const actuales = this.metricasDocentes();
+  if (actuales.length === 0) return 1;
+  return Math.max(...actuales.map(n => n.totalNovedades), 1);
+});
 }
