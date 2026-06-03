@@ -161,8 +161,10 @@
 </div>
 </div>  
 <!-- ── Métricas mensuales por docente ── -->
-@if (isAdmin()) {
-<div class="bg-gray-900 border border-gray-800  rounded-2xl p-6 lg:col-span-2 shadow-xl">
+@if (!isAdmin()) {
+  <div class="p-4 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white mb-6">
+    <strong>Nota:</strong> Consulta las novedades registradas por mes.
+<div class="bg-gray-900 col-1 border border-gray-800  rounded-2xl p-6 lg:col-span-2 shadow-xl">
   
   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-gray-800">
     <div>
@@ -233,7 +235,7 @@
     }
   </div>
 
-</div>}
+</div></div>}
 
 <!-- ══════════════════════════════════
      MODAL
