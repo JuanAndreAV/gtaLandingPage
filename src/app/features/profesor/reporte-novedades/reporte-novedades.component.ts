@@ -22,7 +22,7 @@ export class ReporteNovedadesComponent {
   tipo = signal<'cambio_horario' | 'incapacidad'>('cambio_horario');
   
   reporteForm = new FormGroup({
-    nombreDocente: new FormControl<string>(this.authService.user()?.user_metadata.nombre || '', [Validators.required]),
+    nombreDocente: new FormControl<string>(this.authService.user()?.nombre_completo || '', [Validators.required]),
     curso: new FormControl<string>('', [Validators.required]),
     tipoNovedad: new FormControl<'cambio_horario' | 'incapacidad'>('cambio_horario', [Validators.required]),
     motivo: new FormControl<string>('', [Validators.required]),
@@ -66,7 +66,7 @@ enviarReporte() {
 
       nuevaNovedad(): void {
     this.reporteForm.reset({
-      nombreDocente: this.authService.user()?.user_metadata['nombre'] ?? '',
+      nombreDocente: this.authService.user()?.nombre_completo ?? '',
     });
     this.enviado.set(false);
     this.error.set(null);

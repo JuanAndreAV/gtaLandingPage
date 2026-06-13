@@ -22,6 +22,8 @@ export class Q10PoblacionComponent implements OnInit {
 
   ngOnInit() {
     this.poblacionQ10.obtenerPoblacionQ10(0).subscribe();
+    console.log(this.datosParaInforme());
+   
    
   }
 
@@ -36,6 +38,8 @@ export class Q10PoblacionComponent implements OnInit {
     { val: '>60', label: '60+ años' },
     { val: '', label: 'Todos' },
     ]
+
+    
 
 
    estudiantesActivos = computed(() => {
@@ -263,7 +267,36 @@ filtroEdad(item: { val: string }): void {
       .filter(e => !/no aplica/i.test(e.enfoque))
       .reduce((acc, e) => acc + e.cantidad, 0)
   );
+// Helper para buscar respuestas en las preguntas personalizadas de Q10
+private obtenerRespuestaPersonalizada(estudiante: any, nombrePregunta: string): string {
+  const pregunta = estudiante.Preguntas_personalizadas?.find(
+    (p: any) => p.Pregunta.trim().toLowerCase() === nombrePregunta.toLowerCase()
+  );
+  return pregunta?.Respuesta?.[0]?.Respuesta ?? 'No especificado';
+}
 
+// 1. Filtrar solo los estudiantes que son víctimas
+victimasDelConflicto = computed(() => {
+  return this.estudiantesActivos().filter(e => {
+    const enfoque = this.obtenerRespuestaPersonalizada(e, 'enfoque poblacional');
+    return /víctima/i.test(enfoque);
+  });
+});
+
+// 2. Extraer el set de datos listos para el análisis (Edad y Zona)
+datosParaInforme = computed(() => {
+  return this.victimasDelConflicto().map(e => ({
+    codigo: e.Codigo_estudiante,
+    Nombre: `${e.Primer_nombre} ${e.Segundo_nombre} ${e.Primer_apellido} ${e.Segundo_apellido}`.replace(/\s+/g, ' ').trim(),
+    tipoIdentificacion: e.Nombre_tipo_identificacion,
+    Identificacion: e.Numero_identificacion,
+    edad: e.Edad,
+    celular: e.Celular,
+    email: e.Email,
+    Direccion: e.Direccion,
+    programa: e.Informacion_matricula?.[0]?.Nombre_programa ?? 'No especificado'
+  }));
+});
   // ── Estado de matrícula ───────────────────────────────────────────────────
 
   estadosMatricula = computed(() => {

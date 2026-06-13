@@ -7,7 +7,7 @@ export const isAdminGuard: CanMatchFn = (route, segments) => {
   const router = inject(Router);
 
   // Verificamos el rol usando el computed del service
-  if (authService.isAdmin()) return true;
+  if (authService.isAdmin()) return authService.isAdmin();
 
   // Si es autenticado pero NO es admin (es profesor), lo mandamos a su panel
   if (authService.authStatus() === 'authenticated') {

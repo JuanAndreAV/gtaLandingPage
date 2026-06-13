@@ -27,7 +27,7 @@ export class Q10PoblacionService {
   public obtenerPoblacionQ10( offset: number): Observable<PoblacionQ10[]>{
     this.isLoading.set(true);
     this.error.set(null);
-    let limit = 2000;
+    let limit = 3000;
     
     return this.http.get<PoblacionQ10[]>(`${this.endpoint}&Limit=${limit}&Offset=${offset}`, {
       headers: {

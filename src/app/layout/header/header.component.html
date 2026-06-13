@@ -48,7 +48,7 @@
             </a>
             
             <div class="text-right leading-tight">
-              <p class="text-white text-xs opacity-80">Hola, {{ authService.user()?.user_metadata?.nombre }}</p>
+              <p class="text-white text-xs opacity-80">Hola, {{ authService.user()?.nombre_completo }}</p>
               <button (click)="authService.logout()" class="text-girardota-yellow text-sm font-bold hover:underline">
                 Cerrar Sesión
               </button>
@@ -96,7 +96,7 @@
         <div class="pt-4 space-y-4">
           @if (authService.authStatus() === 'authenticated') {
             <div class="bg-white/10 p-4 rounded-lg">
-              <p class="text-white mb-3">Bienvenido, <span class="font-bold text-girardota-yellow">{{ authService.user()?.user_metadata?.nombre }}</span></p>
+              <p class="text-white mb-3">Bienvenido, <span class="font-bold text-girardota-yellow">{{ authService.user()?.nombre_completo }}</span></p>
               <div class="flex flex-col space-y-3">
                 <a [routerLink]="authService.isAdmin() ? '/admin' : '/profesor'" 
                    (click)="toggleMobileMenu()"

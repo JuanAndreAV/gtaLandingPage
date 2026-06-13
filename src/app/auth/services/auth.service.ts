@@ -27,7 +27,7 @@ private http = inject(HttpClient);
   public authStatus = computed(() => this._authStatus());
   public user = computed(() => this._user());
   public isAdmin = computed(() => 
-    !!this._user()?.user_metadata.role.includes('admin')
+    !!this._user()?.es_admin
   );
   public token = computed(() => this._token());
 

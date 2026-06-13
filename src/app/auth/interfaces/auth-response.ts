@@ -4,12 +4,33 @@ import { Usuario } from "../../models/user";
 //     user: Usuario;
 //     token: string;
 // }
- export interface AuthResponse {
+
+export interface AuthResponse {
     access_token: string;
     user:         UserResponse;
 }
 
 export interface UserResponse {
+    id:               string;
+    email?:            string;
+    nombre?:           string;
+    apellido?:         string;
+    nombre_completo:  string;
+    documento?:        string;
+    fecha_nacimiento?: Date;
+    telefono?:         string;
+    foto_url?:         string;
+    activo?:           boolean;
+    rol_principal:    string;
+    roles:            string[];
+    es_admin?:         boolean;
+    es_docente?:       boolean;
+    es_estudiante?:    boolean;
+    createdAt:        Date;
+}
+
+
+/*export interface UserResponse {
     id:                 string;
     aud:                string;
     role:               string;
@@ -50,4 +71,4 @@ export interface Data {
     phone_verified: boolean;
     role:           string;
     sub:            string;
-}
+}*/
