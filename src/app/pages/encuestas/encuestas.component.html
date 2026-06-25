@@ -1,0 +1,224 @@
+<form [formGroup]="encuestaForm" class="max-w-2xl mx-auto p-6 space-y-6">
+<app-title  title="Planeación de cursos 2026-2" subtitle="Solicitud de edición de mis cursos actuales o creación de curso(s) nuevos." span="Nota: Si no tienes novedades, selecciona tu nombre y clic en enviar" ></app-title>
+
+  <!-- Docente -->
+  <div class="flex flex-col gap-1">
+    <label class="text-sm font-medium text-gray-700">Nombre del Docente</label>
+    <select
+      formControlName="usuario"
+      (change)="seleccionarDocente($any($event.target).value)"
+      class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+      [class.border-red-500]="encuestaForm.get('usuario')?.invalid && encuestaForm.get('usuario')?.touched"
+    >
+      <option value="" disabled selected>Seleccione un docente</option>
+      @for (usuario of q10Service.listaDocentes(); track usuario) {
+        <option [value]="usuario">{{ usuario }}</option>
+      }
+    </select>
+    @if (encuestaForm.get('usuario')?.touched) {
+      @if (encuestaForm.get('usuario')?.hasError('required')) {
+        <span class="text-xs text-red-500">El nombre es requerido</span>
+      }
+      @if (encuestaForm.get('usuario')?.hasError('minlength')) {
+        <span class="text-xs text-red-500">Mínimo 3 caracteres</span>
+      }
+    }
+  </div>
+
+  <!-- Acciones: modificar existente o crear nuevo -->
+  @if (docenteSeleccionado()) {
+    <div class="flex flex-col gap-3">
+
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium text-gray-700">Modificar curso existente</label>
+        <select
+          (change)="agregarCurso($any($event.target).value); $any($event.target).value = ''"
+          class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="">Seleccione un curso</option>
+          @for (curso of cursos(); track curso.Nombre) {
+            <option [value]="curso.Nombre">{{ curso.Nombre }}</option>
+          }
+        </select>
+      </div>
+
+      <button
+        type="button"
+        (click)="agregarCursoNuevo()"
+        class="w-full border-2 border-dashed border-blue-300 text-blue-500 rounded-xl py-3 text-sm hover:bg-blue-50 transition-colors"
+      >
+        + Crear nuevo curso
+      </button>
+
+    </div>
+  }
+
+  <!-- Lista de cursos en el FormArray -->
+  <div formArrayName="respuestas" class="space-y-4">
+
+    @for (control of respuestasFormArray.controls; track $index; let i = $index) {
+      <div
+        [formGroupName]="i"
+        class="border rounded-xl p-4 space-y-3"
+        [class.border-blue-200]="respuestasFormArray.at(i).get('esNuevo')?.value"
+        [class.border-gray-200]="!respuestasFormArray.at(i).get('esNuevo')?.value"
+      >
+
+        <!-- Header de la tarjeta -->
+        <div class="flex items-center justify-between">
+
+          @if (respuestasFormArray.at(i).get('esNuevo')?.value) {
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-semibold text-blue-500 uppercase tracking-wide">Nuevo</span>
+              <input
+                formControlName="curso"
+                placeholder="Nombre del curso"
+                class="border-b border-blue-300 px-1 py-0.5 text-sm font-medium focus:outline-none focus:border-blue-500"
+              />
+            </div>
+          } @else {
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Existente</span>
+              <span class="font-medium text-gray-800">
+                {{ respuestasFormArray.at(i).getRawValue().curso }}
+              </span>
+            </div>
+          }
+
+          <div class="flex items-center gap-3">
+            @if (!respuestasFormArray.at(i).get('esNuevo')?.value) {
+              <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+                <input
+                  type="checkbox"
+                  formControlName="modificar"
+                  (change)="onToggleModificar(i)"
+                  class="accent-blue-500"
+                />
+                Solicitar modificación
+              </label>
+            }
+            <button
+              type="button"
+              (click)="eliminarCurso(i)"
+              class="text-red-400 text-xs hover:text-red-600 transition-colors"
+            >
+              ✕ Quitar
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Campos editables -->
+        @if (respuestasFormArray.at(i).get('modificar')?.value) {
+          <div class="grid grid-cols-2 gap-3">
+
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-gray-500">Horario</label>
+              <input
+                formControlName="horario"
+                placeholder="Ej: Lunes 8:00 - 10:00"
+                class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                [class.border-red-400]="respuestasFormArray.at(i).get('horario')?.invalid && respuestasFormArray.at(i).get('horario')?.touched"
+              />
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-gray-500">Cupo</label>
+              <input
+                formControlName="cupo"
+                type="number"
+                placeholder="Ej: 20"
+                class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                [class.border-red-400]="respuestasFormArray.at(i).get('cupo')?.invalid && respuestasFormArray.at(i).get('cupo')?.touched"
+              />
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-gray-500">Salón</label>
+              <input
+                formControlName="salon"
+                placeholder="Ej: Aula 3"
+                class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                [class.border-red-400]="respuestasFormArray.at(i).get('salon')?.invalid && respuestasFormArray.at(i).get('salon')?.touched"
+              />
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-gray-500">Edad mínima</label>
+              <input
+                formControlName="edadMinima"
+                type="number"
+                placeholder="Ej: 6"
+                class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                [class.border-red-400]="respuestasFormArray.at(i).get('edadMinima')?.invalid && respuestasFormArray.at(i).get('edadMinima')?.touched"
+              />
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-gray-500">Edad máxima</label>
+              <input
+                formControlName="edadMaxima"
+                type="number"
+                placeholder="Ej: 12"
+                class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                [class.border-red-400]="respuestasFormArray.at(i).get('edadMaxima')?.invalid && respuestasFormArray.at(i).get('edadMaxima')?.touched"
+              />
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-gray-500">Prerrequisitos</label>
+              <input
+                formControlName="prerequisitos"
+                placeholder="Opcional"
+                class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div class="col-span-2 flex flex-col gap-1">
+              <label class="text-xs text-gray-500">Observaciones</label>
+              <textarea
+                formControlName="observaciones"
+                rows="2"
+                placeholder="Opcional"
+                class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              ></textarea>
+            </div>
+
+          </div>
+        }
+
+      </div>
+    }
+
+  </div>
+
+  <!-- Mensaje si no hay cursos agregados -->
+  @if (docenteSeleccionado() && respuestasFormArray.length === 0) {
+    <p class="text-sm text-gray-400 text-center py-4">
+      Selecciona un curso existente para modificar o crea uno nuevo.
+    </p>
+  }
+
+  <!-- Submit -->
+  <button
+    type="button"
+    (click)="enviar()"
+    [disabled]="encuestaForm.invalid || isPosting()"
+    class="w-full flex justify-center items-center gap-2 bg-blue-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+  >
+    @if (isPosting()) {
+      Enviando... <app-spinner />
+    } @else {
+      Enviar solicitud
+    }
+  </button>
+
+  <!-- Mensajes de respuesta -->
+  @if (mensajeError()) {
+    <p class="text-center text-sm text-red-500">{{ mensajeError() }}</p>
+  }
+  @if (mensajeConfirmacion()) {
+    <p class="text-center text-sm text-green-500">{{ mensajeConfirmacion() }}</p>
+  }
+
+</form>
