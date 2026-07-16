@@ -15,7 +15,6 @@ export class ReporteNovedadesComponent {
 
   authService = inject(AuthService);
   novedadService = inject(NovedadService);
-
   enviado  = signal(false);
   cargando = signal(false);
   error    = signal<string | null>(null);

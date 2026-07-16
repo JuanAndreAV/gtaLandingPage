@@ -20,6 +20,7 @@ import { NovedadesComponent } from './features/admin/novedades/novedades.compone
 import { TeacherNewsComponent } from './pages/teacher-news/teacher-news.component';
 import { ObservatorioComponent } from './pages/observatorio/observatorio.component';
 import { EncuestasComponent } from './pages/encuestas/encuestas.component';
+import { ReportesEncuestasComponent } from './features/admin/reportes-encuestas/reportes-encuestas.component';
 
 
 export const routes: Routes = [
@@ -118,7 +119,10 @@ export const routes: Routes = [
          {
       path: "novedades",
       component: NovedadesComponent
-   },
+   },{
+         path: "reporte-encuestas",
+      component: ReportesEncuestasComponent
+   }
 
       ] 
    },

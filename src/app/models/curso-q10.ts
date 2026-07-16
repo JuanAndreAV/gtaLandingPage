@@ -19,7 +19,7 @@ export interface CursoQ10 {
     Consecutivo_periodo:                     number;
     Nombre_periodo:                          string;
     Fecha_inicio:                            Date;
-    Fecha_fin:                               Date;
+    Fecha_fin:                               string;
     Estado:                                  string;
     Aplica_matricula_en_linea:               boolean;
     Consecutivo_descuento:                   null;

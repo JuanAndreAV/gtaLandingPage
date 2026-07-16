@@ -509,7 +509,7 @@
         (change)="seleccionarDocente($any($event.target).value)"
         class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all text-sm md:text-base">
         <option value="">-- Buscar Profesor --</option>
-        @for (docente of q10Service.listaDocentes(); track docente) {
+        @for (docente of this.listaDocenteSegundoSemestre(); track docente) {
           <option [value]="docente">{{ docente }}</option>
         }
       </select>

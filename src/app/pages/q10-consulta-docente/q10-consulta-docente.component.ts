@@ -49,9 +49,17 @@ export class Q10ConsultaDocenteComponent implements OnInit {
   // Cursos filtrados por el docente elegido
   public misCursos = computed(() => {
     const seleccion = this.docenteSeleccionado();
-    return this.q10Service.cursos().filter(c => c.Nombre_docente === seleccion);
-   
+    const fechaObjetivo = '2026-11-07T00:00:00';
+
+    return this.q10Service.cursos().filter(c => c.Nombre_docente === seleccion && c.Fecha_fin && 
+    c.Fecha_fin === fechaObjetivo); // se añade la segunda condicion para filtrar los cursos que tengan Fecha_fin igual a '2026-11-07T00:00:00'
+  });
+  listaDocenteSegundoSemestre = computed(()=> {
+    const fechaObjetivo = '2026-11-07T00:00:00';
+    const profes = this.q10Service.cursos().filter(c => c.Fecha_fin && c.Fecha_fin === fechaObjetivo);
+    return [...new Set(profes.map((c: any) => c.Nombre_docente))];
   })
+
 
     
 
@@ -189,7 +197,7 @@ export class Q10ConsultaDocenteComponent implements OnInit {
 
   ngOnInit() {
     this.q10Service.obtenerCursos().subscribe(() => {
-      // Período 3 como definiste originalmente
+      
      
       this.q10Service.obtenerTodosLosEstudiantesPeriodo(3).subscribe();
     });

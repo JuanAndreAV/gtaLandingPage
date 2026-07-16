@@ -64,6 +64,7 @@ export class Q10Service {
   
   public listaDocentes = computed(() => {
     const nombres = this.cursos().map(c => c.Nombre_docente);
+    
     return [...new Set(nombres)].sort();
   });
 

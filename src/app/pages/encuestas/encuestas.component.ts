@@ -72,7 +72,7 @@ onToggleModificar(index: number) {
 }
 
 
-enviar() {
+/*enviar() {
   if (this.encuestaForm.invalid) {
     this.encuestaForm.markAllAsTouched();
     return;
@@ -123,6 +123,10 @@ enviar() {
   });
   //console.log('Payload a enviar:', payload);
   
+}*/
+enviar(){
+  //this.mensajeConfirmacion.set("En este momento no es posible enviar la encuesta. Disculpa las molestias");
+  this.mensajeError.set("En este momento no es posible enviar la encuesta. Disculpa las molestias");
 }
 agregarCursoNuevo() {
   this.respuestasFormArray.push(new FormGroup({

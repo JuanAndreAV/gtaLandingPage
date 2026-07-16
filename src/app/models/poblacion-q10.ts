@@ -75,6 +75,7 @@ export interface Pregunta{
 }
 
 export interface PreguntasPersonalizadas {
+    Respuesta: any;
     Preguntas_personalizadas: Pregunta[];
            
 }

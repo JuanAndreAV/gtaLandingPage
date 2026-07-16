@@ -1,0 +1,148 @@
+<div class="max-w-3xl mx-auto p-6 space-y-6">
+
+  <app-title
+    title="Encuestas"
+    subtitle="Visualizar datos de encuestas"
+    span="Selecciona al profesor de la lista:  {{profesores().length}} profesores de {{q10Service.listaDocentes().length}}"
+  />
+
+  <!-- Select docente -->
+  <div class="flex flex-col gap-1">
+    <label class="text-sm font-medium text-gray-700">Docentes que han respondido la solicitud de cursos: </label>
+    <select
+      (change)="seleccionProfesor($any($event.target).value)"
+      class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+    >
+      <option value="">Selecciona un profesor</option>
+      @for (profesor of profesores(); track profesor.documento) {
+        <option [value]="profesor.documento">{{ profesor.usuario }}</option>
+      }
+    </select>
+  </div>
+
+  <!-- Resultados -->
+  @if (profesorSeleccionado().length > 0) {
+    @for (p of profesorSeleccionado(); track p._id) {
+
+      <div class="space-y-4">
+
+        <!-- Header docente -->
+        <div class="flex items-center gap-3 pb-2 border-b">
+          <div class="bg-blue-100 text-blue-700 rounded-full w-9 h-9 flex items-center justify-center font-semibold text-sm">
+            {{ p.usuario.charAt(0) }}
+          </div>
+          <div>
+            <p class="font-semibold text-gray-800">{{ p.usuario }}</p>
+            <p class="text-xs text-gray-400">Doc: {{ p.documento }} · Semestre: {{ p.campoPersonalizado }}</p>
+          </div>
+          
+          <label class="flex items-center gap-2 cursor-pointer">
+    <span class="text-sm" [class.text-green-600]="p.estado" [class.text-gray-400]="!p.estado">
+      {{ p.estado ? 'Atendido ✅' : 'Pendiente' }}
+    </span>
+    <input
+      type="checkbox"
+      [checked]="p.estado"
+      (change)="toggleEstado(p)"
+      class="accent-green-500 w-4 h-4"
+    />
+  </label>
+        </div>
+
+        <!-- Cursos -->
+        @for (res of p.respuestas; track $index) {
+          @for (r of res.respuesta; track r.curso) {
+
+            <div class="border rounded-xl p-4 space-y-3"
+              [class.border-blue-200]="r.esNuevo"
+              [class.bg-blue-50]="r.esNuevo"
+              [class.border-gray-200]="!r.esNuevo"
+            >
+
+              <!-- Header curso -->
+              <div class="flex items-center justify-between">
+                <span class="font-medium text-gray-800">{{ r.curso }}</span>
+                <div class="flex items-center gap-2">
+                
+                  @if (r.esNuevo) {
+                    <span class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full font-medium">Curso nuevo</span>
+                  }
+                  @else if (r.modificar) {
+                    <span class="text-xs bg-yellow-100 text-yellow-600 px-2 py-0.5 rounded-full font-medium">Modificación</span>
+                  }
+                    
+                  @else if (!r.esNuevo && !r.modificar ) {
+                    <span class="text-xs bg-green-100 text-green-600 px-2 py-0.5 rounded-full font-medium">Sin cambios</span>
+                  }
+                  
+
+                </div>
+                
+              </div>
+
+              <!-- Detalle en grid -->
+              @if (r.modificar || r.esNuevo) {
+                <div class="grid grid-cols-2 gap-2 text-sm">
+
+                  <div class="flex flex-col">
+                    <span class="text-xs text-gray-400">Horario</span>
+                    <span class="text-gray-700">{{ r.horario }}</span>
+                  </div>
+
+                  <div class="flex flex-col">
+                    <span class="text-xs text-gray-400">Cupo</span>
+                    <span class="text-gray-700">{{ r.cupo }}</span>
+                  </div>
+
+                  <div class="flex flex-col">
+                    <span class="text-xs text-gray-400">Salón</span>
+                    <span class="text-gray-700">{{ r.salon }}</span>
+                  </div>
+
+                  <div class="flex flex-col">
+                    <span class="text-xs text-gray-400">Edades</span>
+                    <span class="text-gray-700">{{ r.edadMinima }} – {{ r.edadMaxima }} años</span>
+                  </div>
+
+                  @if (r.prerequisitos && r.prerequisitos !== 'sin cambios') {
+                    <div class="flex flex-col col-span-2">
+                      <span class="text-xs text-gray-400">Prerrequisitos</span>
+                      <span class="text-gray-700">{{ r.prerequisitos }}</span>
+                    </div>
+                  }
+
+                  @if (r.observaciones && r.observaciones !== 'sin cambios') {
+                    <div class="flex flex-col col-span-2">
+                      <span class="text-xs text-gray-400">Observaciones</span>
+                      <span class="text-gray-700">{{ r.observaciones }}</span>
+                    </div>
+                    
+                  }
+
+                </div>
+                
+              }
+
+            </div>
+            
+
+          }
+           
+        }
+@empty {
+  <!-- p.respuestas vacío -->
+  <div class="border border-gray-200 rounded-xl p-4 text-center">
+    <span class="text-sm text-gray-400">El docente no presenta novedades</span>
+  </div>
+}
+      </div>
+
+    }
+  } @else if (profesorSeleccionado().length === 0 ) {
+    <p class="text-sm text-gray-400 text-center py-8">
+      Selecciona un docente para ver sus solicitudes
+    </p>
+    
+  }
+
+</div>
