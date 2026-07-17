@@ -43,7 +43,9 @@ export class ReportesComponent implements OnInit {
     this.q10Service.obtenerCursos().subscribe(() => {
       //this.q10Service.estudiantes()
       this.q10Service.obtenerTodosLosEstudiantesPeriodo(3).subscribe();
+      
       this.q10PoblacionService.obtenerPoblacionQ10(0).subscribe();
+      
     });
   }
 public theadItems = signal<any[]>(['Programa','Cursos','Inscritos', 'matriculados','Cupo total','Ocupacion','Docentes']);
@@ -72,6 +74,7 @@ public theadItems = signal<any[]>(['Programa','Cursos','Inscritos', 'matriculado
         icono: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z',
         color: 'from-blue-500 to-indigo-600'
       },
+   
       {
         titulo: 'Total Estudiantes en Población Q10',
         valor: poblacion.length,

@@ -814,8 +814,14 @@
                             }
                             <div>
                               <p class="font-medium text-gray-900">
-                                {{ est.Primer_nombre }} {{ est.Primer_apellido }}
-                              </p>
+                               {{ est.Primer_nombre }} {{ est.Primer_apellido }}
+                               
+                               @if (nuevosSegundoSemestre(est.Fecha_matricula)) {
+                                <span class="inline-block px-2 py-1 text-xs font-semibold text-green-800 bg-green-200 rounded-full ml-2">
+                                  Estudiante nuevo
+                                </span>
+                              }
+                                                            </p>
                               <p class="text-xs text-gray-500">{{ est.Email }}</p>
                             </div>
                           </div>
@@ -1002,6 +1008,11 @@
                         <div class="mb-3">
                           <p class="font-semibold text-gray-900 mb-1">
                             {{ est.Primer_nombre }} {{ est.Primer_apellido }}
+                            @if (nuevosSegundoSemestre(est.Fecha_matricula)) {
+                              <span class="inline-block px-2 py-1 text-xs font-semibold text-green-800 bg-green-200 rounded-full ml-2">
+                                Estudiante nuevo
+                              </span>
+}
                           </p>
                           <div class="space-y-1">
                             <div class="flex items-center gap-2 text-xs text-gray-600">

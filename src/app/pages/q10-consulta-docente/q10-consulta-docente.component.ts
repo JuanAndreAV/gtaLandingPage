@@ -60,6 +60,10 @@ export class Q10ConsultaDocenteComponent implements OnInit {
     return [...new Set(profes.map((c: any) => c.Nombre_docente))];
   })
 
+  public nuevosSegundoSemestre(fecha: string): boolean {
+ return fecha >= '2026-07-14T00:00:00';
+  }
+
 
     
 
