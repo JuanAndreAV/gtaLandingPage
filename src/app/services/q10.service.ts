@@ -25,7 +25,7 @@ export class Q10Service {
     return this.http.get<CursoQ10[]>(`${this.q10ApiUrl}/cursos?Limit=600&Offset=0`, {
       headers: { 'Api-key': this.q10ApiKey, 'Cache-Control': 'no-cache' }
     }).pipe(
-      tap(data => this.cursos.set(data)),
+      tap(data =>  this.cursos.set([...new Set(data)])),
       catchError(err => {
         this.error.set(err.message);
         return of([]);
@@ -49,7 +49,7 @@ export class Q10Service {
     }).pipe(
       tap(data => {
         console.log(`✅ ${data.length} estudiante(s) encontrado(s)`);
-        this.estudiantes.set(data);
+        this.estudiantes.set([...new Set(data)]);
       }),
       catchError(err => {
         console.error('❌ Error:', err);

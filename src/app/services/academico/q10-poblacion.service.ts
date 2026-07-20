@@ -35,7 +35,7 @@ export class Q10PoblacionService {
         'Cache-Control': 'no-cache'
       }
     }).pipe(
-      tap(data => this.poblacionQ10.set(data)
+      tap(data => this.poblacionQ10.set([...new Set(data)]),
     ),
       catchError(err => {
         this.error.set(err.message);
