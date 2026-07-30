@@ -22,7 +22,7 @@ export class Q10PoblacionComponent implements OnInit {
 
   ngOnInit() {
     this.poblacionQ10.obtenerPoblacionQ10(0).subscribe();
-    console.log(this.datosParaInforme());
+    //console.log( this.datosParaInforme());
    
    
   }

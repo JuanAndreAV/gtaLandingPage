@@ -32,7 +32,17 @@ export class Q10Service {
       }),
       finalize(() => this.isLoading.set(false))
     );
-  }
+  };
+  /*reporteSegundoSemestre = computed(() => {
+    const cursosSegundoSemestre = this.todosLosEstudiantes().filter(curso => curso.Fecha_matricula >= '2026-07-13T00:00:00' );
+    return cursosSegundoSemestre.reduce<Record<string, number>>((acc, estudiante) => {
+      acc[estudiante.Nombre_programa] = (acc[estudiante.Nombre_programa] || 0) + 1;
+      return acc;
+    }, {})
+    //const numero = new Set(cursosSegundoSemestre.filter(estudiante =>  estudiante.Numero_identificacion !== null).map(estudiante => estudiante.Numero_identificacion));
+    // return cursosSegundoSemestre.filter(estudiante => estudiante.Nombre_programa === 'Primera infancia')
+    //return numero;
+  })*/
 
   obtenerEstudiantesPorCurso(periodo: number, sedeJornada: number, cursoId: number): Observable<EstudianteQ10[]> {
     this.isLoading.set(true);

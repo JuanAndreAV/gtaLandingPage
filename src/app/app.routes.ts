@@ -21,6 +21,8 @@ import { TeacherNewsComponent } from './pages/teacher-news/teacher-news.componen
 import { ObservatorioComponent } from './pages/observatorio/observatorio.component';
 import { EncuestasComponent } from './pages/encuestas/encuestas.component';
 import { ReportesEncuestasComponent } from './features/admin/reportes-encuestas/reportes-encuestas.component';
+import {  AcademicoComponent } from './features/admin/academico/academico.component';
+import { AulasComponent } from './features/admin/academico/aulas/aulas.component';
 
 
 export const routes: Routes = [
@@ -97,6 +99,14 @@ export const routes: Routes = [
               pathMatch: 'full'
          },
          {
+            path: "academico",
+            component: AcademicoComponent,
+            children: [
+               {path: '', redirectTo: 'aulas', pathMatch: 'full'},
+               {path: 'aulas', component: AulasComponent},
+            ]
+         },
+         {
               path: 'reports' ,
               component: DashboardReportsComponent
          },
@@ -135,5 +145,6 @@ export const routes: Routes = [
          component: ReporteNovedadesComponent},
       ]
 
-   }
+   }, 
+   
 ];

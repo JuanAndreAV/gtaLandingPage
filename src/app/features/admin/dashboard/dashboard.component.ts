@@ -15,6 +15,7 @@ export class DashboardComponent   {
  
 rutas = signal<any[]>([
   { nombre: 'Analisis-AI', ruta: '/admin/analisis-ai' },
+  { nombre: 'Académico', ruta: '/admin/academico' },
   { nombre: 'Reporte Encuesta', ruta: '/admin/reporte-encuestas'},
   { nombre: 'Novedades-profesores', ruta: '/admin/novedades' },
   { nombre: 'Dashboard', ruta: '/admin/reports' },

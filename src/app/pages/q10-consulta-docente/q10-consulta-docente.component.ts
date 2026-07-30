@@ -201,11 +201,10 @@ export class Q10ConsultaDocenteComponent implements OnInit {
 
   ngOnInit() {
     this.q10Service.obtenerCursos().subscribe(() => {
-      
-     
-      this.q10Service.obtenerTodosLosEstudiantesPeriodo(3).subscribe();
+      this.q10Service.obtenerTodosLosEstudiantesPeriodo(3).subscribe(() => {
+        //console.log( this.q10Service.reporteSegundoSemestre());
+      });
     });
-    
   }
   
 
