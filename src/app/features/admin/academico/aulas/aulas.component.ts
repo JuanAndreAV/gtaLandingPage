@@ -1,11 +1,14 @@
 import { Component, signal, inject } from '@angular/core';
-import { Aulas as Aula, CreateAulaDto } from '../../../../models/gestion_academica/aulas';
-import { AulasService } from '../../../../services/gestion_academica/aulas.service';
+import { Aulas as Aula, CreateAulaDto } from '../../../../models/gestion-academica/aulas';
+import { AulasService } from '../../../../services/gestion-academica/aulas.service';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
+import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
+import { TitleComponent } from '../../../../shared/components/title/title.component';
+import { ConfirmPopupComponent } from '../../../shared/components/confirm-popup/confirm-popup.component';
 
 @Component({
   selector: 'app-aulas',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, SpinnerComponent, TitleComponent, ConfirmPopupComponent],
   templateUrl: './aulas.component.html',
   styleUrl: './aulas.component.css',
 })
@@ -17,6 +20,9 @@ export class AulasComponent {
   guardando = signal(false);
   aulaEditando: Aula | null = null;
   formularioEnviado = false;
+
+  confirmPopup = signal(false);
+  aula = signal<Aula | null>(null);
 
   //form: CreateAulaDto = { nombre: '', capacidad: undefined, descripcion: '' };
   aulaForm = new FormGroup({
@@ -82,13 +88,28 @@ export class AulasComponent {
       },
     });
   }
-
-  desactivar(aula: Aula) {
-    if (!confirm(`¿Desactivar el aula "${aula.nombre}"?`)) return;
-    this.aulasService.desactivar(aula.id).subscribe({
+// modal y confirmar o no desactivar
+  desactivarModal(aula: Aula) {
+    this.confirmPopup.set(true);
+    this.aula.set(aula);
+  }
+  desactivar(estado: boolean | null) {
+    if (!estado){
+      this.confirmPopup.set(false);
+      this.aula.set(null);
+      return
+    }
+    const aulaId = this.aula()?.id;
+    if (!aulaId) return;
+     this.aulasService.desactivar(aulaId).subscribe({
       next: () => this.aulasService.listar().subscribe(),
       error: (err) => alert(err.error?.message ?? 'Error al desactivar'),
     });
+    this.confirmPopup.set(false);
+    this.aula.set(null);
+
+
   }
+
 
 }

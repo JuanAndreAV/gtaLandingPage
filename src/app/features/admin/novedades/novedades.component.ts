@@ -164,6 +164,12 @@ export class NovedadesComponent implements OnInit {
     
     { numero: 5, nombre: 'Mayo' },
     { numero: 6, nombre: 'Junio' },
+    { numero: 7, nombre: 'Julio' },
+    { numero: 8, nombre: 'Agosto' },
+    { numero: 9, nombre: 'Septiembre' },
+    { numero: 10, nombre: 'Octubre' },
+    { numero: 11, nombre: 'Noviembre' },
+    { numero: 12, nombre: 'Diciembre' },
     
   ];
   

@@ -2,10 +2,7 @@
 <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
   <div class="flex items-center justify-between mb-6">
-    <div>
-      <h1 class="text-2xl font-bold text-gray-900">Aulas</h1>
-      <p class="text-gray-500 text-sm mt-1">Gestión de espacios físicos para los cursos.</p>
-    </div>
+    <app-title title="Aulas" subtitle="Gestión de espacios físicos para los cursos."></app-title>
     <button
       (click)="abrirModalNueva()"
       class="px-5 py-2.5 bg-girardota-teal text-white rounded-lg hover:bg-girardota-teal-dark transition font-semibold">
@@ -13,41 +10,54 @@
     </button>
   </div>
 
-  @if (aulasService.isLoading()) {
+ @if (aulasService.isLoading()) {
     <div class="text-center py-12 text-gray-400">Cargando aulas...</div>
   } @else if (aulasService.error()) {
     <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
       {{ aulasService.error() }}
     </div>
   } @else {
-    <div class="bg-white rounded-lg shadow overflow-hidden">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-          <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Capacidad</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descripción</th>
-            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Acciones</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-100">
-          @for (aula of aulasService.aulas(); track aula.id) {
-            <tr class="hover:bg-gray-50">
-              <td class="px-6 py-4 font-medium text-gray-900">{{ aula.nombre }}</td>
-              <td class="px-6 py-4 text-gray-600">{{ aula.capacidad ?? '—' }}</td>
-              <td class="px-6 py-4 text-gray-500 text-sm">{{ aula.descripcion ?? '—' }}</td>
-              <td class="px-6 py-4 text-center">
-                <button (click)="editar(aula)" class="text-blue-600 hover:underline text-sm mr-3">Editar</button>
-                <button (click)="desactivar(aula)" class="text-red-600 hover:underline text-sm">Desactivar</button>
-              </td>
+    <!-- Contenedor con borde y sombra -->
+    <div class="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
+      <!-- Wrapper con scroll horizontal en móvil -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse min-w-[600px]">
+          <thead class="bg-gray-50 border-b border-gray-200">
+            <tr>
+              <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Nombre</th>
+              <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Capacidad</th>
+              <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Descripción</th>
+              <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Acciones</th>
             </tr>
-          } @empty {
-            <tr><td colspan="4" class="text-center py-8 text-gray-400">No hay aulas registradas.</td></tr>
-          }
-        </tbody>
-      </table>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            @for (aula of aulasService.aulas(); track aula.id) {
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">{{ aula.nombre }}</td>
+                <td class="px-6 py-4 text-gray-600 whitespace-nowrap">{{ aula.capacidad ?? '—' }}</td>
+                <td class="px-6 py-4 text-gray-500 text-sm max-w-xs truncate" [title]="aula.descripcion ?? ''">
+                  {{ aula.descripcion ?? '—' }}
+                </td>
+                <td class="px-6 py-4 text-center whitespace-nowrap">
+                  <button (click)="editar(aula)" class="text-blue-600 hover:underline text-sm font-medium mr-3">Editar</button>
+                  <button (click)="desactivarModal(aula)" class="text-red-600 hover:underline text-sm font-medium">Desactivar</button>
+                </td>
+              </tr>
+             
+            } @empty {
+              <tr>
+                <td colspan="4" class="text-center py-8 text-gray-400">No hay aulas registradas.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
     </div>
+    
   }
+   @if(confirmPopup()) {
+      <app-confirm-popup [popupName]="this.aula()?.nombre" (confirm)="desactivar($event)"></app-confirm-popup>
+    }
 
   @if (modalAbierto()) {
     <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -55,7 +65,7 @@
         <div class="bg-girardota-teal px-6 py-4 rounded-t-lg">
           <h2 class="text-xl font-bold text-white">{{ modoEdicion() ? 'Editar Aula' : 'Crear Aula' }}</h2>
         </div>
-        <form [formGroup]="aulaForm" (ngSubmit)="guardar()" class="p-6 space-y-4">
+        <form [formGroup]="aulaForm"  class="p-6 space-y-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
             <input type="text" formControlName="nombre" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-girardota-teal"
@@ -78,9 +88,21 @@
                     class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
               Cancelar
             </button>
-            <button type="submit" [disabled]="guardando()"
+            <button [disabled]="guardando()"
+                    (click)="guardar()"
+                    (keydown.enter)="guardar()"
                     class="flex-1 px-4 py-2 bg-girardota-teal text-white rounded-lg hover:bg-girardota-teal-dark disabled:opacity-50">
-              {{ guardando() ? 'Guardando...' : 'Guardar' }}
+              @if (guardando()) {
+                <div class="flex justify-center gap-2">
+                    Guardando...
+                 <app-spinner></app-spinner>
+                </div>
+              }
+              @else {
+                Guardar
+              }
+
+              
             </button>
           </div>
         </form>

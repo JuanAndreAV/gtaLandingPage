@@ -1,0 +1,95 @@
+<!-- programas-admin.component.html -->
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Programas</h1>
+      <p class="text-gray-500 text-sm mt-1">Áreas artísticas y programas formativos de la casa de la cultura.</p>
+    </div>
+    <button
+      (click)="abrirModalNuevo()"
+      class="px-5 py-2.5 bg-girardota-teal text-white rounded-lg hover:bg-girardota-teal-dark transition font-semibold">
+      + Crear Programa
+    </button>
+  </div>
+
+  @if (programasService.isLoadingProgramas()) {
+    <div class="text-center py-12 text-gray-400">Cargando programas...</div>
+  } @else if (programasService.errorProgramas()) {
+    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+      {{ programasService.errorProgramas() }}
+    </div>
+  } @else {
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      @for (programa of programasService.programas(); track programa.id) {
+        <div class="bg-white rounded-xl shadow p-5 border-t-4" [style.border-top-color]="programa.colorHex">
+          <div class="flex items-start justify-between mb-2">
+            <h3 class="font-bold text-gray-900">{{ programa.nombre }}</h3>
+            <span class="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">{{ programa.area }}</span>
+          </div>
+          @if (programa.descripcion) {
+            <p class="text-sm text-gray-500 mb-4">{{ programa.descripcion }}</p>
+          }
+          <div class="flex gap-3 pt-2 border-t border-gray-100">
+            <button (click)="editar(programa)" class="text-blue-600 hover:underline text-sm">Editar</button>
+            <button (click)="desactivar(programa)" class="text-red-600 hover:underline text-sm">Desactivar</button>
+          </div>
+        </div>
+      } @empty {
+        <p class="col-span-full text-center py-8 text-gray-400">No hay programas registrados.</p>
+      }
+    </div>
+  }
+
+  @if (modalAbierto()) {
+    <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-lg shadow-2xl max-w-md w-full">
+        <div class="bg-girardota-teal px-6 py-4 rounded-t-lg">
+          <h2 class="text-xl font-bold text-white">{{ modoEdicion() ? 'Editar Programa' : 'Crear Programa' }}</h2>
+        </div>
+        <form  [formGroup]="programaForm" class="p-6 space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+            <input type="text" formControlName="nombre"
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-girardota-teal"
+                   [class.border-red-500]="formularioEnviado && !programaForm.get('nombre')?.value">
+            @if (formularioEnviado && !programaForm.get('nombre')?.value) {
+              <p class="text-red-500 text-xs mt-1">El nombre es requerido</p>
+            }
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Área artística *</label>
+            <select formControlName="area"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-girardota-teal">
+              @for (area of areas; track area) {
+                <option [value]="area">{{ area }}</option>
+              }
+            </select>
+          </div>
+          <div class="flex gap-4 items-end">
+            <div class="flex-1">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Color</label>
+              <input type="color" formControlName="colorHex"
+                     class="w-full h-10 border border-gray-300 rounded-lg cursor-pointer">
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+            <textarea formControlName="descripcion" rows="2"
+                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-girardota-teal"></textarea>
+          </div>
+          <div class="flex gap-3 pt-2">
+            <button type="button" (click)="cerrarModal()"
+                    class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+              Cancelar
+            </button>
+            <button  (click)="guardar()" [disabled]="guardando()"
+                    class="flex-1 px-4 py-2 bg-girardota-teal text-white rounded-lg hover:bg-girardota-teal-dark disabled:opacity-50">
+              {{ guardando() ? 'Guardando...' : 'Guardar' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>

@@ -23,6 +23,8 @@ import { EncuestasComponent } from './pages/encuestas/encuestas.component';
 import { ReportesEncuestasComponent } from './features/admin/reportes-encuestas/reportes-encuestas.component';
 import {  AcademicoComponent } from './features/admin/academico/academico.component';
 import { AulasComponent } from './features/admin/academico/aulas/aulas.component';
+import { PeriodosComponent } from './features/admin/academico/periodos/periodos.component';
+import { ProgramasComponent } from './features/admin/academico/programas/programas.component';
 
 
 export const routes: Routes = [
@@ -104,6 +106,8 @@ export const routes: Routes = [
             children: [
                {path: '', redirectTo: 'aulas', pathMatch: 'full'},
                {path: 'aulas', component: AulasComponent},
+               {path: 'periodos', component: PeriodosComponent},
+               {path: 'programas', component: ProgramasComponent},
             ]
          },
          {

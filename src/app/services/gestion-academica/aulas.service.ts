@@ -2,7 +2,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { Aulas as Aula, CreateAulaDto, UpdateAulaDto } from '../../models/gestion_academica/aulas';
+import { Aulas as Aula, CreateAulaDto, UpdateAulaDto } from '../../models/gestion-academica/aulas';
 import { Observable, tap, catchError, of, finalize } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })

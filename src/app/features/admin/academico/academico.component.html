@@ -1,10 +1,13 @@
-<!-- academico.component.html -->
-<div class="min-h-screen bg-gray-50 flex flex-col">
-  <header class="bg-white shadow sticky top-20 z-50">
+<div class="min-h-full flex flex-col bg-gray-50">
+
+  <!-- Sticky top-0: Se adhiere al borde superior del contenedor padre -->
+  <header class="sticky   flex-shrink-0 bg-white shadow">
     <app-navigate-options [rutas]="rutas()"></app-navigate-options>
   </header>
 
+  <!-- Contenido -->
   <main class="flex-1 overflow-x-hidden">
     <router-outlet></router-outlet>
   </main>
+
 </div>
