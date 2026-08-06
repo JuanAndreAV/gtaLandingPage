@@ -7,6 +7,7 @@ import { Component, output, input } from '@angular/core';
   styleUrl: './confirm-popup.component.css',
 })
 export class ConfirmPopupComponent {
+  isActive = input<boolean>();
   confirm = output<boolean>();
   popupName = input<string>();
 
