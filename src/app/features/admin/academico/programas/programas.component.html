@@ -3,8 +3,7 @@
 
   <div class="flex items-center justify-between mb-6">
     <div>
-      <h1 class="text-2xl font-bold text-gray-900">Programas</h1>
-      <p class="text-gray-500 text-sm mt-1">Áreas artísticas y programas formativos de la casa de la cultura.</p>
+      <app-title title="Programas" subtitle="Áreas artísticas y programas formativos de la casa de la cultura."></app-title>
     </div>
     <button
       (click)="abrirModalNuevo()"
@@ -14,7 +13,7 @@
   </div>
 
   @if (programasService.isLoadingProgramas()) {
-    <div class="text-center py-12 text-gray-400">Cargando programas...</div>
+    <div class="flex  justify-center py-12 gap-3"><p class="text-center">Cargando programas...</p> <span><app-spinner></app-spinner></span></div>
   } @else if (programasService.errorProgramas()) {
     <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
       {{ programasService.errorProgramas() }}
@@ -32,7 +31,7 @@
           }
           <div class="flex gap-3 pt-2 border-t border-gray-100">
             <button (click)="editar(programa)" class="text-blue-600 hover:underline text-sm">Editar</button>
-            <button (click)="desactivar(programa)" class="text-red-600 hover:underline text-sm">Desactivar</button>
+            <button (click)="desactivarConfirm(programa)" class="text-red-600 hover:underline text-sm">Desactivar</button>
           </div>
         </div>
       } @empty {
@@ -40,6 +39,9 @@
       }
     </div>
   }
+  @if(confirmPopup()) {
+      <app-confirm-popup [popupName]="this.programa()?.nombre" (confirm)="desactivar($event)"></app-confirm-popup>
+    }
 
   @if (modalAbierto()) {
     <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">

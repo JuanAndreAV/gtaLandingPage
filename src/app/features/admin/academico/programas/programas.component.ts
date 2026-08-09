@@ -4,13 +4,14 @@ import { Programa, CreateProgramaDto, AreaArtistica } from '../../../../models/g
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { TitleComponent } from '../../../../shared/components/title/title.component';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
+import { ConfirmPopupComponent } from '../../../shared/components/confirm-popup/confirm-popup.component';
 
 @Component({
   selector: 'app-programas',
   imports: [
     ReactiveFormsModule,
     TitleComponent,
-    SpinnerComponent
+    SpinnerComponent, ConfirmPopupComponent
   ],
   templateUrl: './programas.component.html',
   styleUrl: './programas.component.css',
@@ -25,6 +26,9 @@ export class ProgramasComponent implements OnInit {
   guardando = signal(false);
   formularioEnviado = false;
   programaEditando: Programa | null = null;
+
+  confirmPopup = signal(false);
+  programa = signal<Programa | null>(null);
 
   programaForm = new FormGroup({
     nombre: new FormControl('', Validators.required),
@@ -84,13 +88,30 @@ export class ProgramasComponent implements OnInit {
       },
     });
   }
-
-  desactivar(programa: Programa) {
-    if (!confirm(`¿Desactivar el programa "${programa.nombre}"?`)) return;
-    this.programasService.desactivarPrograma(programa.id).subscribe({
-      next: () => this.programasService.listarProgramas().subscribe(),
-      error: (err) => alert(err.error?.message ?? 'Error al desactivar'),
-    });
+desactivarConfirm(programa: Programa){
+    this.programa.set(programa);
+    this.confirmPopup.set(true);
   }
+  desactivar(estado: boolean){
+    if(!estado) {
+      this.confirmPopup.set(false);
+      this.programa.set(null);
+      return;
+    }
+    const programaid = this.programa()?.id;
+    if(!programaid) return;
+    const programa = this.programasService.programas().find(p => p.id === programaid);
+    if(!programa) return;
+   this.programasService.desactivarPrograma(programaid).subscribe({
+    next: () => this.programasService.listarProgramas().subscribe(),
+    error: (err) => alert(err.error?.message ?? 'Error al desactivar'),
+   });
+   this.confirmPopup.set(false);
+   this.programa.set(null);
+  }
+      
+     
+   
+  
 
 }
