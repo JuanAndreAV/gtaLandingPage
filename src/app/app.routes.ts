@@ -26,6 +26,8 @@ import { AulasComponent } from './features/admin/academico/aulas/aulas.component
 import { PeriodosComponent } from './features/admin/academico/periodos/periodos.component';
 import { ProgramasComponent } from './features/admin/academico/programas/programas.component';
 import { AsignaturasAdminComponent } from './features/admin/academico/asignaturas-admin/asignaturas-admin.component';
+import { CursosAdminComponent } from './features/admin/academico/cursos-admin/cursos-admin.component';
+import { InscripcionesComponent } from './features/admin/academico/inscripciones/inscripciones.component';
 
 
 export const routes: Routes = [
@@ -98,7 +100,7 @@ export const routes: Routes = [
       children: [
          {
               path: '',
-              redirectTo: 'novedades',
+              redirectTo: 'academico',
               pathMatch: 'full'
          },
          {
@@ -109,7 +111,9 @@ export const routes: Routes = [
                {path: 'aulas', component: AulasComponent},
                {path: 'periodos', component: PeriodosComponent},
                {path: 'programas', component: ProgramasComponent},
-               {path: 'asignaturas', component: AsignaturasAdminComponent}
+               {path: 'asignaturas', component: AsignaturasAdminComponent},
+               {path: 'cursos', component: CursosAdminComponent},
+               {path: 'inscripciones', component: InscripcionesComponent}
             ]
          },
          {

@@ -27,7 +27,7 @@ private http = inject(HttpClient);
   public authStatus = computed(() => this._authStatus());
   public user = computed(() => this._user());
   public isAdmin = computed(() => 
-    !!this._user()?.es_admin
+    !!this._user()?.roles?.includes('admin')
   );
   public token = computed(() => this._token());
 
@@ -97,6 +97,7 @@ private http = inject(HttpClient);
     this._authStatus.set('authenticated');
       this._token.set(response.access_token);
       this._user.set(response.user);
+      //console.log('Usuario autenticado:', response.access_token, response.user);
 
       localStorage.setItem('token', response.access_token);
    }

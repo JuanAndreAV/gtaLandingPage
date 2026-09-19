@@ -17,6 +17,7 @@ interface PensumEdicion {
   orden: number | null;
   yaExistia: boolean; // para saber si hay que crear, actualizar o desasociar
 }
+// averiguar el orden del pensum y la obligatoriedad, revisar en base de datos perfil docente.
 
 @Component({
   selector: 'app-asignaturas-admin',

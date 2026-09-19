@@ -1,4 +1,4 @@
-// src/app/services/academico/asignaturas.service.ts
+// src/app/services/gestion-academica/asignatura.service.ts
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { environment } from '../../../environments/environment';

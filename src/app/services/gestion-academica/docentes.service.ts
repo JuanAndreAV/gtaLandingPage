@@ -1,4 +1,4 @@
-// src/app/services/academico/docentes.service.ts
+// src/app/services/gestion-academica/docentes.service.ts
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { environment } from '../../../environments/environment';
@@ -19,8 +19,11 @@ export class DocentesService {
 
   listar() {
     this.isLoading.set(true);
+    // Use a single explicit role string. The previous expression ('docente' || 'profesor' || undefined)
+    // was always truthy and evaluated to 'docente'. Set the desired role explicitly.
+    const rol = 'profesor';
     return this.http.get<{ datos: DocenteOption[] }>(this.apiUrl, {
-      params: { rol: 'docente', activo: 'true', porPagina: '200' },
+      params: { rol:  rol, activo: 'true', porPagina: '200' },
     }).pipe(
       tap(res => this.docentes.set(res.datos ?? [])),
       catchError(() => { this.docentes.set([]); return of(null); }),

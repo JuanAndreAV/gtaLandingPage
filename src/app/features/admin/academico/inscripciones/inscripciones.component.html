@@ -1,0 +1,422 @@
+<!-- src/app/features/admin/academico/inscripciones/inscripciones-admin.component.html -->
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-gray-900">Inscripciones</h1>
+    <p class="text-gray-500 text-sm mt-1">Gestiona pre-inscripciones pendientes e inscribe estudiantes directamente.</p>
+  </div>
+
+  <!-- Tabs -->
+  <div class="flex gap-1 bg-gray-100 rounded-xl p-1 w-fit mb-6">
+    <button (click)="cambiarTab('pendientes')"
+            class="px-4 py-2 rounded-lg text-sm font-medium transition-all"
+            [class.bg-white]="tab() === 'pendientes'"
+            [class.shadow-sm]="tab() === 'pendientes'"
+            [class.text-gray-700]="tab() === 'pendientes'"
+            [class.text-gray-400]="tab() !== 'pendientes'">
+      Pendientes
+      @if (inscripcionesService.pendientes().length > 0) {
+        <span class="ml-1.5 bg-amber-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+          {{ inscripcionesService.pendientes().length }}
+        </span>
+      }
+    </button>
+    <button (click)="cambiarTab('inscribir')"
+            class="px-4 py-2 rounded-lg text-sm font-medium transition-all"
+            [class.bg-white]="tab() === 'inscribir'"
+            [class.shadow-sm]="tab() === 'inscribir'"
+            [class.text-gray-700]="tab() === 'inscribir'"
+            [class.text-gray-400]="tab() !== 'inscribir'">
+      Inscribir estudiante
+    </button>
+  </div>
+
+  <!-- ═══════════ TAB: PENDIENTES ═══════════ -->
+  @if (tab() === 'pendientes') {
+    @if (inscripcionesService.isLoading()) {
+      <div class="text-center py-12 text-gray-400">Cargando pendientes...</div>
+    } @else if (inscripcionesService.error()) {
+      <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+        {{ inscripcionesService.error() }}
+      </div>
+    } @else {
+      <div class="bg-white rounded-lg shadow divide-y divide-gray-100">
+        @for (insc of inscripcionesService.pendientes(); track insc.id) {
+          <div class="p-4 flex items-center justify-between gap-4">
+            <div class="flex-1 min-w-0">
+              <p class="font-medium text-gray-900">
+                {{ insc.usuario?.nombre }} {{ insc.usuario?.apellido }}
+                <span class="text-xs text-gray-400 font-normal">· {{ insc.usuario?.documento }}</span>
+              </p>
+              <p class="text-sm text-gray-500">
+                {{ insc.curso?.nombre }}
+                @if (insc.curso?.asignatura?.nombre) { <span> · {{ insc.curso?.asignatura?.nombre }}</span> }
+              </p>
+              @if (insc.observaciones) {
+                <p class="text-xs text-gray-400 mt-1 italic">{{ insc.observaciones }}</p>
+              }
+            </div>
+            <div class="flex gap-2 flex-shrink-0">
+              <button (click)="rechazar(insc)" [disabled]="procesando() === insc.id"
+                      class="px-3 py-1.5 border border-red-300 text-red-600 rounded-lg text-sm hover:bg-red-50 disabled:opacity-50">
+                Rechazar
+              </button>
+              <button (click)="aprobar(insc)" [disabled]="procesando() === insc.id"
+                      class="px-3 py-1.5 bg-girardota-teal text-white rounded-lg text-sm hover:bg-girardota-teal-dark disabled:opacity-50">
+                {{ procesando() === insc.id ? 'Procesando...' : 'Aprobar' }}
+              </button>
+            </div>
+          </div>
+        } @empty {
+          <p class="text-center py-8 text-gray-400">No hay pre-inscripciones pendientes.</p>
+        }
+      </div>
+    }
+  }
+
+  <!-- ═══════════ TAB: INSCRIBIR ═══════════ -->
+  @if (tab() === 'inscribir') {
+    <div class="bg-white rounded-xl shadow p-6 space-y-5">
+
+      <!-- Búsqueda por documento -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Documento del estudiante</label>
+        <div class="flex gap-2">
+          <input type="text" [(ngModel)]="documentoBusqueda" (keyup.enter)="buscarPorDocumento()"
+                 placeholder="Número de documento"
+                 class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-girardota-teal">
+          <button (click)="buscarPorDocumento()" [disabled]="buscando()"
+                  class="px-5 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50">
+            {{ buscando() ? 'Buscando...' : 'Buscar' }}
+          </button>
+        </div>
+
+        @if (errorBusqueda()) {
+          <div class="mt-2">
+            <p class="text-red-500 text-sm mb-2">{{ errorBusqueda() }}</p>
+            @if (resultadoBusqueda() && !resultadoBusqueda()!.existe && !mostrarFormularioPerfil()) {
+              <button (click)="abrirFormularioPerfil()"
+                      class="text-sm px-3 py-1.5 border border-girardota-teal text-girardota-teal rounded-lg hover:bg-teal-50">
+                + Registrar nuevo estudiante con todos sus datos
+              </button>
+            }
+          </div>
+        }
+
+        @if (resultadoBusqueda()?.existe && !resultadoBusqueda()!.perfilCompleto && !mostrarFormularioPerfil()) {
+          <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mt-2">
+            <p class="text-sm text-amber-700 mb-2">
+              ⚠️ Este estudiante ya existe, pero tiene datos básicos pendientes: {{ resultadoBusqueda()!.camposFaltantes?.join(', ') }}.
+            </p>
+            <button (click)="abrirFormularioPerfil()"
+                    class="text-sm px-3 py-1.5 border border-amber-400 text-amber-700 rounded-lg hover:bg-amber-100">
+              Completar datos ahora
+            </button>
+          </div>
+        }
+      </div>
+
+      <!-- ── Formulario extenso: registro nuevo o completar existente ── -->
+      @if (mostrarFormularioPerfil()) {
+        <div class="border border-teal-200 bg-teal-50/50 rounded-xl p-5 space-y-5">
+          <p class="text-sm font-semibold text-gray-700">
+            {{ modoPerfil() === 'nuevo' ? 'Registro completo' : 'Completar / corregir perfil' }}
+            — Documento: {{ formRegistro.documento }}
+          </p>
+
+          <!-- Datos básicos -->
+          <div>
+            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Datos básicos</h4>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">Primer nombre *</label>
+                <input type="text" [(ngModel)]="formRegistro.nombre" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+              </div>
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">Segundo nombre</label>
+                <input type="text" [(ngModel)]="formRegistro.segundoNombre" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+              </div>
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">Primer apellido *</label>
+                <input type="text" [(ngModel)]="formRegistro.apellido" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+              </div>
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">Segundo apellido</label>
+                <input type="text" [(ngModel)]="formRegistro.segundoApellido" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+              </div>
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">Tipo de identificación</label>
+                <select [(ngModel)]="formRegistro.tipoIdentificacion" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                  <option value="">Seleccione</option>
+                  <option value="CC">Cédula de ciudadanía</option>
+                  <option value="TI">Tarjeta de identidad</option>
+                  <option value="RC">Registro civil</option>
+                  <option value="CE">Cédula de extranjería</option>
+                  <option value="PA">Pasaporte</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">Documento *</label>
+                <input type="text" [ngModel]="formRegistro.documento" [disabled]="true"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-100">
+              </div>
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">Fecha de nacimiento</label>
+                <input type="date" [(ngModel)]="formRegistro.fechaNacimiento" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+              </div>
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">Género</label>
+                <select [(ngModel)]="formRegistro.genero" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                  <option value="">Seleccione</option>
+                  <option value="Masculino">Masculino</option>
+                  <option value="Femenino">Femenino</option>
+                  <option value="Otro">Otro</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">Teléfono</label>
+                <input type="text" [(ngModel)]="formRegistro.telefono" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+              </div>
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">Correo (opcional)</label>
+                <input type="email" [(ngModel)]="formRegistro.email" placeholder="Si no tiene, se genera uno interno"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+              </div>
+            </div>
+          </div>
+
+          <!-- Ubicación actual -->
+          <div>
+            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Ubicación actual</h4>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="col-span-2">
+                <label class="block text-xs text-gray-600 mb-1">Dirección</label>
+                <input type="text" [(ngModel)]="formRegistro.direccion" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+              </div>
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">Barrio</label>
+                <input type="text" [(ngModel)]="formRegistro.barrio" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+              </div>
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">Zona</label>
+                <select [(ngModel)]="formRegistro.zonaResidencia" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                  <option value="">Seleccione</option>
+                  <option value="Urbana">Urbana</option>
+                  <option value="Rural">Rural</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">Municipio</label>
+                <input type="text" [(ngModel)]="formRegistro.municipio" placeholder="Girardota" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+              </div>
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">Departamento</label>
+                <input type="text" [(ngModel)]="formRegistro.departamento" placeholder="Antioquia" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+              </div>
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">País</label>
+                <input type="text" [(ngModel)]="formRegistro.pais" placeholder="Colombia" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+              </div>
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">Estrato</label>
+                <input type="number" min="1" max="6" [(ngModel)]="formRegistro.estrato" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+              </div>
+            </div>
+          </div>
+
+          <!-- Lugar de nacimiento -->
+          <details class="group">
+            <summary class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 cursor-pointer select-none">
+              Lugar de nacimiento <span class="font-normal normal-case text-gray-400">(opcional, clic para expandir)</span>
+            </summary>
+            <div class="grid grid-cols-3 gap-3 mt-2">
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">Municipio de nacimiento</label>
+                <input type="text" [(ngModel)]="formRegistro.municipioNacimiento" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+              </div>
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">Departamento de nacimiento</label>
+                <input type="text" [(ngModel)]="formRegistro.departamentoNacimiento" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+              </div>
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">País de nacimiento</label>
+                <input type="text" [(ngModel)]="formRegistro.paisNacimiento" placeholder="Colombia" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+              </div>
+            </div>
+          </details>
+
+          <!-- Enfoque poblacional -->
+          <div>
+            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Enfoque poblacional</h4>
+            <select [(ngModel)]="formRegistro.enfoquePoblacional" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+              <option value="">No aplica</option>
+              <option value="Víctima del conflicto armado">Víctima del conflicto armado</option>
+              <option value="Población indígena">Población indígena</option>
+              <option value="Población afrodescendiente">Población afrodescendiente</option>
+              <option value="Persona con discapacidad">Persona con discapacidad</option>
+              <option value="Adulto mayor">Adulto mayor</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+
+          <!-- Salud -->
+          <div>
+            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Salud</h4>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">EPS</label>
+                <input type="text" [(ngModel)]="formRegistro.eps" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+              </div>
+              <div class="flex items-end">
+                <label class="flex items-center gap-2 text-sm text-gray-700 pb-2">
+                  <input type="checkbox" [(ngModel)]="formRegistro.tieneDiscapacidad" class="accent-girardota-teal">
+                  Tiene discapacidad
+                </label>
+              </div>
+              @if (formRegistro.tieneDiscapacidad) {
+                <div class="col-span-2">
+                  <label class="block text-xs text-gray-600 mb-1">Tipo de discapacidad</label>
+                  <input type="text" [(ngModel)]="formRegistro.tipoDiscapacidad" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Acudiente -->
+          <div>
+            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">
+              Acudiente <span class="font-normal normal-case text-gray-400">(si es menor de edad)</span>
+            </h4>
+            <div class="grid grid-cols-3 gap-3">
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">Nombre</label>
+                <input type="text" [(ngModel)]="formRegistro.acudienteNombre" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+              </div>
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">Teléfono</label>
+                <input type="text" [(ngModel)]="formRegistro.acudienteTelefono" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+              </div>
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">Parentesco</label>
+                <input type="text" [(ngModel)]="formRegistro.acudienteParentesco" placeholder="Madre, padre, tutor..." class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+              </div>
+            </div>
+          </div>
+
+          @if (modoPerfil() === 'nuevo') {
+            <p class="text-xs text-gray-500 bg-white/60 rounded-lg px-3 py-2">
+              Contraseña temporal asignada: <strong>{{ formRegistro.password }}</strong> (el número de documento).
+              El estudiante podrá cambiarla más adelante.
+            </p>
+          }
+
+          @if (errorPerfil()) {
+            <div class="text-sm rounded-lg px-3 py-2"
+                 [class]="usuarioCreadoParcial() ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-red-50 text-red-600 border border-red-200'">
+              {{ errorPerfil() }}
+            </div>
+          }
+
+          <div class="flex gap-2 pt-1">
+            <button (click)="mostrarFormularioPerfil.set(false)"
+                    class="flex-1 px-4 py-2 border border-gray-300 text-gray-600 rounded-lg text-sm hover:bg-white">
+              Cancelar
+            </button>
+            <button (click)="guardarPerfil()" [disabled]="guardandoPerfil()"
+                    class="flex-1 px-4 py-2 bg-girardota-teal text-white rounded-lg text-sm hover:bg-girardota-teal-dark disabled:opacity-50 font-medium">
+              {{ guardandoPerfil() ? 'Guardando...' : (modoPerfil() === 'nuevo' ? 'Registrar estudiante completo' : 'Guardar cambios del perfil') }}
+            </button>
+          </div>
+        </div>
+      }
+
+      <!-- ── Resultado: usuario existe → seleccionar curso e inscribir ── -->
+      @if (resultadoBusqueda(); as usuario) {
+        @if (usuario.existe) {
+          <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <p class="font-semibold text-gray-900">{{ usuario.nombre }} {{ usuario.apellido }}</p>
+                <p class="text-sm text-gray-500">{{ usuario.email ?? 'Sin correo real' }} · Doc: {{ usuario.documento }}</p>
+              </div>
+              <button (click)="limpiarBusqueda()" class="text-xs text-gray-400 hover:text-gray-600">✕ Cambiar</button>
+            </div>
+
+            <!-- Filtros en cascada: Área -> Programa -> Asignatura -> Curso -->
+            <div class="space-y-3 mb-3">
+              <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Ubicar el curso</p>
+
+              <div class="grid grid-cols-3 gap-3">
+  <div>
+    <label class="block text-xs font-medium text-gray-600 mb-1">Área artística</label>
+    <select [(ngModel)]="filtroArea" (ngModelChange)="onAreaChange()"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+      <option value="">Todas las áreas</option>
+      @for (area of areas; track area) {
+        <option [value]="area">{{ area }}</option>
+      }
+    </select>
+  </div>
+  <div>
+    <label class="block text-xs font-medium text-gray-600 mb-1">Asignatura</label>
+    <select [(ngModel)]="filtroAsignaturaInscribir" (ngModelChange)="onAsignaturaChange()"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+      <option value="">Todas las asignaturas</option>
+      @for (a of asignaturasFiltradas(); track a.id) {
+        <option [value]="a.id">{{ a.nombre }}</option>
+      }
+    </select>
+  </div>
+  <div>
+    <label class="block text-xs font-medium text-gray-600 mb-1">Periodo</label>
+    <select [(ngModel)]="filtroPeriodoInscribir"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+      <option value="">Todos</option>
+      @for (p of programasService.periodos(); track p.id) {
+        <option [value]="p.id">{{ p.nombre }}</option>
+      }
+    </select>
+  </div>
+</div>
+
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">
+                  Curso *
+                  <span class="font-normal text-gray-400">({{ cursosDelPeriodo().length }} resultado{{ cursosDelPeriodo().length !== 1 ? 's' : '' }})</span>
+                </label>
+                <select [(ngModel)]="cursoSeleccionado"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                  <option value="">Seleccione un curso</option>
+                  @for (c of cursosDelPeriodo(); track c.id) {
+                    <option [value]="c.id">{{ c.nombre }} — {{ c.asignatura?.nombre }} ({{ c.periodo?.nombre }})</option>
+                  }
+                </select>
+                @if (cursosDelPeriodo().length === 0) {
+                  <p class="text-xs text-amber-600 mt-1">No hay cursos que coincidan con estos filtros.</p>
+                }
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="block text-xs font-medium text-gray-600 mb-1">Observaciones</label>
+              <textarea [(ngModel)]="observaciones" rows="2"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"></textarea>
+            </div>
+
+            @if (errorInscripcion()) {
+              <p class="text-red-500 text-sm mb-2">{{ errorInscripcion() }}</p>
+            }
+            @if (mensajeInscripcion()) {
+              <p class="text-emerald-600 text-sm mb-2">{{ mensajeInscripcion() }}</p>
+            }
+
+            <button (click)="inscribir()" [disabled]="!cursoSeleccionado() || inscribiendo()"
+                    class="w-full px-4 py-2.5 bg-girardota-teal text-white rounded-lg hover:bg-girardota-teal-dark disabled:opacity-50 font-medium">
+              {{ inscribiendo() ? 'Inscribiendo...' : 'Inscribir en el curso' }}
+            </button>
+          </div>
+        }
+      }
+    </div>
+  }
+</div>
