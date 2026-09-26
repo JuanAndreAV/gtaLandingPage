@@ -16,6 +16,8 @@ export class AcademicoComponent {
     { nombre: 'Asignaturas', ruta: '/admin/academico/asignaturas' },
     { nombre: 'Cursos', ruta: '/admin/academico/cursos' },
     { nombre: 'Inscripciones', ruta: '/admin/academico/inscripciones' },
+    { nombre: 'Cursos Disponibles', ruta: '/admin/academico/cursos-disponibles' },
+    { nombre: 'Registro Estudiante', ruta: '/admin/academico/registro-estudiante' },
   ])
 
 }

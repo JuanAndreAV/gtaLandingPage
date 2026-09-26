@@ -28,6 +28,8 @@ import { ProgramasComponent } from './features/admin/academico/programas/program
 import { AsignaturasAdminComponent } from './features/admin/academico/asignaturas-admin/asignaturas-admin.component';
 import { CursosAdminComponent } from './features/admin/academico/cursos-admin/cursos-admin.component';
 import { InscripcionesComponent } from './features/admin/academico/inscripciones/inscripciones.component';
+import { CursosDisponiblesComponent } from './features/admin/academico/cursos-disponibles/cursos-disponibles.component';
+import { RegistroEstudianteComponent } from './features/admin/academico/registro-estudiante/registro-estudiante.component';
 
 
 export const routes: Routes = [
@@ -113,7 +115,9 @@ export const routes: Routes = [
                {path: 'programas', component: ProgramasComponent},
                {path: 'asignaturas', component: AsignaturasAdminComponent},
                {path: 'cursos', component: CursosAdminComponent},
-               {path: 'inscripciones', component: InscripcionesComponent}
+               {path: 'inscripciones', component: InscripcionesComponent},
+               {path: 'cursos-disponibles', component: CursosDisponiblesComponent},
+               {path: 'registro-estudiante', component: RegistroEstudianteComponent}
             ]
          },
          {

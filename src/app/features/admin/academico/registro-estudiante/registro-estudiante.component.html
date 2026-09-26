@@ -1,0 +1,417 @@
+<div class="max-w-4xl mx-auto p-6">
+
+  <!-- PASO 1: Verificar documento -->
+  @if (paso() === 'documento') {
+    <div class="bg-white rounded-2xl shadow p-8 max-w-md mx-auto">
+      <h2 class="text-2xl font-bold text-gray-800 mb-2">Verificar documento</h2>
+      <p class="text-gray-500 mb-6 text-sm">
+        Ingresa el número de documento del estudiante para verificar si ya está registrado.
+      </p>
+
+      <form [formGroup]="formDoc" (ngSubmit)="verificarDocumento()" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            Número de documento
+          </label>
+          <input formControlName="documento" type="text"
+            placeholder="Ej: 32317010"
+            class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition" />
+          @if (formDoc.get('documento')?.invalid && formDoc.get('documento')?.touched) {
+            <p class="text-red-500 text-xs mt-1">Ingresa un número de documento válido</p>
+          }
+        </div>
+
+        @if (usuariosAdmin.error()) {
+          <p class="text-red-500 text-sm">{{ usuariosAdmin.error() }}</p>
+        }
+
+        <button type="submit"
+          [disabled]="formDoc.invalid || usuariosAdmin.isLoading()"
+          class="w-full bg-indigo-600 text-white rounded-lg py-2.5 font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition">
+          @if (usuariosAdmin.isLoading()) { Verificando... } @else { Verificar }
+        </button>
+      </form>
+    </div>
+  }
+
+  <!-- PASO 2: Formulario de datos -->
+  @if (paso() === 'datos') {
+    <div class="bg-white rounded-2xl shadow p-8">
+
+      <!-- Header -->
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-2xl font-bold text-gray-800">
+            {{ esNuevo() ? 'Nuevo estudiante' : 'Actualizar perfil' }}
+          </h2>
+          <p class="text-sm text-gray-500 mt-1">
+            @if (!esNuevo()) {
+              <span class="inline-flex items-center gap-1 text-green-600 font-medium">
+                ✓ Usuario encontrado — completa los campos faltantes
+              </span>
+            } @else {
+              Completa los datos del nuevo estudiante
+            }
+          </p>
+        </div>
+        <button (click)="volver()" class="text-sm text-gray-500 hover:text-gray-700 underline">
+          ← Volver
+        </button>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="guardar()" class="space-y-8">
+
+        <!-- SECCIÓN: Identidad -->
+        <section>
+          <h3 class="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 pb-2 border-b border-indigo-100">
+            Datos de identidad
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de identificación</label>
+              <select formControlName="tipoIdentificacion"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none">
+                @for (tipo of tiposId; track tipo) {
+                  <option [value]="tipo">{{ tipo }}</option>
+                }
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Número de documento *</label>
+              <input formControlName="documento" type="text"
+                class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"
+                [class.border-red-400]="invalido('documento')"
+                [class.border-gray-300]="!invalido('documento')" />
+              @if (invalido('documento')) {
+                <p class="text-red-500 text-xs mt-1">Campo requerido</p>
+              }
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Primer nombre *</label>
+              <input formControlName="nombre" type="text"
+                class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"
+                [class.border-red-400]="invalido('nombre')"
+                [class.border-gray-300]="!invalido('nombre')" />
+              @if (invalido('nombre')) {
+                <p class="text-red-500 text-xs mt-1">Campo requerido</p>
+              }
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Segundo nombre</label>
+              <input formControlName="segundoNombre" type="text"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Primer apellido *</label>
+              <input formControlName="apellido" type="text"
+                class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"
+                [class.border-red-400]="invalido('apellido')"
+                [class.border-gray-300]="!invalido('apellido')" />
+              @if (invalido('apellido')) {
+                <p class="text-red-500 text-xs mt-1">Campo requerido</p>
+              }
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Segundo apellido</label>
+              <input formControlName="segundoApellido" type="text"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Género</label>
+              <select formControlName="genero"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none">
+                <option value="">Seleccionar</option>
+                @for (g of generos; track g) {
+                  <option [value]="g">{{ g }}</option>
+                }
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Fecha de nacimiento *</label>
+              <input formControlName="fechaNacimiento" type="date"
+                class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"
+                [class.border-red-400]="invalido('fechaNacimiento')"
+                [class.border-gray-300]="!invalido('fechaNacimiento')" />
+              @if (invalido('fechaNacimiento')) {
+                <p class="text-red-500 text-xs mt-1">Campo requerido</p>
+              }
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono / Celular</label>
+              <input formControlName="telefono" type="tel"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
+              <input formControlName="email" type="email"
+                placeholder="Dejar vacío si no tiene"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none" />
+            </div>
+
+          </div>
+        </section>
+
+        <!-- SECCIÓN: Residencia -->
+        <section>
+          <h3 class="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 pb-2 border-b border-indigo-100">
+            Lugar de residencia
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Departamento</label>
+              <select formControlName="departamentoId"
+                (change)="onDepartamentoChange($event)"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none">
+                <option value="">Seleccionar departamento</option>
+                @for (dep of ubicacion.departamentos(); track dep.id) {
+                  <option [value]="dep.id">{{ dep.name }}</option>
+                }
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Municipio</label>
+              <select formControlName="municipioId"
+                (change)="onMunicipioChange($event)"
+                [disabled]="ubicacion.municipios().length === 0"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none disabled:bg-gray-100">
+                <option value="">Seleccionar municipio</option>
+                @for (mun of ubicacion.municipios(); track mun.id) {
+                  <option [value]="mun.id">{{ mun.name }}</option>
+                }
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+              <input formControlName="direccion" type="text"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Barrio</label>
+              <input formControlName="barrio" type="text"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Zona de residencia</label>
+              <select formControlName="zonaResidencia"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none">
+                <option value="">Seleccionar</option>
+                @for (z of zonas; track z) {
+                  <option [value]="z">{{ z }}</option>
+                }
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Estrato</label>
+              <select formControlName="estrato"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none">
+                <option value="">Seleccionar</option>
+                @for (e of estratos; track e) {
+                  <option [value]="e">{{ e }}</option>
+                }
+              </select>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- SECCIÓN: Lugar de nacimiento -->
+        <section>
+          <h3 class="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 pb-2 border-b border-indigo-100">
+            Lugar de nacimiento
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Departamento de nacimiento</label>
+              <select formControlName="departamentoNacId"
+                (change)="onDepNacimientoChange($event)"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none">
+                <option value="">Seleccionar departamento</option>
+                @for (dep of ubicacion.departamentos(); track dep.id) {
+                  <option [value]="dep.id">{{ dep.name }}</option>
+                }
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Municipio de nacimiento</label>
+              <select formControlName="municipioNacId"
+                (change)="onMunNacimientoChange($event)"
+                [disabled]="ubicacion.municipios().length === 0"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none disabled:bg-gray-100">
+                <option value="">Seleccionar municipio</option>
+                @for (mun of ubicacion.municipios(); track mun.id) {
+                  <option [value]="mun.id">{{ mun.name }}</option>
+                }
+              </select>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- SECCIÓN: Caracterización -->
+        <section>
+          <h3 class="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 pb-2 border-b border-indigo-100">
+            Caracterización poblacional
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Enfoque poblacional</label>
+              <select formControlName="enfoquePoblacional"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none">
+                <option value="">Seleccionar</option>
+                @for (e of enfoques; track e) {
+                  <option [value]="e">{{ e }}</option>
+                }
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">EPS</label>
+              <input formControlName="eps" type="text"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none" />
+            </div>
+
+            <div class="md:col-span-2">
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input formControlName="tieneDiscapacidad" type="checkbox"
+                  class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                <span class="text-sm font-medium text-gray-700">¿Tiene algún tipo de discapacidad?</span>
+              </label>
+            </div>
+
+            @if (tieneDiscapacidad()) {
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de discapacidad</label>
+                <input formControlName="tipoDiscapacidad" type="text"
+                  placeholder="Ej: Visual, auditiva, motriz..."
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none" />
+              </div>
+            }
+
+          </div>
+        </section>
+
+        <!-- SECCIÓN: Acudiente (solo menores) -->
+        @if (esMinorEdad()) {
+          <section>
+            <h3 class="text-sm font-semibold text-amber-600 uppercase tracking-wider mb-4 pb-2 border-b border-amber-100">
+              Datos del acudiente <span class="normal-case font-normal text-amber-500">(requerido para menores de edad)</span>
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nombre del acudiente</label>
+                <input formControlName="acudienteNombre" type="text"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none" />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono del acudiente</label>
+                <input formControlName="acudienteTelefono" type="tel"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none" />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Parentesco</label>
+                <input formControlName="acudienteParentesco" type="text"
+                  placeholder="Ej: Madre, padre, tutor..."
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none" />
+              </div>
+
+            </div>
+          </section>
+        }
+
+       
+       <!-- SECCIÓN: Roles (ahora visible siempre, no solo para nuevos) -->
+<section>
+  <h3 class="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 pb-2 border-b border-indigo-100">
+    Roles en el sistema
+  </h3>
+  <p class="text-xs text-gray-400 mb-3">
+    El rol <strong>estudiante</strong> se agrega automáticamente para poder inscribirlo en cursos.
+    Los roles que ya tenía no se eliminan.
+  </p>
+  <div class="flex gap-3 flex-wrap">
+    @for (rol of rolesOpciones; track rol) {
+      <button type="button"
+        (click)="toggleRol(rol)"
+        [disabled]="rol === 'estudiante'"
+        [class]="tieneRol(rol)
+          ? 'px-4 py-2 rounded-full text-sm font-medium bg-indigo-600 text-white disabled:opacity-70 disabled:cursor-not-allowed'
+          : 'px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200'">
+        {{ rol }}
+      </button>
+    }
+  </div>
+</section>
+
+        <!-- Error -->
+        @if (errorMsg()) {
+          <div class="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm">
+            {{ errorMsg() }}
+          </div>
+        }
+
+        <!-- Acciones -->
+        <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
+          <button type="button" (click)="volver()"
+            class="px-6 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
+            Cancelar
+          </button>
+          <button type="submit"
+            [disabled]="guardando()"
+            class="px-6 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition font-medium">
+            @if (guardando()) { Guardando... }
+            @else { {{ esNuevo() ? 'Registrar estudiante' : 'Actualizar perfil' }} }
+          </button>
+        </div>
+
+      </form>
+    </div>
+  }
+
+  <!-- PASO 3: Listo -->
+  @if (paso() === 'listo') {
+    <div class="bg-white rounded-2xl shadow p-8 max-w-md mx-auto text-center">
+      <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <span class="text-3xl">✓</span>
+      </div>
+      <h2 class="text-xl font-bold text-gray-800 mb-2">
+        {{ esNuevo() ? '¡Estudiante registrado!' : '¡Perfil actualizado!' }}
+      </h2>
+      <p class="text-gray-500 mb-6 text-sm">
+        Ya puedes inscribirlo en los cursos disponibles.
+      </p>
+      <div class="flex flex-col gap-3">
+        <button (click)="irACursos()"
+          class="w-full bg-indigo-600 text-white rounded-lg py-2.5 font-medium hover:bg-indigo-700 transition">
+          Ver cursos disponibles →
+        </button>
+        <button (click)="paso.set('documento')"
+          class="w-full border border-gray-300 text-gray-700 rounded-lg py-2.5 hover:bg-gray-50 transition">
+          Registrar otro estudiante
+        </button>
+      </div>
+    </div>
+  }
+
+</div>

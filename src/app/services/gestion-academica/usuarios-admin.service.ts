@@ -1,81 +1,132 @@
 // src/app/services/academico/usuarios-admin.service.ts
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { Observable, switchMap } from 'rxjs';
+import { catchError, finalize, Observable, of, tap } from 'rxjs';
 import { RegistroEstudianteCompleto } from '../../models/gestion-academica/registro-estudiante';
 
-export interface VerificacionUsuario {
+export interface PerfilEstudianteExtend {
+  
+  acudiente_nombre?: string;
+  acudiente_telefono?: string;
+  acudiente_parentesco?: string;
+}
+
+export interface VerificacionDocumento {
   existe: boolean;
   mensaje?: string;
   id?: string;
   nombre?: string;
+  segundoNombre?: string;
   apellido?: string;
+  segundoApellido?: string;
   email?: string | null;
   emailFicticio?: boolean;
   documento?: string;
+  tipoIdentificacion?: string;
+  
+  
   fechaNacimiento?: string;
   telefono?: string;
+
+  direccion?: string;
+  barrio?: string; 
+  pais?: string;
+
+  departamento?: string;
+      municipio?: string;
+      departamentoNacimiento?: string;
+      municipioNacimiento?: string;
+      paisNacimiento?: string;
+      enfoquePoblacional?: string;
+      eps?: string;
+      estrato?: number;
+      genero?: string;
+      zonaResidencia?: string;
+      tieneDiscapacidad?: boolean;
+      tipoDiscapacidad?: string;
+
+  roles?: string[];
   activo?: boolean;
   camposFaltantes?: string[];
   perfilCompleto?: boolean;
+  perfil?: PerfilEstudianteExtend | null;
 }
+/*
+existe: true,
+      id: usuario.id,
+      nombre: usuario.nombre,
+      apellido: usuario.apellido,
+      email: usuario.emailFicticio ? null : usuario.email,
+      emailFicticio: usuario.emailFicticio,
+      documento: usuario.documento,
+      tipoIdentificacion: usuario.tipoIdentificacion,
+      fechaNacimiento: usuario.fechaNacimiento,
+      telefono: usuario.telefono,
+      roles: usuario.roles,
+      activo: usuario.activo,
+      perfil: perfilExtendido ?? null,
+      camposFaltantes,
+      perfilCompleto: camposFaltantes.length === 0,
+*/
 
-export interface RegistrarUsuarioDto {
-  email?: string;
-  password: string;
-  nombre: string;
-  apellido: string;
-  documento?: string;
-  tipoIdentificacion?: string;
-  segundoNombre?: string;
-  segundoApellido?: string;
-  telefono?: string;
-  role?: ('admin' | 'docente' | 'estudiante')[];
-}
-
-export interface RegistroResponse {
-  access_token: string | null;
-  user: {
+// Representa la respuesta real devuelta por UsuariosService.crear() en NestJS
+export interface RegistroUsuarioResponse {
+  mensaje: string;
+  usuario: {
     id: string;
-    email: string;
-    emailFicticio: boolean;
     nombre: string;
     apellido: string;
-    role: string;
+    email: string;
+    emailFicticio: boolean;
+    documento: string;
+    tipoIdentificacion?: string;
+    roles: string[];
+    activo: boolean;
   };
 }
 
 @Injectable({ providedIn: 'root' })
 export class UsuariosAdminService {
   private http = inject(HttpClient);
-  private apiUrl = environment.baseUrl;
+  private apiUrl = `${environment.baseUrl}/usuarios`;
 
-  verificarDocumento(documento: string): Observable<VerificacionUsuario> {
-    return this.http.get<VerificacionUsuario>(`${this.apiUrl}/usuarios/verificar/${documento}`);
+  verificado = signal<VerificacionDocumento | null>(null);
+  isLoading = signal(false);
+  error = signal<string | null>(null);
+
+  /**
+   * Consulta el backend para verificar si el usuario o su perfil extendido existen.
+   */
+  verificarDocumento(documento: string): Observable<VerificacionDocumento> {
+    this.isLoading.set(true);
+    this.error.set(null);
+    return this.http.get<VerificacionDocumento>(`${this.apiUrl}/verificar/${documento}`).pipe(
+      tap((data) => {
+        console.log(data)
+        this.verificado.set(data)
+         
+      }),
+  
+      catchError((err) => {
+        this.error.set(err.error?.message ?? 'Error al verificar el documento');
+        return of({ existe: false });
+      }),
+      finalize(() => this.isLoading.set(false))
+    );
   }
 
-  registrar(dto: RegistrarUsuarioDto): Observable<RegistroResponse> {
-    return this.http.post<RegistroResponse>(`${this.apiUrl}/usuarios/crear`, dto);
+  /**
+   * Actualiza el perfil en public.users y perfiles_estudiante
+   */
+  completarPerfil(id: string, datos: Partial<RegistroEstudianteCompleto>): Observable<{ mensaje: string }> {
+    return this.http.put<{ mensaje: string }>(`${this.apiUrl}/${id}/completar-perfil`, datos);
   }
 
-  completarPerfil(usuarioId: string, dto: Partial<RegistroEstudianteCompleto>): Observable<{ mensaje: string }> {
-    return this.http.put<{ mensaje: string }>(`${this.apiUrl}/usuarios/${usuarioId}/completar-perfil`, dto);
+  /**
+   * Registra un estudiante completo consumo directo del endpoint POST /usuarios/crear (o el equivalente administrativo)
+   */
+  registrarEstudianteCompleto(datos: Partial<RegistroEstudianteCompleto> | any): Observable<RegistroUsuarioResponse> {
+    return this.http.post<RegistroUsuarioResponse>(`${this.apiUrl}/crear`, datos);
   }
-
-  registrarEstudianteCompleto(datos: RegistroEstudianteCompleto): Observable<{ mensaje: string }> {
-  const {
-    nombre, apellido, documento, password, email,
-    tipoIdentificacion, segundoNombre, segundoApellido, telefono,
-    ...perfil
-  } = datos;
-
-  return this.registrar({
-    nombre, apellido, documento, password, email,
-    tipoIdentificacion, segundoNombre, segundoApellido, telefono,
-    role: ['estudiante'],
-  }).pipe(
-    switchMap((res) => this.completarPerfil(res.user.id, perfil))
-  );
-}
 }

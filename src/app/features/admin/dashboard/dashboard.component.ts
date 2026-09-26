@@ -23,6 +23,7 @@ rutas = signal<any[]>([
 
     { nombre: 'Gestión de Cursos', ruta: '/admin/cursos' },
     { nombre: 'Gestión de Usuarios', ruta: '/admin/usuarios' },
+    
     //{ nombre: 'Inscripciones', ruta: '/admin/inscripciones' },  
       
   ]
