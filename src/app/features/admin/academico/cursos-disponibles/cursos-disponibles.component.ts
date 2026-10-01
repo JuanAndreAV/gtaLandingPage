@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { finalize, debounceTime, distinctUntilChanged } from 'rxjs';
+import { finalize, distinctUntilChanged } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
 import { InscripcionesService } from '../../../../services/gestion-academica/inscripciones.service';
 
@@ -58,6 +58,8 @@ export class CursosDisponiblesComponent implements OnInit {
   errorMsg     = signal<string | null>(null);
   exitoMsg     = signal<string | null>(null);
 
+  inscripcionesPrevias = signal<any[]>([]);
+
   // Parámetros
   usuarioId  = signal<string | null>(null);
 
@@ -92,6 +94,7 @@ export class CursosDisponiblesComponent implements OnInit {
     this.cargarProgramas();
     this.cargarPeriodos();
     this.cargarCursos();
+    this.cargarInscripcionesPrevias();
 
     // Recargar cuando cambian los filtros de select
     this.filtroProgramaId.valueChanges
@@ -132,7 +135,19 @@ export class CursosDisponiblesComponent implements OnInit {
       .subscribe(data => this.periodos.set(data));
   }
 
-  preInscribir(cursoId: string, estadoCupos: string) {
+  // Trae las inscripciones activas/pendientes del estudiante, para
+  // advertir al admin ANTES de que elija un curso (no bloquea el flujo).
+  cargarInscripcionesPrevias() {
+    if (!this.usuarioId()) return;
+
+    this.inscripciones.listarPorEstudiante(this.usuarioId()!, true)
+      .subscribe({
+        next:  data => this.inscripcionesPrevias.set(data),
+        error: ()   => this.inscripcionesPrevias.set([]), // silencioso: no bloquea la vista
+      });
+  }
+
+  Inscribir(cursoId: string, estadoCupos: string) {
     if (!this.usuarioId()) {
       this.errorMsg.set('No se identificó al estudiante. Vuelve al paso anterior.');
       return;
@@ -142,20 +157,25 @@ export class CursosDisponiblesComponent implements OnInit {
     this.errorMsg.set(null);
     this.exitoMsg.set(null);
 
-    this.inscripciones.preInscribir({
+    this.inscripciones.inscribirDirecto({
       usuarioId: this.usuarioId()!,
       cursoId,
     }).pipe(
       finalize(() => this.inscribiendo.set(null))
     ).subscribe({
       next: (res: any) => {
-        this.exitoMsg.set(res.mensaje ?? 'Pre-inscripción realizada correctamente.');
-        this.cargarCursos(); // refrescar cupos
+        this.exitoMsg.set(res.mensaje ?? 'Inscripción realizada correctamente.');
+        this.cargarCursos();               // refrescar cupos
+        this.cargarInscripcionesPrevias();  // refrescar aviso de inscripciones previas
       },
       error: err => {
-        this.errorMsg.set(err.error?.message ?? 'Error al realizar la pre-inscripción');
+        this.errorMsg.set(err.error?.message ?? 'Error al realizar la inscripción');
       }
     });
+  }
+
+  anchoBarra(curso: CursoDisponible): number {
+    return Math.min((curso.inscritos / curso.capacidad_max) * 100, 100);
   }
 
   formatearHorario(horarios: Horario[]): string {
@@ -177,7 +197,7 @@ export class CursosDisponiblesComponent implements OnInit {
   }
 
   volver() {
-    this.router.navigate(['../registro-estudiante']);
+    this.router.navigate(['admin/academico/registro-estudiante']);
   }
 
   private capitalizarDia(dia: string): string {

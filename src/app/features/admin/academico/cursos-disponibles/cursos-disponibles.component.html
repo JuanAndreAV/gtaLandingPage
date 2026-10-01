@@ -73,6 +73,16 @@
       <span>✓</span> {{ exitoMsg() }}
     </div>
   }
+  @if (inscripcionesPrevias().length > 0) {
+  <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 text-amber-800 text-sm mb-4">
+    <p class="font-medium mb-1">⚠️ Este estudiante ya tiene {{ inscripcionesPrevias().length }} inscripción(es) activa(s):</p>
+    <ul class="list-disc list-inside">
+      @for (i of inscripcionesPrevias(); track i.id) {
+        <li>{{ i.curso.nombre }} ({{ i.curso.asignatura.nombre }}) — {{ i.estado }}</li>
+      }
+    </ul>
+  </div>
+}
 
   <!-- Loading -->
   @if (isLoading()) {
@@ -141,6 +151,7 @@
                     <span>{{ formatearHorario(curso.horarios) }}</span>
                   </div>
                 }
+                
 
                 @if (edadLabel(curso.edad_min, curso.edad_max)) {
                   <div class="flex items-center gap-1.5">
@@ -162,7 +173,7 @@
                   </div>
                   <div class="w-full bg-gray-100 rounded-full h-1.5">
                     <div class="h-1.5 rounded-full transition-all"
-                      [style.width.%]="(curso.inscritos / curso.capacidad_max) * 100"
+                      [style.width.%]="anchoBarra(curso)"
                       [class]="curso.estado_cupos === 'disponible' ? 'bg-indigo-500' : 'bg-red-400'">
                     </div>
                   </div>
@@ -181,7 +192,7 @@
               <!-- Botón de inscripción -->
               @if (usuarioId()) {
                 <button
-                  (click)="preInscribir(curso.id, curso.estado_cupos)"
+                  (click)="Inscribir(curso.id, curso.estado_cupos)"
                   [disabled]="inscribiendo() === curso.id"
                   class="mt-auto w-full py-2 rounded-lg text-sm font-medium transition"
                   [class]="curso.estado_cupos === 'disponible'
@@ -190,9 +201,9 @@
                   @if (inscribiendo() === curso.id) {
                     Procesando...
                   } @else if (curso.estado_cupos === 'disponible') {
-                    Pre-inscribir
+                    Inscribir
                   } @else {
-                    Unirse a lista de espera
+                    No hay cupos para este curso
                   }
                 </button>
               }
@@ -204,5 +215,6 @@
       </section>
     }
   }
+  
 
 </div>

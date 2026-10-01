@@ -41,12 +41,14 @@ export class InscripcionesService {
     );
   }
 
-  listarPorEstudiante(usuarioId: string): Observable<Inscripcion[]> {
-    return this.http.get<Inscripcion[]>(`${this.apiUrl}/estudiante/${usuarioId}`);
+  // soloActivas=true filtra por estado ACTIVA/PENDIENTE en el backend
+  listarPorEstudiante(usuarioId: string, soloActivas = false): Observable<Inscripcion[]> {
+    const params = soloActivas ? '?soloActivas=true' : '';
+    return this.http.get<Inscripcion[]>(`${this.apiUrl}/estudiante/${usuarioId}${params}`);
   }
 
   inscribirDirecto(dto: CreateInscripcionDto): Observable<Inscripcion> {
-    return this.http.post<Inscripcion>(`${this.apiUrl}/`, dto);
+    return this.http.post<Inscripcion>(this.apiUrl, dto);
   }
 
   preInscribir(dto: CreateInscripcionDto): Observable<Inscripcion> {
