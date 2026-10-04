@@ -1,0 +1,133 @@
+<p>curso-detalle works!</p><div class="max-w-6xl mx-auto p-6">
+
+  <a routerLink="/admin/academico/cursos" class="text-sm text-gray-500 hover:text-gray-700 underline">← Volver</a>
+
+  @if (curso(); as c) {
+    <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mt-3 mb-6">
+      <div class="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-800">{{ c.nombre }}</h1>
+          <p class="text-sm text-gray-500 mt-1">
+            {{ c.asignatura?.nombre }} · {{ c.periodo?.nombre }}
+            @if (!c.activo) { <span class="ml-2 text-red-600 font-medium">(Desactivado)</span> }
+          </p>
+          <p class="text-sm text-gray-600 mt-2">
+            Docente: <strong>{{ c.docente ? c.docente.nombre + ' ' + c.docente.apellido : 'Sin asignar' }}</strong>
+          </p>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3 text-center">
+          <div class="bg-indigo-50 rounded-lg px-4 py-2">
+            <p class="text-xl font-bold text-indigo-700">{{ activas() }}</p>
+            <p class="text-xs text-gray-500">Activos</p>
+          </div>
+          <div class="bg-gray-50 rounded-lg px-4 py-2">
+            <p class="text-xl font-bold text-gray-700">{{ c.capacidadMax }}</p>
+            <p class="text-xs text-gray-500">Capacidad</p>
+          </div>
+          <div class="rounded-lg px-4 py-2" [class]="cuposLibres() > 0 ? 'bg-green-50' : 'bg-red-50'">
+            <p class="text-xl font-bold" [class]="cuposLibres() > 0 ? 'text-green-700' : 'text-red-600'">{{ cuposLibres() }}</p>
+            <p class="text-xs text-gray-500">Cupos libres</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-4 mt-5 text-sm text-gray-600">
+        <div>
+          <p class="text-xs uppercase text-gray-400 mb-1">Horario</p>
+          @for (h of c.horarios; track h.id) {
+            <p>{{ h.diaSemana }} {{ h.horaInicio.slice(0,5) }}–{{ h.horaFin.slice(0,5) }}{{ h.aula ? ' · ' + h.aula.nombre : '' }}</p>
+          } @empty { <p class="text-gray-400">Sin horario</p> }
+        </div>
+        <div>
+          <p class="text-xs uppercase text-gray-400 mb-1">Edades</p>
+          <p>{{ c.edadMin ?? '—' }} a {{ c.edadMax ?? '—' }} años</p>
+        </div>
+        <div>
+          <p class="text-xs uppercase text-gray-400 mb-1">Descripción</p>
+          <p>{{ c.descripcion || '—' }}</p>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (errorMsg()) {
+    <div class="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm mb-4">{{ errorMsg() }}</div>
+  }
+
+  <!-- Filtros por estado -->
+  <div class="flex flex-wrap gap-2 mb-4">
+    <button (click)="filtro.set('todas')"
+      [class]="filtro() === 'todas' ? 'bg-gray-900 text-white' : 'bg-white border border-gray-200 text-gray-600'"
+      class="px-4 py-1.5 rounded-full text-sm font-medium">
+      Todas ({{ inscritos().length }})
+    </button>
+    @for (e of estados; track e) {
+      <button (click)="filtro.set(e)"
+        [class]="filtro() === e ? 'bg-gray-900 text-white' : 'bg-white border border-gray-200 text-gray-600'"
+        class="px-4 py-1.5 rounded-full text-sm font-medium capitalize">
+        {{ e }} ({{ contar(e) }})
+      </button>
+    }
+  </div>
+
+  @if (isLoading()) {
+    <div class="flex justify-center py-12">
+      <div class="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  } @else {
+    <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50 text-xs uppercase text-gray-500 text-left">
+          <tr>
+            <th class="px-4 py-3">Estudiante</th>
+            <th class="px-4 py-3">Contacto</th>
+            <th class="px-4 py-3">Estado</th>
+            <th class="px-4 py-3">Observaciones</th>
+            <th class="px-4 py-3 text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          @for (i of inscritosFiltrados(); track i.id) {
+            <tr class="hover:bg-gray-50">
+              <td class="px-4 py-3">
+                <p class="font-medium text-gray-800">{{ i.usuario.nombre }} {{ i.usuario.apellido }}</p>
+                <p class="text-xs text-gray-400">{{ i.usuario.documento }}</p>
+              </td>
+              <td class="px-4 py-3 text-gray-600">
+                <p>{{ i.usuario.telefono || '—' }}</p>
+                @if (!i.usuario.emailFicticio) { <p class="text-xs text-gray-400">{{ i.usuario.email }}</p> }
+              </td>
+              <td class="px-4 py-3">
+                @if (isAdmin()) {
+                  <select (change)="cambiarEstado(i, $any($event.target).value)"
+                    [disabled]="procesando() === i.id"
+                    class="rounded-full px-2 py-1 text-xs font-medium border-0 capitalize" [class]="badge(i.estado)">
+                    @for (e of estados; track e) {
+                      <option [value]="e" [selected]="e === i.estado">{{ e }}</option>
+                    }
+                  </select>
+                } @else {
+                  <span class="px-2 py-1 rounded-full text-xs font-medium capitalize" [class]="badge(i.estado)">{{ i.estado }}</span>
+                }
+              </td>
+              <td class="px-4 py-3 text-gray-600 max-w-xs">{{ i.observaciones || '—' }}</td>
+              <td class="px-4 py-3 text-right whitespace-nowrap">
+                @if (i.estado === 'pendiente') {
+                  <button (click)="aprobar(i)" [disabled]="procesando() === i.id"
+                    class="text-green-600 hover:underline mr-3 disabled:opacity-50">Aprobar</button>
+                }
+                @if (isAdmin()) {
+                  <button (click)="eliminar(i)" [disabled]="procesando() === i.id"
+                    class="text-red-600 hover:underline disabled:opacity-50">Eliminar</button>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="5" class="px-4 py-10 text-center text-gray-400">No hay inscripciones en esta categoría</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

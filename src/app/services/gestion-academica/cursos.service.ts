@@ -14,7 +14,7 @@ export class CursosService {
   public isLoading = signal(false);
   public error = signal<string | null>(null);
 
-  listar(filtros?: { periodoId?: string; asignaturaId?: string; docenteId?: string }): Observable<Curso[]> {
+  listar(filtros?: { periodoId?: string; asignaturaId?: string; docenteId?: string | null}): Observable<Curso[]> {
     this.isLoading.set(true);
     this.error.set(null);
     const params: Record<string, string> = {};

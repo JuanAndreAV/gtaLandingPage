@@ -3,11 +3,15 @@
 @theme {
   --color-girardota-yellow: #F9D423;
   --color-girardota-teal: #00897B;
-  --color-girardota-teal-dark: #00695C ;
+  --color-girardota-teal-dark: #00695C;
   --color-girardota-orange: #FF6B35;
   --color-girardota-blue: #4DD0E1;
-  --color-girardota-amber: #FBBF24
-}
+  --color-girardota-amber: #FBBF24;
 
-       
-       
+  /* Manual de imagen */
+  --color-purpura: #5d0e7a;
+  --color-verde-institucional: #1c7a2e;
+  --color-amarillo-estimulos: #ffd600;
+
+  --font-sans: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+}

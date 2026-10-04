@@ -5,7 +5,7 @@ export enum EstadoInscripcion {
   RETIRADA = 'retirada',
   SUSPENDIDA = 'suspendida',
   FINALIZADA = 'finalizada',
-  EN_ESPERA = 'en_espera',
+  //EN_ESPERA = 'en_espera',
 }
 
 export interface Inscripcion {

@@ -30,9 +30,16 @@ import { CursosAdminComponent } from './features/admin/academico/cursos-admin/cu
 import { InscripcionesComponent } from './features/admin/academico/inscripciones/inscripciones.component';
 import { CursosDisponiblesComponent } from './features/admin/academico/cursos-disponibles/cursos-disponibles.component';
 import { RegistroEstudianteComponent } from './features/admin/academico/registro-estudiante/registro-estudiante.component';
+import { CursoDetalleComponent } from './features/admin/academico/curso-detalle/curso-detalle.component';
+import { OfertaPublicaComponent } from './pages/oferta-publica/oferta-publica.component';
 
 
 export const routes: Routes = [
+   {
+      path: "oferta-publica",
+      component: OfertaPublicaComponent
+   },
+   
    {
       path: "registro-novedades",
       component: ReporteNovedadesComponent
@@ -117,7 +124,8 @@ export const routes: Routes = [
                {path: 'cursos', component: CursosAdminComponent},
                {path: 'inscripciones', component: InscripcionesComponent},
                {path: 'cursos-disponibles', component: CursosDisponiblesComponent},
-               {path: 'registro-estudiante', component: RegistroEstudianteComponent}
+               {path: 'registro-estudiante', component: RegistroEstudianteComponent},
+               {path: 'cursos/:id', component: CursoDetalleComponent}
             ]
          },
          {
@@ -143,13 +151,15 @@ export const routes: Routes = [
          {
       path: "novedades",
       component: NovedadesComponent
-   },{
+   },
+   {
          path: "reporte-encuestas",
       component: ReportesEncuestasComponent
    }
 
       ] 
    },
+   
    {
       path: "profesor",
        component: AreaprofesorComponent,

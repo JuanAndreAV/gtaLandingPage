@@ -11,6 +11,7 @@ import { Curso, CreateCursoDto, DiaSemana, CreateHorarioDto, Horario } from '../
 import { TitleComponent } from '../../../../shared/components/title/title.component';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 import { ConfirmPopupComponent } from '../../../shared/components/confirm-popup/confirm-popup.component';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-cursos-admin',
@@ -22,6 +23,7 @@ export class CursosAdminComponent implements OnInit {
   cursosService = inject(CursosService);
   asignaturasService = inject(AsignaturasService);
   programasService = inject(ProgramasService);
+  private router = inject(Router)
   aulasService = inject(AulasService);
   docentesService = inject(DocentesService);
 
@@ -59,9 +61,11 @@ export class CursosAdminComponent implements OnInit {
     this.docentesService.listar().subscribe();
   }
 
+  
+
   private formVacio(): CreateCursoDto {
     return {
-      asignaturaId: '', periodoId: '', docenteId: undefined,
+      asignaturaId: '', periodoId: '', docenteId: null,
       nombre: '', descripcion: '', capacidadMax: 20,
       edadMin: undefined, edadMax: undefined, intensidadHoraria: undefined,
       porcentajeAsistenciaMin: 80, notaAprobatoria: 3,
@@ -94,7 +98,7 @@ export class CursosAdminComponent implements OnInit {
     this.form = {
       asignaturaId: curso.asignaturaId,
       periodoId: curso.periodoId,
-      docenteId: curso.docenteId ?? undefined,
+      docenteId: curso.docenteId,
       nombre: curso.nombre,
       descripcion: curso.descripcion ?? '',
       capacidadMax: curso.capacidadMax,
@@ -239,5 +243,8 @@ export class CursosAdminComponent implements OnInit {
   nombreAula(aulaId: string | undefined | null): string {
     if (!aulaId) return '—';
     return this.aulasService.aulas().find(a => a.id === aulaId)?.nombre ?? '—';
+  }
+  detalleCurso(id: string){
+    this.router.navigate([`/admin/academico/cursos/${id}`])
   }
 }

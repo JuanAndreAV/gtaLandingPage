@@ -1,3 +1,5 @@
+import { PerfilDocente } from "./docentes";
+
 // src/app/models/curso.ts
 export enum DiaSemana {
   LUNES = 'lunes',
@@ -46,7 +48,7 @@ export interface Curso {
   updatedAt: string;
   asignatura?: { id: string; nombre: string };
   periodo?: { id: string; nombre: string };
-  docente?: { id: string; nombre: string; apellido: string } | null;
+  docente?: PerfilDocente | null;
   horarios?: Horario[];
   cursoPrerequisito?: { id: string; nombre: string } | null;
 }
@@ -54,7 +56,7 @@ export interface Curso {
 export interface CreateCursoDto {
   asignaturaId: string;
   periodoId: string;
-  docenteId?: string;
+  docenteId?: string | null;
   nombre: string;
   descripcion?: string;
   capacidadMax?: number;

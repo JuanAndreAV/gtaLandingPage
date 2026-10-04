@@ -1,0 +1,33 @@
+export interface PerfilDocente {
+    id:                     string;
+    email?:                  string;
+    nombre:                 string;
+    apellido:               string;
+    documento:              string;
+    fechaNacimiento?:        Date;
+    telefono?:               string;
+    fotoUrl?:                null;
+    activo?:                 boolean;
+    emailFicticio?:          boolean;
+    roles:                  string[];
+    tipoIdentificacion?:     string;
+    segundoNombre?:          string;
+    segundoApellido?:        string;
+    genero?:                 string;
+    direccion?:              string;
+    barrio?:                 string;
+    municipio?:              string;
+    departamento?:           string;
+    pais?:                   string;
+    municipioNacimiento?:    string;
+    departamentoNacimiento?: string;
+    paisNacimiento?:         string;
+    zonaResidencia?:         string;
+    enfoquePoblacional?:     string;
+    tieneDiscapacidad?:      boolean;
+    tipoDiscapacidad?:       string;
+    estrato?:                number;
+    eps?:                    string;
+    createdAt:              Date;
+    updatedAt:              Date;
+}

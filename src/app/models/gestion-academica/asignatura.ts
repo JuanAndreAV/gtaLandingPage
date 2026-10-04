@@ -22,12 +22,10 @@ export interface Asignatura {
   activo: boolean;
   createdAt: string;
   updatedAt: string;
-  docente?: { id: string; nombre: string; apellido: string };
   pensum?: PensumItem[];
 }
 
 export interface CreateAsignaturaDto {
-  docenteId?: string;
   nombre: string;
   descripcion?: string;
   programas?: PensumItemDto[];

@@ -5,10 +5,11 @@ import { Event } from '../../models/event';
 import { News } from '../../models/news';
 import { NewsCardComponent } from '../../shared/components/news-card/news-card.component';
 import { EventItemComponent } from '../../shared/components/event-item/event-item.component';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-home',
-  imports: [NewsCardComponent, EventItemComponent],
+  imports: [NewsCardComponent, EventItemComponent, RouterLink],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
   standalone: true

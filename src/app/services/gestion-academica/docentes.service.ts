@@ -1,32 +1,42 @@
 // src/app/services/gestion-academica/docentes.service.ts
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { tap, catchError, of, finalize } from 'rxjs';
+import { tap, catchError, of, finalize, Observable } from 'rxjs';
+import { PerfilDocente } from '../../models/gestion-academica/docentes';
 
-export interface DocenteOption {
-  id: string;
-  nombre_completo: string;
-}
+
 
 @Injectable({ providedIn: 'root' })
 export class DocentesService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.baseUrl}/usuarios`;
+  private apiUrl = `${environment.baseUrl}/usuarios/docentes`;
 
-  public docentes = signal<DocenteOption[]>([]);
+  public docentes = signal<PerfilDocente[]>([]);
   public isLoading = signal(false);
 
-  listar() {
+  public docentesConNombreCompleto = computed(() =>
+    this.docentes().map(docente => ({
+      ...docente,
+      nombreCompleto: [
+        docente.nombre,
+        docente.segundoNombre,
+        docente.apellido,
+        docente.segundoApellido
+      ]
+        .filter(Boolean)
+        .join(' ')
+    }))
+  );
+
+  listar(): Observable<PerfilDocente[]> {
     this.isLoading.set(true);
-    // Use a single explicit role string. The previous expression ('docente' || 'profesor' || undefined)
-    // was always truthy and evaluated to 'docente'. Set the desired role explicitly.
-    const rol = 'profesor';
-    return this.http.get<{ datos: DocenteOption[] }>(this.apiUrl, {
-      params: { rol:  rol, activo: 'true', porPagina: '200' },
-    }).pipe(
-      tap(res => this.docentes.set(res.datos ?? [])),
-      catchError(() => { this.docentes.set([]); return of(null); }),
+   
+    return this.http.get<PerfilDocente[]>(this.apiUrl).pipe(
+      tap(res => this.docentes.set(res ?? [])),
+      catchError((e) => { 
+        console.error(e)
+        this.docentes.set([]); return of([]); }),
       finalize(() => this.isLoading.set(false)),
     );
   }

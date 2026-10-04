@@ -1,11 +1,10 @@
-import {
-  Component, inject, signal, computed, OnInit
-} from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { finalize, distinctUntilChanged } from 'rxjs';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { finalize, distinctUntilChanged, startWith } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
 import { InscripcionesService } from '../../../../services/gestion-academica/inscripciones.service';
 
@@ -17,30 +16,31 @@ interface Horario {
 }
 
 interface CursoDisponible {
-  id:               string;
-  nombre:           string;
-  descripcion:      string;
-  asignatura:       string;
-  programa:         string;
-  programa_color:   string;
-  periodo:          string;
-  capacidad_max:    number;
-  inscritos:        number;
+  id:                string;
+  nombre:            string;
+  descripcion:       string;
+  asignatura:        string;
+  programa:          string;
+  programa_color:    string;
+  periodo:           string;
+  capacidad_max:     number;
+  inscritos:         number;
   cupos_disponibles: number;
-  en_espera:        number;
-  estado_cupos:     'disponible' | 'lleno';
-  edad_min:         number | null;
-  edad_max:         number | null;
-  horarios:         Horario[];
+  en_espera:         number;
+  estado_cupos:      'disponible' | 'lleno';
+  edad_min:          number | null;
+  edad_max:          number | null;
+  horarios:          Horario[];
 }
 
-interface Programa { id: string; nombre: string; }
-interface Periodo  { id: string; nombre: string; }
+interface Programa   { id: string; nombre: string; }
+interface Periodo    { id: string; nombre: string; }
+interface Asignatura { id: string; nombre: string; }
 
 @Component({
   selector: 'app-cursos-disponibles',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './cursos-disponibles.component.html',
 })
 export class CursosDisponiblesComponent implements OnInit {
@@ -51,35 +51,64 @@ export class CursosDisponiblesComponent implements OnInit {
 
   // Estado
   cursos       = signal<CursoDisponible[]>([]);
+  areas        = signal<string[]>([]);
   programas    = signal<Programa[]>([]);
+  asignaturas  = signal<Asignatura[]>([]);
   periodos     = signal<Periodo[]>([]);
   isLoading    = signal(false);
-  inscribiendo = signal<string | null>(null); // id del curso en proceso
+  inscribiendo = signal<string | null>(null);
   errorMsg     = signal<string | null>(null);
   exitoMsg     = signal<string | null>(null);
 
   inscripcionesPrevias = signal<any[]>([]);
 
   // Parámetros
-  usuarioId  = signal<string | null>(null);
+  usuarioId = signal<string | null>(null);
 
   // Filtros
-  filtroProgramaId = new FormControl('');
-  filtroPeriodoId  = new FormControl('');
-  filtroTexto      = new FormControl('');
+  filtroTexto        = new FormControl('');
+  filtroArea         = new FormControl('');
+  filtroProgramaId   = new FormControl('');
+  filtroAsignaturaId = new FormControl('');
+  filtroPeriodoId    = new FormControl('');
 
-  // Cursos filtrados por búsqueda de texto
+  // Observación para el docente
+  observaciones = new FormControl('');
+
+  // Los FormControl no son signals: se convierten para que computed reaccione
+  private texto = toSignal(
+    this.filtroTexto.valueChanges.pipe(startWith('')), { initialValue: '' }
+  );
+  private areaSel = toSignal(
+    this.filtroArea.valueChanges.pipe(startWith('')), { initialValue: '' }
+  );
+  private asignaturaSelId = toSignal(
+    this.filtroAsignaturaId.valueChanges.pipe(startWith('')), { initialValue: '' }
+  );
+
   cursosFiltrados = computed(() => {
-    const texto = this.filtroTexto.value?.toLowerCase() ?? '';
-    if (!texto) return this.cursos();
+    const texto = (this.texto() ?? '').toLowerCase();
+
+    // Área: programas() ya viene filtrado por área desde el backend
+    const area = this.areaSel();
+    const programasDelArea = new Set(this.programas().map(p => p.nombre));
+
+    // Asignatura: se compara por nombre
+    const asigId = this.asignaturaSelId();
+    const asigNombre = asigId
+      ? this.asignaturas().find(a => a.id === asigId)?.nombre
+      : null;
+
     return this.cursos().filter(c =>
-      c.nombre.toLowerCase().includes(texto) ||
-      c.asignatura.toLowerCase().includes(texto) ||
-      c.programa.toLowerCase().includes(texto)
+      (!area       || programasDelArea.has(c.programa)) &&
+      (!asigNombre || c.asignatura === asigNombre) &&
+      (!texto ||
+        c.nombre.toLowerCase().includes(texto) ||
+        c.asignatura.toLowerCase().includes(texto) ||
+        c.programa.toLowerCase().includes(texto))
     );
   });
 
-  // Agrupados por programa
   cursosAgrupados = computed(() => {
     const grupos = new Map<string, CursoDisponible[]>();
     for (const curso of this.cursosFiltrados()) {
@@ -91,20 +120,35 @@ export class CursosDisponiblesComponent implements OnInit {
 
   ngOnInit() {
     this.usuarioId.set(this.route.snapshot.queryParamMap.get('usuarioId'));
+
+    this.cargarAreas();
     this.cargarProgramas();
     this.cargarPeriodos();
     this.cargarCursos();
     this.cargarInscripcionesPrevias();
 
-    // Recargar cuando cambian los filtros de select
-    this.filtroProgramaId.valueChanges
-      .pipe(distinctUntilChanged())
-      .subscribe(() => this.cargarCursos());
+    // Área → recarga programas y limpia lo de abajo
+    this.filtroArea.valueChanges.pipe(distinctUntilChanged()).subscribe(() => {
+      this.filtroProgramaId.setValue('');
+      this.filtroAsignaturaId.setValue('');
+      this.asignaturas.set([]);
+      this.cargarProgramas();
+    });
+
+    // Programa → recarga asignaturas y cursos
+    this.filtroProgramaId.valueChanges.pipe(distinctUntilChanged()).subscribe(id => {
+      this.filtroAsignaturaId.setValue('');
+      this.asignaturas.set([]);
+      if (id) this.cargarAsignaturas(id);
+      this.cargarCursos();
+    });
 
     this.filtroPeriodoId.valueChanges
       .pipe(distinctUntilChanged())
       .subscribe(() => this.cargarCursos());
   }
+
+  // ── Carga de datos ─────────────────────────────────────────────
 
   cargarCursos() {
     this.isLoading.set(true);
@@ -125,9 +169,21 @@ export class CursosDisponiblesComponent implements OnInit {
     });
   }
 
+  cargarAreas() {
+    this.http.get<string[]>(`${environment.baseUrl}/programas/areas`)
+      .subscribe(data => this.areas.set(data));
+  }
+
   cargarProgramas() {
-    this.http.get<Programa[]>(`${environment.baseUrl}/programas`)
+    const area = this.filtroArea.value;
+    const qs = area ? `?area=${encodeURIComponent(area)}` : '';
+    this.http.get<Programa[]>(`${environment.baseUrl}/programas${qs}`)
       .subscribe(data => this.programas.set(data));
+  }
+
+  cargarAsignaturas(programaId: string) {
+    this.http.get<Asignatura[]>(`${environment.baseUrl}/asignaturas?programaId=${programaId}`)
+      .subscribe(data => this.asignaturas.set(data));
   }
 
   cargarPeriodos() {
@@ -135,21 +191,25 @@ export class CursosDisponiblesComponent implements OnInit {
       .subscribe(data => this.periodos.set(data));
   }
 
-  // Trae las inscripciones activas/pendientes del estudiante, para
-  // advertir al admin ANTES de que elija un curso (no bloquea el flujo).
   cargarInscripcionesPrevias() {
     if (!this.usuarioId()) return;
 
     this.inscripciones.listarPorEstudiante(this.usuarioId()!, true)
       .subscribe({
         next:  data => this.inscripcionesPrevias.set(data),
-        error: ()   => this.inscripcionesPrevias.set([]), // silencioso: no bloquea la vista
+        error: ()   => this.inscripcionesPrevias.set([]),
       });
   }
+
+  // ── Inscripción ────────────────────────────────────────────────
 
   Inscribir(cursoId: string, estadoCupos: string) {
     if (!this.usuarioId()) {
       this.errorMsg.set('No se identificó al estudiante. Vuelve al paso anterior.');
+      return;
+    }
+    if (estadoCupos !== 'disponible') {
+      this.errorMsg.set('Este curso no tiene cupos disponibles.');
       return;
     }
 
@@ -160,19 +220,23 @@ export class CursosDisponiblesComponent implements OnInit {
     this.inscripciones.inscribirDirecto({
       usuarioId: this.usuarioId()!,
       cursoId,
+      observaciones: this.observaciones.value?.trim() || undefined,
     }).pipe(
       finalize(() => this.inscribiendo.set(null))
     ).subscribe({
       next: (res: any) => {
         this.exitoMsg.set(res.mensaje ?? 'Inscripción realizada correctamente.');
-        this.cargarCursos();               // refrescar cupos
-        this.cargarInscripcionesPrevias();  // refrescar aviso de inscripciones previas
+        this.observaciones.reset('');
+        this.cargarCursos();
+        this.cargarInscripcionesPrevias();
       },
       error: err => {
         this.errorMsg.set(err.error?.message ?? 'Error al realizar la inscripción');
       }
     });
   }
+
+  // ── Helpers de vista ───────────────────────────────────────────
 
   anchoBarra(curso: CursoDisponible): number {
     return Math.min((curso.inscritos / curso.capacidad_max) * 100, 100);

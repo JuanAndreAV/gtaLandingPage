@@ -13,8 +13,7 @@
       </p>
     </div>
     @if (usuarioId()) {
-      <button (click)="volver()"
-        class="text-sm text-gray-500 hover:text-gray-700 underline">
+      <button (click)="volver()" class="text-sm text-gray-500 hover:text-gray-700 underline">
         ← Volver al registro
       </button>
     }
@@ -22,21 +21,27 @@
 
   <!-- Filtros -->
   <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
 
       <div>
-        <label class="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">
-          Buscar
-        </label>
-        <input [formControl]="filtroTexto" type="text"
-          placeholder="Nombre, asignatura..."
+        <label class="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Buscar</label>
+        <input [formControl]="filtroTexto" type="text" placeholder="Nombre, asignatura..."
           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
       </div>
 
       <div>
-        <label class="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">
-          Programa
-        </label>
+        <label class="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Área</label>
+        <select [formControl]="filtroArea"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+          <option value="">Todas las áreas</option>
+          @for (a of areas(); track a) {
+            <option [value]="a">{{ a }}</option>
+          }
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Programa</label>
         <select [formControl]="filtroProgramaId"
           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
           <option value="">Todos los programas</option>
@@ -47,9 +52,19 @@
       </div>
 
       <div>
-        <label class="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">
-          Periodo
-        </label>
+        <label class="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Asignatura</label>
+        <select [formControl]="filtroAsignaturaId"
+          [attr.disabled]="asignaturas().length === 0 ? '' : null"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none disabled:bg-gray-100">
+          <option value="">Todas las asignaturas</option>
+          @for (a of asignaturas(); track a.id) {
+            <option [value]="a.id">{{ a.nombre }}</option>
+          }
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">Periodo</label>
         <select [formControl]="filtroPeriodoId"
           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
           <option value="">Todos los periodos</option>
@@ -74,15 +89,27 @@
     </div>
   }
   @if (inscripcionesPrevias().length > 0) {
-  <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 text-amber-800 text-sm mb-4">
-    <p class="font-medium mb-1">⚠️ Este estudiante ya tiene {{ inscripcionesPrevias().length }} inscripción(es) activa(s):</p>
-    <ul class="list-disc list-inside">
-      @for (i of inscripcionesPrevias(); track i.id) {
-        <li>{{ i.curso.nombre }} ({{ i.curso.asignatura.nombre }}) — {{ i.estado }}</li>
-      }
-    </ul>
-  </div>
-}
+    <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 text-amber-800 text-sm mb-4">
+      <p class="font-medium mb-1">⚠️ Este estudiante ya tiene {{ inscripcionesPrevias().length }} inscripción(es) activa(s):</p>
+      <ul class="list-disc list-inside">
+        @for (i of inscripcionesPrevias(); track i.id) {
+          <li>{{ i.curso.nombre }} ({{ i.curso.asignatura.nombre }}) — {{ i.estado }}</li>
+        }
+      </ul>
+    </div>
+  }
+
+  <!-- Observación para el docente -->
+  @if (usuarioId()) {
+    <div class="bg-white rounded-xl border border-gray-100 p-4 mb-6">
+      <label class="block text-xs font-medium text-gray-500 mb-1 uppercase tracking-wider">
+        Observación para el docente (opcional)
+      </label>
+      <textarea [formControl]="observaciones" rows="2"
+        placeholder="Novedades del estudiante que el docente deba conocer..."
+        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"></textarea>
+    </div>
+  }
 
   <!-- Loading -->
   @if (isLoading()) {
@@ -104,7 +131,6 @@
     @for (grupo of programasArray(); track grupo[0]) {
       <section class="mb-8">
 
-        <!-- Encabezado del programa -->
         <div class="flex items-center gap-3 mb-4">
           <div class="w-3 h-3 rounded-full flex-shrink-0"
             [style.background-color]="grupo[1][0]?.programa_color ?? '#6366f1'">
@@ -115,15 +141,15 @@
           </span>
         </div>
 
-        <!-- Grid de cursos -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           @for (curso of grupo[1]; track curso.id) {
             <div class="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col gap-3">
 
-              <!-- Nombre y estado de cupos -->
               <div class="flex items-start justify-between gap-2">
                 <div>
-                  <h4 class="font-semibold text-gray-800">{{ curso.nombre }}</h4>
+                  <a [routerLink]="['/admin/academico/cursos', curso.id]" class="hover:text-indigo-600 transition">
+                    <h4 class="font-semibold text-gray-800">{{ curso.nombre }}</h4>
+                  </a>
                   <p class="text-xs text-gray-400">{{ curso.asignatura }}</p>
                 </div>
                 @if (curso.estado_cupos === 'disponible') {
@@ -137,12 +163,10 @@
                 }
               </div>
 
-              <!-- Descripción -->
               @if (curso.descripcion) {
                 <p class="text-sm text-gray-500">{{ curso.descripcion }}</p>
               }
 
-              <!-- Detalles -->
               <div class="space-y-1.5 text-xs text-gray-500">
 
                 @if (curso.horarios?.length) {
@@ -151,7 +175,6 @@
                     <span>{{ formatearHorario(curso.horarios) }}</span>
                   </div>
                 }
-                
 
                 @if (edadLabel(curso.edad_min, curso.edad_max)) {
                   <div class="flex items-center gap-1.5">
@@ -165,7 +188,6 @@
                   <span>{{ curso.periodo }}</span>
                 </div>
 
-                <!-- Barra de ocupación -->
                 <div class="pt-1">
                   <div class="flex justify-between text-xs text-gray-400 mb-1">
                     <span>{{ curso.inscritos }} inscritos</span>
@@ -179,7 +201,6 @@
                   </div>
                 </div>
 
-                <!-- Lista de espera -->
                 @if (curso.en_espera > 0) {
                   <div class="flex items-center gap-1.5 text-amber-600">
                     <span>⏳</span>
@@ -189,15 +210,14 @@
 
               </div>
 
-              <!-- Botón de inscripción -->
               @if (usuarioId()) {
                 <button
                   (click)="Inscribir(curso.id, curso.estado_cupos)"
-                  [disabled]="inscribiendo() === curso.id"
+                  [disabled]="inscribiendo() === curso.id || curso.estado_cupos !== 'disponible'"
                   class="mt-auto w-full py-2 rounded-lg text-sm font-medium transition"
                   [class]="curso.estado_cupos === 'disponible'
                     ? 'bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50'
-                    : 'bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 disabled:opacity-50'">
+                    : 'bg-amber-50 text-amber-700 border border-amber-200 disabled:opacity-60 disabled:cursor-not-allowed'">
                   @if (inscribiendo() === curso.id) {
                     Procesando...
                   } @else if (curso.estado_cupos === 'disponible') {
@@ -215,6 +235,5 @@
       </section>
     }
   }
-  
 
 </div>

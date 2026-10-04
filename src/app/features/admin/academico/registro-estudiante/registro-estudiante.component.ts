@@ -86,7 +86,7 @@ export class RegistroEstudianteComponent implements OnInit {
   tiposId       = ['C.C.', 'T.I.', 'C.E.', 'Pasaporte', 'R.C.N', 'Otro'];
   generos       = ['Masculino', 'Femenino', 'No binario', 'Otro'];
   zonas         = ['Urbana', 'Rural'];
-  enfoques      = ['No aplica', 'Víctimas', 'Discapacidad', 'LGBTIQ+', 'Adulto mayor', 'Primera infancia', 'Indigena', 'Comunidades Afrodescendientes','Raizal','Palenquero', 'Gitano'];
+  enfoques      = ['No aplica', 'Víctimas', 'ICBF', 'Discapacidad', 'LGBTIQ+', 'Adulto mayor', 'Primera infancia', 'Indigena', 'Comunidades Afrodescendientes','Raizal','Palenquero', 'Gitano'];
   estratos      = [1, 2, 3, 4, 5, 6];
   rolesOpciones = ['estudiante', 'docente', 'admin'];
 

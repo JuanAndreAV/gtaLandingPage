@@ -1,0 +1,87 @@
+<div class="max-w-6xl mx-auto p-6">
+  <h1 class="text-3xl font-bold text-gray-900">Oferta de cursos</h1>
+  <p class="text-gray-500 mt-1 mb-6">Casa de la Cultura Pedrito Ruiz · Para inscribirte, acércate a la Casa de la Cultura.</p>
+
+  <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4 mb-6 grid gap-4 md:grid-cols-3">
+    <input [formControl]="filtroTexto" placeholder="Buscar curso, asignatura o docente..."
+      class="border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500" />
+    <select [formControl]="filtroArea"
+      class="border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+      <option value="">Todas las áreas</option>
+      @for (a of areas(); track a) { <option [value]="a">{{ a }}</option> }
+    </select>
+    <input [formControl]="filtroEdad" type="number" min="0" max="120" placeholder="Edad del participante"
+      class="border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500" />
+  </div>
+
+  @if (isLoading()) {
+    <div class="flex justify-center py-16">
+      <div class="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  } @else if (error()) {
+    <p class="text-center text-red-600 py-12">{{ error() }}</p>
+  } @else {
+    <p class="text-sm text-gray-400 mb-3">{{ filtrados().length }} curso(s)</p>
+
+    <div class="grid md:grid-cols-2 gap-5">
+      @for (c of filtrados(); track c.id) {
+        <article class="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3">
+
+          <header class="flex items-start justify-between gap-3">
+            <div>
+              <h2 class="font-semibold text-gray-900 text-lg">{{ c.nombre }}</h2>
+              <p class="text-xs text-gray-400">{{ c.asignatura }} · {{ c.programas.join(', ') }}</p>
+            </div>
+            @if (c.cuposDisponibles > 0) {
+              <span class="text-xs font-medium px-2.5 py-1 rounded-full bg-green-100 text-green-700 whitespace-nowrap">
+                {{ c.cuposDisponibles }} cupo{{ c.cuposDisponibles !== 1 ? 's' : '' }}
+              </span>
+            } @else {
+              <span class="text-xs font-medium px-2.5 py-1 rounded-full bg-red-100 text-red-700">Sin cupos</span>
+            }
+          </header>
+
+          @if (c.descripcion) { <p class="text-sm text-gray-600">{{ c.descripcion }}</p> }
+
+          @if (c.docente) {
+            <div class="flex items-center gap-3">
+              @if (c.docente.fotoUrl) {
+                <img [src]="c.docente.fotoUrl" alt="" class="w-9 h-9 rounded-full object-cover" />
+              } @else {
+                <div class="w-9 h-9 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-sm font-bold">
+                  {{ c.docente.nombre?.charAt(0) }}{{ c.docente.apellido?.charAt(0) }}
+                </div>
+              }
+              <div>
+                <p class="text-xs text-gray-400">Docente</p>
+                <p class="text-sm font-medium text-gray-800">{{ c.docente.nombre }} {{ c.docente.apellido }}</p>
+              </div>
+            </div>
+          }
+
+          <div class="text-sm text-gray-600 space-y-1">
+            <p>👤 {{ edadLabel(c) }}</p>
+            <p>📅 {{ c.periodo }}</p>
+            @for (h of c.horarios; track $index) {
+              <p>🕐 {{ dia(h.diaSemana) }} {{ h.horaInicio }}–{{ h.horaFin }}{{ h.aula ? ' · ' + h.aula : '' }}</p>
+            } @empty {
+              <p class="text-gray-400">Horario por confirmar</p>
+            }
+          </div>
+
+          <div class="mt-auto pt-1">
+            <div class="flex justify-between text-xs text-gray-400 mb-1">
+              <span>{{ c.inscritos }} inscritos</span><span>{{ c.capacidadMax }} cupos</span>
+            </div>
+            <div class="w-full bg-gray-100 rounded-full h-1.5">
+              <div class="h-1.5 rounded-full" [style.width.%]="anchoBarra(c)"
+                [class]="c.cuposDisponibles > 0 ? 'bg-indigo-500' : 'bg-red-400'"></div>
+            </div>
+          </div>
+        </article>
+      } @empty {
+        <p class="md:col-span-2 text-center text-gray-400 py-12">No hay cursos con esos filtros</p>
+      }
+    </div>
+  }
+</div>

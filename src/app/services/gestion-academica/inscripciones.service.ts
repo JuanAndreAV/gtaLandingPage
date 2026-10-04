@@ -62,4 +62,7 @@ export class InscripcionesService {
   cambiarEstado(id: string, dto: CambiarEstadoDto): Observable<Inscripcion> {
     return this.http.patch<Inscripcion>(`${this.apiUrl}/${id}/estado`, dto);
   }
+  eliminar(id: string): Observable<Inscripcion> {
+    return this.http.delete<Inscripcion>(`${this.apiUrl}/${id}`)
+  }
 }

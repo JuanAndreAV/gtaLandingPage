@@ -38,7 +38,7 @@ export class AsignaturasAdminComponent implements OnInit {
   guardando = signal(false);
   formularioEnviado = false;
   asignaturaEditando: Asignatura | null = null;
-  form: CreateAsignaturaDto = { nombre: '', descripcion: '', docenteId: undefined };
+  form: CreateAsignaturaDto = { nombre: '', descripcion: '' };
 
   // ── Modal de pensum ────────────────────────────────────
   modalPensumAbierto = signal(false);
@@ -60,7 +60,7 @@ export class AsignaturasAdminComponent implements OnInit {
   abrirModalNueva() {
     this.modoEdicion.set(false);
     this.asignaturaEditando = null;
-    this.form = { nombre: '', descripcion: '', docenteId: undefined };
+    this.form = { nombre: '', descripcion: '' };
     this.formularioEnviado = false;
     this.modalAbierto.set(true);
   }
@@ -71,7 +71,6 @@ export class AsignaturasAdminComponent implements OnInit {
     this.form = {
       nombre: asignatura.nombre,
       descripcion: asignatura.descripcion ?? '',
-      docenteId: asignatura.docenteId ?? undefined,
     };
     this.formularioEnviado = false;
     this.modalAbierto.set(true);
