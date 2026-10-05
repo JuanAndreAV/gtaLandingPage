@@ -32,9 +32,13 @@ import { CursosDisponiblesComponent } from './features/admin/academico/cursos-di
 import { RegistroEstudianteComponent } from './features/admin/academico/registro-estudiante/registro-estudiante.component';
 import { CursoDetalleComponent } from './features/admin/academico/curso-detalle/curso-detalle.component';
 import { OfertaPublicaComponent } from './pages/oferta-publica/oferta-publica.component';
+import { ElegirModoComponent } from './features/shared/elegir-modo/elegir-modo.component';
 
 
 export const routes: Routes = [
+   {
+      path: 'elegir-modo', component: ElegirModoComponent, canMatch: [isAuthenticatedGuard] 
+   },
    {
       path: "oferta-publica",
       component: OfertaPublicaComponent

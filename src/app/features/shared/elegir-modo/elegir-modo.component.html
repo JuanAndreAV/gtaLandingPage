@@ -1,0 +1,16 @@
+<div class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+      <div class="bg-white rounded-lg shadow-2xl max-w-sm w-full p-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-1">¿Cómo quieres ingresar?</h2>
+        <p class="text-sm text-gray-500 mb-5">Puedes cambiarlo cuando quieras desde el menú.</p>
+        <div class="space-y-3">
+          <button (click)="entrar('admin')"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg text-left hover:border-girardota-teal">
+            <span class="font-semibold">Administrador</span>
+          </button>
+          <button (click)="entrar('profesor')"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg text-left hover:border-girardota-teal">
+            <span class="font-semibold">Docente</span>
+          </button>
+        </div>
+      </div>
+    </div>
