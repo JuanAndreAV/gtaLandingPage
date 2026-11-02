@@ -1,9 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { environment } from '../../../environments/environment';
-import { UserResponse, AuthResponse } from '../interfaces/auth-response';
-import { Observable, tap, map, catchError, of } from 'rxjs';
+import { Observable, tap, map, catchError, of, throwError, finalize, shareReplay } from 'rxjs';
 import { Router } from '@angular/router';
+import { environment } from '../../../environments/environment';
+import { UserResponse } from '../interfaces/auth-response';
 
 type AuthStatus = 'checking' | 'authenticated' | 'unauthenticated';
 export type Modo = 'admin' | 'profesor';
@@ -14,18 +14,16 @@ export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
 
-  // Estados
   private _authStatus = signal<AuthStatus>('checking');
   private _user = signal<UserResponse | null>(null);
-  private _token = signal<string | null>(localStorage.getItem('token'));
   private _modo = signal<Modo | null>(sessionStorage.getItem('modo') as Modo | null);
+  private refresh$?: Observable<boolean>;
 
-  // Signals públicos
+  constructor() { localStorage.removeItem('token'); } // limpia el token viejo
+
   public authStatus = computed(() => this._authStatus());
   public user = computed(() => this._user());
-  public token = computed(() => this._token());
 
-  // Roles que realmente tiene el usuario
   public rolesDisponibles = computed<Modo[]>(() => {
     const roles = this._user()?.roles ?? [];
     const r: Modo[] = [];
@@ -34,7 +32,6 @@ export class AuthService {
     return r;
   });
 
-  // Modo activo: el elegido (si sigue siendo válido) o el único disponible
   public modo = computed<Modo | null>(() => {
     const disp = this.rolesDisponibles();
     const m = this._modo();
@@ -42,11 +39,7 @@ export class AuthService {
     return disp.length === 1 ? disp[0] : null;
   });
 
-  public necesitaElegirModo = computed(
-    () => this.rolesDisponibles().length > 1 && this.modo() === null
-  );
-
-  // Ahora depende del modo, no solo del rol
+  public necesitaElegirModo = computed(() => this.rolesDisponibles().length > 1 && this.modo() === null);
   public isAdmin = computed(() => this.modo() === 'admin');
 
   elegirModo(m: Modo) {
@@ -60,56 +53,58 @@ export class AuthService {
     this.router.navigateByUrl('/elegir-modo');
   }
 
+  // Ya no hay token en el front: la cookie viaja sola
   checkStatus(): Observable<boolean> {
-    const token = this.token();
-    if (!token) { this.clearSession(); return of(false); }
-
     this._authStatus.set('checking');
-
     return this.http.get<UserResponse>(`${baseUrl}/auth/profile`).pipe(
-      tap(user => this.handleAuthSuccess({ access_token: token, user })),
+      tap(user => this.setUser(user)),
       map(() => true),
-      catchError(() => { this.clearSession(); return of(false); })
+      catchError(() => { this.clearSession(); return of(false); }),
     );
   }
 
-  login(email: string, password: string): Observable<boolean> {
-    return this.http.post<AuthResponse>(`${baseUrl}/auth/login`, { email, password }).pipe(
-      tap(response => {
-        // Nuevo login = nueva elección de modo
+  // acepta correo o documento
+  login(identificador: string, password: string): Observable<boolean> {
+    const body = identificador.includes('@')
+      ? { email: identificador.trim(), password }
+      : { documento: identificador.trim(), password };
+
+    return this.http.post<{ user: UserResponse }>(`${baseUrl}/auth/login`, body).pipe(
+      tap(res => {
         sessionStorage.removeItem('modo');
         this._modo.set(null);
-        this.handleAuthSuccess(response);
+        this.setUser(res.user);
       }),
       map(() => true),
-      catchError(() => this.handleAuthError())
+      catchError(() => { this.clearSession(); return of(false); }),
+    );
+  }
+
+  refresh(): Observable<boolean> {
+    this.refresh$ ??= this.http.post(`${baseUrl}/auth/refresh`, {}).pipe(
+      map(() => true),
+      finalize(() => (this.refresh$ = undefined)),
+      shareReplay(1),
+    );
+    return this.refresh$.pipe(
+      catchError(e => { this.clearSession(); return throwError(() => e); }),
     );
   }
 
   logout() {
-    this.clearSession();
-    this.router.navigateByUrl('');
+    this.http.post(`${baseUrl}/auth/logout`, {}).subscribe({ complete: () => this.finLogout(), error: () => this.finLogout() });
+  }
+  private finLogout() { this.clearSession(); this.router.navigateByUrl(''); }
+
+  private setUser(user: UserResponse) {
+    this._user.set(user);
+    this._authStatus.set('authenticated');
   }
 
-  // Limpia estado sin navegar (lo usan los guards vía checkStatus)
   private clearSession() {
     this._authStatus.set('unauthenticated');
-    this._token.set(null);
     this._user.set(null);
     this._modo.set(null);
-    localStorage.removeItem('token');
     sessionStorage.removeItem('modo');
-  }
-
-  private handleAuthSuccess(response: AuthResponse) {
-    this._authStatus.set('authenticated');
-    this._token.set(response.access_token);
-    this._user.set(response.user);
-    localStorage.setItem('token', response.access_token);
-  }
-
-  private handleAuthError() {
-    this.clearSession();
-    return of(false);
   }
 }

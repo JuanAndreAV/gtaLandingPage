@@ -1,21 +1,21 @@
-import { HttpHandlerFn, HttpRequest } from "@angular/common/http";
-import { AuthService } from "../services/auth.service";
-import { inject } from "@angular/core";
+import { HttpInterceptorFn } from '@angular/common/http';
+import { inject } from '@angular/core';
+import { catchError, switchMap, throwError } from 'rxjs';
+import { AuthService } from '../services/auth.service';
+import { environment } from '../../../environments/environment';
 
+export const authInterceptor: HttpInterceptorFn = (req, next) => {
+  if (!req.url.startsWith(environment.baseUrl)) return next(req);
 
+  const auth = inject(AuthService);
+  const peticion = req.clone({ withCredentials: true });
 
-export function authInterceptor(req: HttpRequest<unknown>, next: HttpHandlerFn) {
-  // Inject the current `AuthService` and use it to get an authentication token:
-  const authToken = inject(AuthService).token() || localStorage.getItem('token');
-  //console.log(authToken);
-
-  if (!authToken) {
-    return next(req);
-  }
-
-  // Clone the request to add the authentication header.
-  const newReq = req.clone({
-    headers: req.headers.set('Authorization', `Bearer ${authToken}` ),
-  });
-  return next(newReq);
-}
+  return next(peticion).pipe(
+    catchError(err => {
+      const esLoginORefresh = req.url.includes('/auth/login') || req.url.includes('/auth/refresh');
+      if (err.status !== 401 || esLoginORefresh) return throwError(() => err);
+      // Access token vencido: renueva una vez y reintenta
+      return auth.refresh().pipe(switchMap(() => next(peticion)));
+    }),
+  );
+};

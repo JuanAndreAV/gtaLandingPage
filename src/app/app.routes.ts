@@ -6,7 +6,6 @@ import { CourseManagementComponent } from './features/admin/course-management/co
 import { UserManagementComponent } from './features/admin/user-management/user-management.component';
 import { RegistrationComponent } from './features/admin/registration/registration.component';
 import { notAuthenticatedGuard } from './auth/guards/not-authenticated.guard';
-import { isAdminGuard } from './auth/guards/is-admin.guard';
 import { isAuthenticatedGuard } from './auth/guards/is-authenticated.guard';
 import { AreaprofesorComponent } from './features/profesor/areaprofesor/areaprofesor.component';
 import { Q10ConsultaDocenteComponent } from './pages/q10-consulta-docente/q10-consulta-docente.component';
@@ -33,11 +32,16 @@ import { RegistroEstudianteComponent } from './features/admin/academico/registro
 import { CursoDetalleComponent } from './features/admin/academico/curso-detalle/curso-detalle.component';
 import { OfertaPublicaComponent } from './pages/oferta-publica/oferta-publica.component';
 import { ElegirModoComponent } from './features/shared/elegir-modo/elegir-modo.component';
+import { modoGuard } from './auth/guards/modo.guard';
 
 
 export const routes: Routes = [
    {
       path: 'elegir-modo', component: ElegirModoComponent, canMatch: [isAuthenticatedGuard] 
+   },
+   {
+      path: "sin-acceso",
+      loadComponent: () => import('./pages/sin-acceso/sin-acceso.component').then(m => m.SinAccesoComponent)
    },
    {
       path: "oferta-publica",
@@ -106,9 +110,7 @@ export const routes: Routes = [
    {
       path: "admin",
       component: DashboardComponent,  
-     canMatch: [
-            isAdminGuard, isAuthenticatedGuard
-        ], 
+     canActivate: [modoGuard('admin')],
       
       children: [
          {
@@ -167,7 +169,7 @@ export const routes: Routes = [
    {
       path: "profesor",
        component: AreaprofesorComponent,
-      canActivate: [isAuthenticatedGuard],
+      canActivate: [modoGuard('profesor')],
       children: [
           {path: 'novedades-profesor',
          component: ReporteNovedadesComponent},

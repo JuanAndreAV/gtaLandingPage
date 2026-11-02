@@ -103,7 +103,7 @@ export class UsuariosAdminService {
     this.error.set(null);
     return this.http.get<VerificacionDocumento>(`${this.apiUrl}/verificar/${documento}`).pipe(
       tap((data) => {
-        console.log(data)
+        //console.log(data)
         this.verificado.set(data)
          
       }),
