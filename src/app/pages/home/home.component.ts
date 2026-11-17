@@ -25,6 +25,8 @@ export class HomeComponent {
   errorNews = signal('');
   errorEvents = signal('');
 
+  readonly anioActual = new Date().getFullYear();
+
   statistics = [
     { value: '262', label: 'Cursos ofertados en 2026' },
     { value: '1500+', label: 'Estudiantes activos' },

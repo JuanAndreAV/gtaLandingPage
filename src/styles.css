@@ -13,5 +13,16 @@
   --color-verde-institucional: #1c7a2e;
   --color-amarillo-estimulos: #ffd600;
 
+  /* Paleta institucional (header / home) — basada en el verde del manual de imagen */
+  --color-inst-950: #071f15;
+  --color-inst-900: #0b2e1f;
+  --color-inst-800: #10402b;
+  --color-inst-700: #17573a;
+  --color-inst-600: #1c7a2e;
+  --color-inst-100: #e7f0ea;
+  --color-inst-50:  #f4f7f5;
+  --color-inst-gold: #c9a227;
+  --color-inst-gold-light: #e3c766;
+
   --font-sans: 'Poppins', ui-sans-serif, system-ui, sans-serif;
 }

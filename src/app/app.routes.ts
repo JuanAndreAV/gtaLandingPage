@@ -33,6 +33,8 @@ import { CursoDetalleComponent } from './features/admin/academico/curso-detalle/
 import { OfertaPublicaComponent } from './pages/oferta-publica/oferta-publica.component';
 import { ElegirModoComponent } from './features/shared/elegir-modo/elegir-modo.component';
 import { modoGuard } from './auth/guards/modo.guard';
+import { MiHorarioComponent } from './features/profesor/mi-horario/mi-horario.component';
+import { TomarAsistenciaComponent } from './features/profesor/tomar-asistencia/tomar-asistencia.component';
 
 
 export const routes: Routes = [
@@ -173,6 +175,10 @@ export const routes: Routes = [
       children: [
           {path: 'novedades-profesor',
          component: ReporteNovedadesComponent},
+         
+         { path: '', redirectTo: 'horario', pathMatch: 'full' },
+         { path: 'horario', component: MiHorarioComponent },
+         { path: 'cursos/:id/asistencia', component: TomarAsistenciaComponent },
       ]
 
    }, 

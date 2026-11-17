@@ -1,74 +1,80 @@
-<!-- Hero Banner -->
-<section id="inicio" class="relative text-white py-28 overflow-hidden" style="background-color: #b8df85;">
+<!-- Hero -->
+<section id="inicio" class="relative overflow-hidden bg-inst-900 text-white">
+  <img src="assets/img/banner-casa-cultura.jpeg" alt="" aria-hidden="true"
+       class="absolute inset-0 w-full h-full object-cover opacity-25" />
+  <div class="absolute inset-0 bg-gradient-to-r from-inst-950 via-inst-900/90 to-inst-900/40"></div>
 
-  <!-- Imagen de fondo -->
-  <div class="absolute inset-0">
-    <img
-      src="assets/img/banner-casa-cultura.jpeg"
-      alt="Casa de la Cultura Pedrito Ruiz"
-      class="w-full h-full object-cover md:object-contain object-center opacity-20"
-    />
-  </div>
-
-  <!-- Capa oscura para que el texto se vea -->
-  <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-black/20"></div>
-
-  <!-- Contenido -->
-  <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="text-center animate-fade-in">
-
-      <h2 class="text-5xl md:text-6xl font-bold mb-6">
-        Girardota es Cultura
-      </h2>
-
-      <p class="text-xl md:text-2xl mb-8 text-gray-100">
-        Descubre el arte, la música y las tradiciones de nuestro municipio
+  <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
+    <div class="max-w-2xl">
+      <p class="inline-flex items-center gap-2 text-inst-gold-light text-xs font-semibold uppercase tracking-[0.2em] mb-5">
+        <span class="w-8 h-px bg-inst-gold"></span>
+        Casa de la Cultura Pedrito Ruíz
       </p>
-
-      <a 
-        href="#inscripciones"
-        class="inline-block px-8 py-4 rounded-full font-bold text-lg shadow-xl bg-girardota-amber text-green-700 hover:scale-105 transition-transform">
-        Ver Programación
-      </a>
-
+      <h1 class="text-4xl md:text-6xl font-bold leading-tight tracking-tight mb-6">
+        Girardota es Cultura
+      </h1>
+      <p class="text-lg md:text-xl text-white/80 leading-relaxed mb-10">
+        Formación artística, patrimonio y programación cultural para todas las edades.
+        Descubre el arte, la música y las tradiciones de nuestro municipio.
+      </p>
+      <div class="flex flex-col sm:flex-row gap-3">
+        <a routerLink="/oferta-publica"
+           class="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-md font-semibold bg-inst-gold text-inst-950 hover:bg-inst-gold-light transition shadow-lg shadow-black/20">
+          Ver oferta de cursos
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+        </a>
+        <a href="#eventos"
+           class="inline-flex items-center justify-center px-7 py-3.5 rounded-md font-semibold border border-white/40 text-white hover:bg-white/10 transition">
+          Próximos eventos
+        </a>
+      </div>
     </div>
   </div>
-
-  <!-- Wave inferior -->
-  <div class="absolute bottom-0 left-0 right-0">
-    <svg viewBox="0 0 1440 120" fill="none">
-      <path d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120Z" fill="#F9FAFB"/>
-    </svg>
-  </div>
-
 </section>
-<!-- Noticias e Inscripciones -->
-<section id="talleres" class="py-16 bg-gray-50">
+
+<!-- Cifras -->
+<section class="relative z-10 -mt-10 md:-mt-12">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-2 md:grid-cols-4 bg-white rounded-xl shadow-xl ring-1 ring-black/5 divide-x divide-y md:divide-y-0 divide-gray-100 overflow-hidden">
+      @for (stat of statistics; track stat.label) {
+        <div class="p-6 md:p-8 text-center">
+          <p class="text-3xl md:text-4xl font-bold text-inst-700 tracking-tight">{{ stat.value }}</p>
+          <p class="mt-2 text-sm text-gray-600 leading-snug">{{ stat.label }}</p>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- Noticias e inscripciones -->
+<section id="talleres" class="py-20 bg-white scroll-mt-28">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <h3 class="text-3xl font-bold text-gray-900 mb-8 text-center">
-      Noticias e Inscripciones
-    </h3>
-    
+    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-10">
+      <div>
+        <p class="text-inst-600 text-xs font-semibold uppercase tracking-[0.2em] mb-2">Actualidad</p>
+        <h2 class="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">Noticias e inscripciones</h2>
+      </div>
+      <a routerLink="/oferta-publica" class="text-sm font-semibold text-inst-700 hover:text-inst-900 transition">
+        Ver todos los talleres →
+      </a>
+    </div>
+
     @if (loadingNews()) {
-      <!-- Loading State -->
       <div class="text-center py-12">
-        <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-girardota-teal"></div>
-        <p class="text-gray-600 mt-4">Cargando noticias...</p>
+        <div class="inline-block animate-spin rounded-full h-10 w-10 border-2 border-inst-100 border-t-inst-600"></div>
+        <p class="text-gray-500 mt-4">Cargando noticias...</p>
       </div>
     } @else if (errorNews()) {
-      <!-- Error State -->
-      <div class="text-center py-12">
+      <div class="text-center py-12 rounded-xl bg-inst-50">
         <p class="text-red-600 font-semibold">{{ errorNews() }}</p>
         <p class="text-gray-500 mt-2">Por favor, intenta nuevamente más tarde.</p>
       </div>
     } @else {
-      <!-- News Cards -->
       <div class="grid md:grid-cols-3 gap-8">
         @for (newsItem of news(); track newsItem.id) {
           <app-news-card [news]="newsItem" />
-        }
-        @empty {
-          <div class="col-span-3 text-center py-12">
+        } @empty {
+          <div class="md:col-span-3 text-center py-12 rounded-xl bg-inst-50">
             <p class="text-gray-500">No hay noticias disponibles en este momento.</p>
           </div>
         }
@@ -77,81 +83,68 @@
   </div>
 </section>
 
-<!-- Banner Inscripciones -->
-<section id="inscripciones" class="py-16 gradient-yellow">
-  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-    <h3 class="text-4xl font-bold mb-6 text-girardota-teal-dark">
-      ¡Inscripciones Abiertas 2026!
-    </h3>
-    <p class="text-xl mb-8 text-gray-800">
-      No te quedes fuera. Únete a nuestra comunidad cultural y desarrolla tu talento.
-    </p>
-    <div class="flex flex-col sm:flex-row gap-4 justify-center">
-      <a 
-        routerLink="oferta-publica"
-        class="bg-girardota-teal text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-girardota-teal-dark transition shadow-lg">
-        Ver Talleres Disponibles
-      </a>
-      <a 
-        href="#contacto" 
-        class="bg-transparent border-3 border-girardota-teal text-girardota-teal-dark px-8 py-4 rounded-full font-bold text-lg hover:bg-girardota-teal hover:text-white transition">
-        Contactar Ahora
-      </a>
+<!-- Inscripciones -->
+<section id="inscripciones" class="py-20 bg-inst-50 scroll-mt-28">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="relative overflow-hidden rounded-2xl bg-inst-800 text-white px-8 py-12 md:px-14 md:py-16">
+      <div class="absolute -right-20 -top-20 w-72 h-72 rounded-full bg-inst-700/60"></div>
+      <div class="absolute -right-6 -bottom-24 w-56 h-56 rounded-full border-2 border-inst-gold/30"></div>
+
+      <div class="relative grid md:grid-cols-[1fr_auto] gap-8 items-center">
+        <div>
+          <p class="text-inst-gold-light text-xs font-semibold uppercase tracking-[0.2em] mb-3">Convocatoria {{ anioActual }}</p>
+          <h2 class="text-3xl md:text-4xl font-bold tracking-tight mb-4">Inscripciones abiertas</h2>
+          <p class="text-white/80 text-lg max-w-xl">
+            Únete a nuestra comunidad cultural y desarrolla tu talento con docentes de las distintas áreas artísticas.
+          </p>
+        </div>
+        <div class="flex flex-col sm:flex-row md:flex-col gap-3">
+          <a routerLink="/oferta-publica"
+             class="inline-flex justify-center px-7 py-3.5 rounded-md font-semibold bg-inst-gold text-inst-950 hover:bg-inst-gold-light transition">
+            Ver talleres disponibles
+          </a>
+          <a href="#contacto"
+             class="inline-flex justify-center px-7 py-3.5 rounded-md font-semibold border border-white/40 hover:bg-white/10 transition">
+            Contáctanos
+          </a>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- Próximos Eventos -->
-<section id="eventos" class="py-16 bg-white">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <h3 class="text-3xl font-bold text-gray-900 mb-8 text-center">
-      Próximos Eventos (Marzo)
-    </h3>
-    
+<!-- Próximos eventos -->
+<section id="eventos" class="py-20 bg-white scroll-mt-28">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="mb-10">
+      <p class="text-inst-600 text-xs font-semibold uppercase tracking-[0.2em] mb-2">Agenda cultural</p>
+      <h2 class="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">Próximos eventos</h2>
+    </div>
+
     @if (loadingEvents()) {
-      <!-- Loading State -->
       <div class="text-center py-12">
-        <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-girardota-teal"></div>
-        <p class="text-gray-600 mt-4">Cargando eventos...</p>
+        <div class="inline-block animate-spin rounded-full h-10 w-10 border-2 border-inst-100 border-t-inst-600"></div>
+        <p class="text-gray-500 mt-4">Cargando eventos...</p>
       </div>
     } @else if (errorEvents()) {
-      <!-- Error State -->
-      <div class="text-center py-12">
+      <div class="text-center py-12 rounded-xl bg-inst-50">
         <p class="text-red-600 font-semibold">{{ errorEvents() }}</p>
         <p class="text-gray-500 mt-2">Por favor, intenta nuevamente más tarde.</p>
       </div>
     } @else {
-      <!-- Event Items -->
       <div class="space-y-4">
         @for (event of events(); track event.id) {
-         <app-event-item [event]="event" /> 
-        }
-        @empty {
-          <div class="text-center py-12">
-            <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          <app-event-item [event]="event" />
+        } @empty {
+          <div class="text-center py-14 rounded-xl bg-inst-50">
+            <svg class="w-12 h-12 mx-auto text-inst-600/50 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
             </svg>
-            <p class="text-gray-500 text-lg">No hay eventos próximos en este momento.</p>
-            <p class="text-gray-400 text-sm mt-2">Vuelve pronto para ver nuestras próximas actividades.</p>
+            <p class="text-gray-700 font-medium">No hay eventos próximos en este momento.</p>
+            <p class="text-gray-500 text-sm mt-1">Vuelve pronto para ver nuestras próximas actividades.</p>
           </div>
         }
       </div>
     }
-  </div>
-</section>
-
-<!-- Estadísticas -->
-<section class="py-16 gradient-bg cultural-pattern text-white">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="grid md:grid-cols-4 gap-8 text-center">
-      @for (stat of statistics; track stat.value) {
-        <div class="animate-fade-in">
-          <div class="text-5xl font-bold text-girardota-yellow mb-2">
-            {{ stat.value }}
-          </div>
-          <p class="text-gray-500">{{ stat.label }}</p>
-        </div>
-      }
-    </div>
   </div>
 </section>

@@ -21,64 +21,70 @@ export class Q10PoblacionComponent implements OnInit {
   //public estudiantesSeleccionados = signal<PoblacionQ10[]>([]);
 
   ngOnInit() {
-    this.poblacionQ10.obtenerPoblacionQ10(0).subscribe();
-    //console.log( this.datosParaInforme());
-   
-   
+    this.poblacionQ10.obtenerPoblacionQ10(0).subscribe(() => {
+      // console.log(this.datosParaInforme());
+      console.log(this.victimasDelConflicto());
+    });
   }
 
+  // Deduplica por estudiante conservando todas sus matrículas para evitar personas repetidas
+  private estudiantesUnicos = computed<PoblacionQ10[]>(() => {
+    const crudos = this.poblacionQ10.poblacionQ10() ?? [];
+    const mapa = new Map<string, PoblacionQ10>();
+
+    for (const item of crudos) {
+      const llave = String(item.Codigo_estudiante || item.Numero_identificacion);
+
+      if (!mapa.has(llave)) {
+        mapa.set(llave, {
+          ...item,
+          Informacion_matricula: [...(item.Informacion_matricula ?? [])]
+        });
+      } else {
+        const existente = mapa.get(llave)!;
+        if (item.Informacion_matricula?.length) {
+          existente.Informacion_matricula = [
+            ...(existente.Informacion_matricula ?? []),
+            ...item.Informacion_matricula
+          ];
+        }
+      }
+    }
+
+    return Array.from(mapa.values());
+  });
+
+  // Se mantiene tu getter original apuntando a la lista ya deduplicada
   private get estudiantes(): PoblacionQ10[] {
-    return this.poblacionQ10.poblacionQ10() ?? [];
+    return this.estudiantesUnicos();
   }
-    rangosEdad = [
+
+  rangosEdad = [
     { val: '0-5', label: '0-5 años' },
     { val: '6-13', label: '6-13 años' },
     { val: '14-28', label: '14-28 años' },
     { val: '29-59', label: '29-59 años' },
     { val: '>60', label: '60+ años' },
     { val: '', label: 'Todos' },
-    ]
+  ];
 
-    
-
-
-   estudiantesActivos = computed(() => {
-  const rango = this.grupoEdadSeleccionado();
-  if (!rango) return this.estudiantes;
-  return this.estudiantes.filter(e => {
-    if (e.Edad == null) return false;
-    if (rango === '0-5')   return e.Edad <= 5;
-    if (rango === '6-13')  return e.Edad >= 6  && e.Edad <= 13;
-    if (rango === '14-28') return e.Edad >= 14 && e.Edad <= 28;
-    if (rango === '29-59') return e.Edad >= 29 && e.Edad <= 59;
-    if (rango === '>60')   return e.Edad >= 60;
-    return true;
+  estudiantesActivos = computed(() => {
+    const rango = this.grupoEdadSeleccionado();
+    if (!rango) return this.estudiantes;
+    return this.estudiantes.filter(e => {
+      if (e.Edad == null) return false;
+      if (rango === '0-5')   return e.Edad <= 5;
+      if (rango === '6-13')  return e.Edad >= 6  && e.Edad <= 13;
+      if (rango === '14-28') return e.Edad >= 14 && e.Edad <= 28;
+      if (rango === '29-59') return e.Edad >= 29 && e.Edad <= 59;
+      if (rango === '>60')   return e.Edad >= 60;
+      return true;
+    });
   });
-});
-filtroEdad(item: { val: string }): void {
-  this.grupoEdadSeleccionado.set(item.val);
-}
 
-   /*estudiantesPorRangoEdad(rango?: string): PoblacionQ10[] {
-
-    const grupos: Record<string, PoblacionQ10[]> = {
-      '0-5': [],
-      '6-13': [],
-      '14-28': [],
-      '29-59': [],
-      '60+': []
-    };
-   
-    for (const e of this.estudiantes) {
-      if (e.Edad == null) continue;
-      if (e.Edad <= 5) grupos['0-5'].push(e);
-      else if (e.Edad <= 13) grupos['6-13'].push(e);
-      else if (e.Edad <= 28) grupos['14-28'].push(e);
-      else if (e.Edad <= 59) grupos['29-59'].push(e);
-      else grupos['60+'].push(e);
-    }
-    return rango ? grupos[rango] : this.estudiantes;
-  }*/
+  filtroEdad(item: { val: string }): void {
+    this.grupoEdadSeleccionado.set(item.val);
+  }
 
   // ── KPIs ─────────────────────────────────────────────────────────────────
 
@@ -99,7 +105,7 @@ filtroEdad(item: { val: string }): void {
 
   private conteoGenero = computed(() => {
     const mapa: Record<string, number> = {};
-    for (const e of this.estudiantesActivos() ) {
+    for (const e of this.estudiantesActivos()) {
       const g = e.Genero ?? e.Codigo_genero ?? 'No especificado';
       mapa[g] = (mapa[g] ?? 0) + 1;
     }
@@ -132,10 +138,10 @@ filtroEdad(item: { val: string }): void {
   gruposEdad = computed(() => {
     const grupos = [
       { rango: '0-5',    min: 0,  max: 5,  color: '#818cf8', cantidad: 0 },
-      { rango: '6-13', min: 6, max: 13,  color: '#38bdf8', cantidad: 0  },
-      { rango: '14-28', min: 14, max: 28,  color: '#34d399', cantidad: 0  },
-      { rango: '29-59', min: 29, max: 59,  color: '#f97316', cantidad: 0  },
-      { rango: '>60',    min: 60, max: 999, color: '#f472b6', cantidad: 0  },
+      { rango: '6-13',   min: 6,  max: 13, color: '#38bdf8', cantidad: 0 },
+      { rango: '14-28',  min: 14, max: 28, color: '#34d399', cantidad: 0 },
+      { rango: '29-59',  min: 29, max: 59, color: '#f97316', cantidad: 0 },
+      { rango: '>60',    min: 60, max: 999, color: '#f472b6', cantidad: 0 },
     ];
     for (const e of this.estudiantes) {
       if (e.Edad == null) continue;
@@ -200,18 +206,8 @@ filtroEdad(item: { val: string }): void {
 
   // ── Preguntas personalizadas (helper) ────────────────────────────────────
 
-  /**
-   * Patrón de dirección urbana: cra, carrera, calle, cl, avenida, av,
-   * diagonal, diag, transversal, tv — seguidas de número o #
-   */
   private readonly REGEX_DIR_URBANA = /^(cra|carrera|calle|cl|barrio|avenida|av|diagonal|diag|transversal|tv)\s*[0-9#]/i;
 
-  /**
-   * Busca la respuesta de una pregunta personalizada por texto (case-insensitive).
-   * Para preguntas de zona de residencia, si no hay respuesta aplica fallback:
-   *   - Dirección con patrón urbano → "Urbana"
-   *   - Sin dirección reconocible   → "Rural"
-   */
   private respuestaPregunta(estudiante: PoblacionQ10, textoPregunta: string): string | null {
     const preguntas = estudiante.Preguntas_personalizadas as unknown as Pregunta[] | undefined;
 
@@ -267,36 +263,38 @@ filtroEdad(item: { val: string }): void {
       .filter(e => !/no aplica/i.test(e.enfoque))
       .reduce((acc, e) => acc + e.cantidad, 0)
   );
-// Helper para buscar respuestas en las preguntas personalizadas de Q10
-private obtenerRespuestaPersonalizada(estudiante: any, nombrePregunta: string): string {
-  const pregunta = estudiante.Preguntas_personalizadas?.find(
-    (p: any) => p.Pregunta.trim().toLowerCase() === nombrePregunta.toLowerCase()
-  );
-  return pregunta?.Respuesta?.[0]?.Respuesta ?? 'No especificado';
-}
 
-// 1. Filtrar solo los estudiantes que son víctimas
-victimasDelConflicto = computed(() => {
-  return this.estudiantesActivos().filter(e => {
-    const enfoque = this.obtenerRespuestaPersonalizada(e, 'enfoque poblacional');
-    return /víctima/i.test(enfoque);
+  // Helper para buscar respuestas en las preguntas personalizadas de Q10
+  private obtenerRespuestaPersonalizada(estudiante: any, nombrePregunta: string): string {
+    const pregunta = estudiante.Preguntas_personalizadas?.find(
+      (p: any) => p.Pregunta.trim().toLowerCase() === nombrePregunta.toLowerCase()
+    );
+    return pregunta?.Respuesta?.[0]?.Respuesta ?? 'No especificado';
+  }
+
+  // 1. Filtrar solo los estudiantes que son víctimas
+  victimasDelConflicto = computed(() => {
+    return this.estudiantesActivos().filter(e => {
+      const enfoque = this.obtenerRespuestaPersonalizada(e, 'enfoque poblacional');
+      return /víctima/i.test(enfoque);
+    });
   });
-});
 
-// 2. Extraer el set de datos listos para el análisis (Edad y Zona)
-datosParaInforme = computed(() => {
-  return this.victimasDelConflicto().map(e => ({
-    codigo: e.Codigo_estudiante,
-    Nombre: `${e.Primer_nombre} ${e.Segundo_nombre} ${e.Primer_apellido} ${e.Segundo_apellido}`.replace(/\s+/g, ' ').trim(),
-    tipoIdentificacion: e.Nombre_tipo_identificacion,
-    Identificacion: e.Numero_identificacion,
-    edad: e.Edad,
-    celular: e.Celular,
-    email: e.Email,
-    Direccion: e.Direccion,
-    programa: e.Informacion_matricula?.[0]?.Nombre_programa ?? 'No especificado'
-  }));
-});
+  // 2. Extraer el set de datos listos para el análisis (Edad y Zona)
+  datosParaInforme = computed(() => {
+    return this.victimasDelConflicto().map(e => ({
+      codigo: e.Codigo_estudiante,
+      Nombre: `${e.Primer_nombre} ${e.Segundo_nombre} ${e.Primer_apellido} ${e.Segundo_apellido}`.replace(/\s+/g, ' ').trim(),
+      tipoIdentificacion: e.Nombre_tipo_identificacion,
+      Identificacion: e.Numero_identificacion,
+      edad: e.Edad,
+      celular: e.Celular,
+      email: e.Email,
+      Direccion: e.Direccion,
+      programa: [...new Set(e.Informacion_matricula?.map(m => m.Nombre_programa).filter(Boolean))].join(', ') || 'No especificado'
+    }));
+  });
+
   // ── Estado de matrícula ───────────────────────────────────────────────────
 
   estadosMatricula = computed(() => {

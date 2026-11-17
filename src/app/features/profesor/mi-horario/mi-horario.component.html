@@ -1,0 +1,58 @@
+<div class="max-w-5xl mx-auto p-6">
+  <h2 class="text-2xl font-bold text-gray-800 mb-1">Mi horario</h2>
+  <p class="text-sm text-gray-500 mb-6">Tus clases del periodo vigente. Toca una sesión para pasar lista.</p>
+
+  @if (error()) {
+    <div class="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm mb-4">{{ error() }}</div>
+  }
+
+  @if (isLoading()) {
+    <p class="text-center text-gray-400 py-12">Cargando...</p>
+  } @else {
+    @for (d of semana(); track d.dia) {
+      <section class="mb-6">
+        <h3 class="text-sm font-semibold uppercase tracking-wider mb-2"
+            [class]="d.dia === hoy ? 'text-indigo-600' : 'text-gray-500'">
+          {{ dia(d.dia) }}
+          @if (d.dia === hoy) { <span class="ml-1 normal-case font-normal">· hoy</span> }
+        </h3>
+        <div class="grid md:grid-cols-2 gap-3">
+          @for (s of d.sesiones; track $index) {
+            <a [routerLink]="['/profesor/cursos', s.curso.id, 'asistencia']"
+               class="bg-white rounded-xl border p-4 hover:shadow-md transition flex justify-between items-center gap-3"
+               [class]="d.dia === hoy ? 'border-indigo-300' : 'border-gray-100'">
+              <div class="min-w-0">
+                <p class="font-semibold text-gray-800 truncate">{{ s.curso.nombre }}</p>
+                <p class="text-xs text-gray-400 truncate">
+                  {{ s.curso.asignatura?.nombre }}{{ s.h.aula ? ' · ' + s.h.aula.nombre : '' }}
+                </p>
+              </div>
+              <span class="text-sm font-medium text-gray-700 whitespace-nowrap">
+                {{ s.h.horaInicio.slice(0,5) }}–{{ s.h.horaFin.slice(0,5) }}
+              </span>
+            </a>
+          }
+        </div>
+      </section>
+    }
+
+    @if (sinHorario().length) {
+      <section class="mb-6">
+        <h3 class="text-sm font-semibold uppercase tracking-wider text-gray-500 mb-2">Sin horario asignado</h3>
+        <div class="grid md:grid-cols-2 gap-3">
+          @for (c of sinHorario(); track c.id) {
+            <a [routerLink]="['/profesor/cursos', c.id, 'asistencia']"
+               class="bg-white rounded-xl border border-gray-100 p-4 hover:shadow-md transition">
+              <p class="font-semibold text-gray-800">{{ c.nombre }}</p>
+              <p class="text-xs text-gray-400">{{ c.asignatura?.nombre }}</p>
+            </a>
+          }
+        </div>
+      </section>
+    }
+
+    @if (!semana().length && !sinHorario().length) {
+      <p class="text-center text-gray-400 py-12">No tienes cursos asignados en el periodo actual.</p>
+    }
+  }
+</div>

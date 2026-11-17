@@ -69,7 +69,7 @@ export class CursosAdminComponent implements OnInit {
       nombre: '', descripcion: '', capacidadMax: 20,
       edadMin: undefined, edadMax: undefined, intensidadHoraria: undefined,
       porcentajeAsistenciaMin: 80, notaAprobatoria: 3,
-      requiereNivelPrevio: false, cursoPrerequisitorId: undefined,
+      requiereNivelPrevio: false, cursoPrerequisitoId: undefined,
     };
   }
 
@@ -101,14 +101,15 @@ export class CursosAdminComponent implements OnInit {
       docenteId: curso.docenteId,
       nombre: curso.nombre,
       descripcion: curso.descripcion ?? '',
-      capacidadMax: curso.capacidadMax,
-      edadMin: curso.edadMin ?? undefined,
-      edadMax: curso.edadMax ?? undefined,
-      intensidadHoraria: curso.intensidadHoraria ?? undefined,
-      porcentajeAsistenciaMin: curso.porcentajeAsistenciaMin,
-      notaAprobatoria: curso.notaAprobatoria,
+      // Postgres devuelve las columnas numeric como string ("80.00"): se convierten a número
+      capacidadMax: this.aEntero(curso.capacidadMax) ?? 20,
+      edadMin: this.aEntero(curso.edadMin) ?? undefined,
+      edadMax: this.aEntero(curso.edadMax) ?? undefined,
+      intensidadHoraria: this.aNumero(curso.intensidadHoraria) ?? undefined,
+      porcentajeAsistenciaMin: this.aEntero(curso.porcentajeAsistenciaMin) ?? 80,
+      notaAprobatoria: this.aNumero(curso.notaAprobatoria) ?? 3,
       requiereNivelPrevio: curso.requiereNivelPrevio,
-      cursoPrerequisitorId: curso.cursoPrerequisitorId ?? undefined,
+      cursoPrerequisitoId: curso.cursoPrerequisitoId ?? undefined,
     };
     this.formularioEnviado = false;
     this.errorGuardado.set(null);
@@ -134,22 +135,60 @@ export class CursosAdminComponent implements OnInit {
       return;
     }
 
+    const pct = this.form.porcentajeAsistenciaMin;
+    if (pct != null && (!Number.isInteger(Number(pct)) || +pct < 0 || +pct > 100)) {
+      this.errorGuardado.set('El % de asistencia mínima debe ser un número entero entre 0 y 100.');
+      return;
+    }
+
     this.guardando.set(true);
+    const payload = this.construirPayload();
 
     if (this.modoEdicion() && this.cursoEditando) {
-      this.cursosService.actualizar(this.cursoEditando.id, this.form).subscribe({
+      this.cursosService.actualizar(this.cursoEditando.id, payload).subscribe({
         next: () => this.finalizarGuardado(),
         error: (err) => this.manejarErrorGuardado(err),
       });
     } else {
       // al crear, incluimos los horarios pendientes en el mismo payload
       // (igual que hace tu backend: si fallan, revierte el curso completo)
-      const dto: CreateCursoDto = { ...this.form, horarios: this.horariosPendientes() };
+      const dto: CreateCursoDto = { ...payload, horarios: this.horariosPendientes() };
       this.cursosService.crear(dto).subscribe({
         next: () => this.finalizarGuardado(),
         error: (err) => this.manejarErrorGuardado(err),
       });
     }
+  }
+
+  /** Arma el body con solo los campos que acepta el backend y con los tipos correctos. */
+  private construirPayload(): CreateCursoDto {
+    const f = this.form;
+    return {
+      asignaturaId: f.asignaturaId,
+      periodoId: f.periodoId,
+      docenteId: f.docenteId || null,
+      nombre: f.nombre.trim(),
+      descripcion: f.descripcion?.trim() || null,
+      capacidadMax: this.aEntero(f.capacidadMax) ?? 20,
+      edadMin: this.aEntero(f.edadMin),
+      edadMax: this.aEntero(f.edadMax),
+      intensidadHoraria: this.aNumero(f.intensidadHoraria),
+      porcentajeAsistenciaMin: this.aEntero(f.porcentajeAsistenciaMin) ?? 80,
+      notaAprobatoria: this.aNumero(f.notaAprobatoria) ?? 3,
+      requiereNivelPrevio: !!f.requiereNivelPrevio,
+      cursoPrerequisitoId: f.requiereNivelPrevio ? (f.cursoPrerequisitoId || null) : null,
+    };
+  }
+
+  private aNumero(v: unknown): number | null {
+    if (v === null || v === undefined || v === '') return null;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  private aEntero(v: unknown): number | null {
+    const n = this.aNumero(v);
+    return n === null ? null : Math.round(n);
   }
 
   private finalizarGuardado() {

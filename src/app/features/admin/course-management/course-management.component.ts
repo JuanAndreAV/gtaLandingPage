@@ -360,7 +360,7 @@ export class CourseManagementComponent implements OnInit {
 
       // Aquí harías la llamada a tu servicio
       if (this.modoEdicion()) {
-        // await this.cursoService.actualizar(this.cursoEditando.id, this.formularioCurso);
+        //await this.cursoService.actualizar(this.cursoEditando.id, this.formularioCurso);
         console.log('Actualizando curso:', this.formularioCurso);
       } else {
         // await this.cursoService.crear(this.formularioCurso);
@@ -458,4 +458,5 @@ export class CourseManagementComponent implements OnInit {
       await this.cargarCursos();
     }
   }
+  
 }

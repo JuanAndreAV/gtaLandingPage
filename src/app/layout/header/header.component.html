@@ -1,125 +1,210 @@
-<nav class="bg-girardota-teal-dark shadow-lg sticky top-0 z-50">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex justify-between items-center py-4">
-      
-      <div class="flex items-center space-x-3">
-        <a routerLink="/" class="flex items-center space-x-3">
-          <!--<div class="w-14 h-14 bg-girardota-yellow rounded-full flex items-center justify-center shadow-lg">
-            <svg class="w-8 h-8 text-girardota-teal" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"/>
-            </svg>
+<header class="sticky top-0 z-50 shadow-md">
 
-          </div>-->
-          <div class="w-14 h-14 rounded-full overflow-hidden shadow-lg">
-              <img
-                src="assets/img/banner-casa-cultura.jpeg"
-                alt="Logo Casa de la Cultura"
-                class="w-full h-full object-cover"
-              />
+  <!-- Franja institucional superior -->
+  <div class="bg-inst-950 text-white/70 text-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-8 flex items-center justify-between">
+      <span class="tracking-wide">Girardota, Antioquia · Casa de la Cultura Pedrito Ruíz</span>
+      <span class="hidden sm:inline tracking-wide">Girardota es Cultura</span>
+    </div>
+  </div>
+
+  <!-- Barra principal -->
+  <nav class="bg-inst-900 border-b-2 border-inst-gold" aria-label="Navegación principal">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-18 py-3">
+
+        <!-- Marca -->
+        <a routerLink="/" class="flex items-center gap-3 group">
+          <div class="w-12 h-12 rounded-full overflow-hidden ring-2 ring-inst-gold/70 bg-white shrink-0">
+            <img src="assets/img/banner-casa-cultura.jpeg" alt="Logo Casa de la Cultura" class="w-full h-full object-cover" />
           </div>
-          <div class="text-white">
-            <h1 class="text-xl font-bold leading-tight">Casa de la Cultura</h1>
-            <p class="text-xs text-girardota-yellow uppercase tracking-wider">Pedrito Ruíz</p>
-            
+          <div class="leading-tight">
+            <p class="text-white text-lg font-semibold tracking-tight">Casa de la Cultura</p>
+            <p class="text-inst-gold-light text-[11px] uppercase tracking-[0.18em] font-medium">Pedrito Ruíz · Girardota</p>
           </div>
         </a>
-      </div>
-      
-      <div class="hidden md:flex items-center space-x-6">
-        @for(item of menuItems(); track item.id) {
-          @if (item.fragment) {
-            <a (click)="navigateToAnchor(item.fragment)" 
-               class="text-white hover:text-girardota-yellow transition font-medium cursor-pointer">
-              {{ item.label }}
-            </a>
-          } @else {
-            <a [routerLink]="item.link" 
-               class="text-white hover:text-girardota-yellow transition font-medium">
-              {{ item.label }}
-            </a>
-          }
-        }
 
-        <div class="flex items-center ml-4 pl-4 border-l border-white/20 space-x-4">
-          @if (authService.authStatus() === 'authenticated') {
-            <a [routerLink]="authService.isAdmin() ? '/admin' : '/profesor'" 
-               class="bg-girardota-yellow text-girardota-teal px-4 py-2 rounded-md font-bold hover:bg-white transition shadow-md">
-               Panel {{ authService.isAdmin() ? 'Admin' : 'Profesor' }}
-            </a>
-            
-            <div class="text-right leading-tight">
-              <p class="text-white text-xs opacity-80">Hola, {{ authService.user()?.nombre_completo }}</p>
-              <button (click)="authService.logout()" class="text-girardota-yellow text-sm font-bold hover:underline">
-                Cerrar Sesión
-              </button>
-            </div>
-          } @else {
-            <a routerLink="/auth/login" 
-               class="text-white border border-white px-5 py-2 rounded-md hover:bg-white hover:text-girardota-teal transition font-medium">
-              Login
-            </a>
+        <!-- Navegación escritorio -->
+        <div class="hidden md:flex items-center gap-1">
+          @for (item of menuItems(); track item.id) {
+            @if (item.fragment) {
+              <a (click)="navigateToAnchor(item.fragment)"
+                 class="px-3 py-2 text-sm font-medium text-white/85 hover:text-white rounded-md hover:bg-white/5 transition cursor-pointer">
+                {{ item.label }}
+              </a>
+            } @else {
+              <a [routerLink]="item.link"
+                 routerLinkActive="text-white after:scale-x-100"
+                 [routerLinkActiveOptions]="{ exact: true }"
+                 class="relative px-3 py-2 text-sm font-medium text-white/85 hover:text-white transition
+                        after:absolute after:left-3 after:right-3 after:-bottom-0.5 after:h-0.5 after:bg-inst-gold
+                        after:scale-x-0 after:origin-left after:transition-transform">
+                {{ item.label }}
+              </a>
+            }
           }
+
+          <div class="ml-4 pl-4 border-l border-white/15 flex items-center gap-3">
+            @if (autenticado()) {
+              <a [routerLink]="rutaPanel()"
+                 class="px-4 py-2 text-sm font-semibold rounded-md bg-inst-gold text-inst-950 hover:bg-inst-gold-light transition">
+                Mi panel
+              </a>
+
+              <!-- Menú de usuario / cambio de perfil -->
+              <div class="relative" data-perfil-menu>
+                <button type="button" (click)="togglePerfilMenu()"
+                        class="flex items-center gap-2 pl-1 pr-2 py-1 rounded-full hover:bg-white/10 transition"
+                        [attr.aria-expanded]="perfilMenuOpen()" aria-haspopup="menu">
+                  <span class="w-9 h-9 rounded-full bg-inst-700 text-white text-sm font-semibold flex items-center justify-center ring-1 ring-white/20">
+                    {{ iniciales() }}
+                  </span>
+                  <span class="text-left leading-tight hidden lg:block">
+                    <span class="block text-white text-sm font-medium max-w-[10rem] truncate">{{ authService.user()?.nombre_completo }}</span>
+                    @if (authService.modo(); as m) {
+                      <span class="block text-inst-gold-light text-[11px] uppercase tracking-wider">{{ etiquetaModo[m] }}</span>
+                    }
+                  </span>
+                  <svg class="w-4 h-4 text-white/70 transition-transform" [class.rotate-180]="perfilMenuOpen()"
+                       fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                  </svg>
+                </button>
+
+                @if (perfilMenuOpen()) {
+                  <div role="menu"
+                       class="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-xl ring-1 ring-black/5 overflow-hidden">
+                    <div class="px-4 py-3 bg-inst-50 border-b border-gray-100">
+                      <p class="text-sm font-semibold text-gray-900 truncate">{{ authService.user()?.nombre_completo }}</p>
+                      @if (authService.user()?.email) {
+                        <p class="text-xs text-gray-500 truncate">{{ authService.user()?.email }}</p>
+                      }
+                    </div>
+
+                    @if (tieneVariosPerfiles()) {
+                      <div class="py-2">
+                        <p class="px-4 pb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400">Cambiar perfil</p>
+                        @for (m of authService.rolesDisponibles(); track m) {
+                          <button type="button" role="menuitemradio" [attr.aria-checked]="authService.modo() === m"
+                                  (click)="cambiarPerfil(m)"
+                                  class="w-full flex items-center justify-between px-4 py-2.5 text-sm text-left hover:bg-inst-50 transition"
+                                  [class.text-inst-700]="authService.modo() === m"
+                                  [class.font-semibold]="authService.modo() === m"
+                                  [class.text-gray-700]="authService.modo() !== m">
+                            <span class="flex items-center gap-3">
+                              @if (m === 'admin') {
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                              } @else {
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0v6m0-6l6.16-3.422A12.083 12.083 0 0118 18.5c-1.8 1-3.84 1.5-6 1.5s-4.2-.5-6-1.5a12.083 12.083 0 01-.16-7.922L12 14z"/></svg>
+                              }
+                              {{ etiquetaModo[m] }}
+                            </span>
+                            @if (authService.modo() === m) {
+                              <svg class="w-4 h-4 text-inst-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                            }
+                          </button>
+                        }
+                      </div>
+                    }
+
+                    <div class="border-t border-gray-100 py-1">
+                      <button type="button" role="menuitem" (click)="cerrarSesion()"
+                              class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition text-left">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                        Cerrar sesión
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <a routerLink="/auth/login"
+                 class="px-4 py-2 text-sm font-semibold rounded-md border border-white/40 text-white hover:bg-white hover:text-inst-900 transition">
+                Iniciar sesión
+              </a>
+            }
+          </div>
         </div>
-      </div>
-      
-      <button 
-        (click)="toggleMobileMenu()" 
-        class="md:hidden text-white focus:outline-none p-2 cursor-pointer hover:text-girardota-yellow transition"
-        [attr.aria-expanded]="mobileMenuOpen()">
-        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          @if (!mobileMenuOpen()) {
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-          } @else {
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-          }
-        </svg>
-      </button>
-    </div>
-    
-    @if (mobileMenuOpen()) {
-      <div class="md:hidden pb-6 pt-2 space-y-3 border-t border-white/10 mt-2">
-        @for (item of menuItems(); track item.id) {
-          @if (item.fragment) {
-            <a (click)="navigateToAnchor(item.fragment)"
-               class="block text-white text-lg py-2 hover:text-girardota-yellow transition border-b border-white/5 cursor-pointer">
-              {{ item.label }}
-            </a>
-          } @else {
-            <a [routerLink]="item.link" 
-               (click)="toggleMobileMenu()"
-               class="block text-white text-lg py-2 hover:text-girardota-yellow transition border-b border-white/5">
-              {{ item.label }}
-            </a>
-          }
-        }
 
-        <div class="pt-4 space-y-4">
-          @if (authService.authStatus() === 'authenticated') {
-            <div class="bg-white/10 p-4 rounded-lg">
-              <p class="text-white mb-3">Bienvenido, <span class="font-bold text-girardota-yellow">{{ authService.user()?.nombre_completo }}</span></p>
-              <div class="flex flex-col space-y-3">
-                <a [routerLink]="authService.isAdmin() ? '/admin' : '/profesor'" 
-                   (click)="toggleMobileMenu()"
-                   class="bg-girardota-yellow text-girardota-teal text-center py-3 rounded-md font-bold">
-                   Ir a mi Panel
+        <!-- Botón menú móvil -->
+        <button type="button" (click)="toggleMobileMenu()"
+                class="md:hidden text-white p-2 rounded-md hover:bg-white/10 transition"
+                [attr.aria-expanded]="mobileMenuOpen()" aria-label="Abrir menú">
+          <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            @if (!mobileMenuOpen()) {
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            } @else {
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            }
+          </svg>
+        </button>
+      </div>
+
+      <!-- Menú móvil -->
+      @if (mobileMenuOpen()) {
+        <div class="md:hidden pb-5 pt-2 border-t border-white/10">
+          @for (item of menuItems(); track item.id) {
+            @if (item.fragment) {
+              <a (click)="navigateToAnchor(item.fragment)"
+                 class="block px-2 py-3 text-white/90 border-b border-white/5 cursor-pointer">
+                {{ item.label }}
+              </a>
+            } @else {
+              <a [routerLink]="item.link" (click)="toggleMobileMenu()"
+                 class="block px-2 py-3 text-white/90 border-b border-white/5">
+                {{ item.label }}
+              </a>
+            }
+          }
+
+          <div class="pt-4">
+            @if (autenticado()) {
+              <div class="bg-white/5 rounded-lg p-4 space-y-4">
+                <div class="flex items-center gap-3">
+                  <span class="w-10 h-10 rounded-full bg-inst-700 text-white font-semibold flex items-center justify-center">{{ iniciales() }}</span>
+                  <div class="leading-tight min-w-0">
+                    <p class="text-white font-medium truncate">{{ authService.user()?.nombre_completo }}</p>
+                    @if (authService.modo(); as m) {
+                      <p class="text-inst-gold-light text-xs uppercase tracking-wider">{{ etiquetaModo[m] }}</p>
+                    }
+                  </div>
+                </div>
+
+                @if (tieneVariosPerfiles()) {
+                  <div>
+                    <p class="text-[11px] uppercase tracking-wider text-white/50 mb-2">Cambiar perfil</p>
+                    <div class="grid grid-cols-2 gap-2">
+                      @for (m of authService.rolesDisponibles(); track m) {
+                        <button type="button" (click)="cambiarPerfil(m)"
+                                class="py-2 rounded-md text-sm font-medium transition"
+                                [class]="authService.modo() === m
+                                  ? 'bg-inst-gold text-inst-950'
+                                  : 'bg-white/10 text-white hover:bg-white/20'">
+                          {{ etiquetaModo[m] }}
+                        </button>
+                      }
+                    </div>
+                  </div>
+                }
+
+                <a [routerLink]="rutaPanel()" (click)="toggleMobileMenu()"
+                   class="block text-center py-2.5 rounded-md bg-inst-gold text-inst-950 font-semibold">
+                  Ir a mi panel
                 </a>
-                <button (click)="authService.logout(); toggleMobileMenu()" class="text-white border border-white/30 py-2 rounded-md text-sm">
-                  Cerrar Sesión
+                <button type="button" (click)="cerrarSesion()"
+                        class="w-full py-2 rounded-md border border-white/25 text-white/90 text-sm">
+                  Cerrar sesión
                 </button>
               </div>
-            </div>
-          } @else {
-            <a routerLink="/auth/login" 
-               (click)="toggleMobileMenu()"
-               class="block bg-white text-girardota-teal text-center py-3 rounded-md font-bold">
-               Iniciar Sesión
-            </a>
-          }
+            } @else {
+              <a routerLink="/auth/login" (click)="toggleMobileMenu()"
+                 class="block text-center py-3 rounded-md bg-white text-inst-900 font-semibold">
+                Iniciar sesión
+              </a>
+            }
+          </div>
         </div>
-      </div>
-    }
-  </div>
-  <a target="_blank" href="https://linkedin.com/in/juan-a-a-v/" class=" text-sm m-5 text-white/80  hover:text-girardota-yellow transition">
-              Desarrollado por <span class="font-bold">JuanitoCode</span>
-            </a>
-</nav>
+      }
+    </div>
+  </nav>
+</header>

@@ -42,7 +42,7 @@ export interface Curso {
   porcentajeAsistenciaMin: number;
   notaAprobatoria: number;
   requiereNivelPrevio: boolean;
-  cursoPrerequisitorId: string | null;
+  cursoPrerequisitoId: string | null;
   activo: boolean;
   createdAt: string;
   updatedAt: string;
@@ -58,15 +58,15 @@ export interface CreateCursoDto {
   periodoId: string;
   docenteId?: string | null;
   nombre: string;
-  descripcion?: string;
+  descripcion?: string | null;
   capacidadMax?: number;
-  edadMin?: number;
-  edadMax?: number;
-  intensidadHoraria?: number;
+  edadMin?: number | null;
+  edadMax?: number | null;
+  intensidadHoraria?: number | null;
   porcentajeAsistenciaMin?: number;
   notaAprobatoria?: number;
   requiereNivelPrevio?: boolean;
-  cursoPrerequisitorId?: string;
+  cursoPrerequisitoId?: string | null;
   horarios?: CreateHorarioDto[];
 }
 

@@ -16,6 +16,8 @@ export class AreaprofesorComponent {
   routes = signal([
     { nombre: 'Reporte novedades', ruta: '/profesor/novedades-profesor' },
     { nombre: 'Reportes de Asistencia', ruta: '/inasistencia' },
+    { nombre: 'Mi horario', ruta: '/profesor/horario' },
+    { nombre: 'Tomar asistencia', ruta: '/profesor/cursos/:id/asistencia' },
     
   ]);
 }
