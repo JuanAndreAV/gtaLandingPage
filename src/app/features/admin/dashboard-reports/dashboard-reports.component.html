@@ -1,197 +1,181 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    @if (loading()) {
-      <div class="text-center py-12">
-        <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-girardota-teal"></div>
-        <p class="text-gray-600 mt-4 text-lg">Cargando métricas...</p>
-      </div>
-    } @else if (error()) {
-      <div class="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg">
-        {{ error() }}
-      </div>
-    } @else if (metricas()) {
-      
-      <!-- KPIs Principales -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        
-        <!-- Total Estudiantes -->
-        <div class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition">
-          <div class="flex items-center justify-between">
-            <div class="flex-1">
-              <p class="text-sm text-gray-600 mb-1 font-medium">Total Estudiantes</p>
-              <h3 class="text-4xl font-bold text-gray-900 mb-2">{{ metricas()!.totalEstudiantes }}</h3>
-              <div class="flex items-center text-green-600 text-sm font-medium">
-                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
-                </svg>
-                <span>{{ metricas()!.estudiantesNuevos }} nuevos este mes</span>
-              </div>
-            </div>
-            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-              <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
-              </svg>
-            </div>
-          </div>
-        </div>
 
-        <!-- Cursos Activos -->
-        <div class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition">
-          <div class="flex items-center justify-between">
-            <div class="flex-1">
-              <p class="text-sm text-gray-600 mb-1 font-medium">Cursos Activos</p>
-              <h3 class="text-4xl font-bold text-gray-900 mb-2">{{ metricas()!.cursosActivos }}</h3>
-              <p class="text-sm text-gray-500 font-medium">
-                de {{ metricas()!.totalCursos }} totales
-              </p>
-            </div>
-            <div class="w-16 h-16 bg-linear-to-br from-yellow-400 to-yellow-500 rounded-full flex items-center justify-center">
-              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <!-- Inscripciones Pendientes -->
-        <div class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition">
-          <div class="flex items-center justify-between">
-            <div class="flex-1">
-              <p class="text-sm text-gray-600 mb-1 font-medium">Pendientes</p>
-              <h3 class="text-4xl font-bold text-gray-900 mb-2">{{ metricas()!.inscripcionesPendientes }}</h3>
-              <p class="text-sm text-orange-600 font-medium">
-                Requieren revisión
-              </p>
-            </div>
-            <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center">
-              <svg class="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <!-- Promedio Asistencia -->
-        <div class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition">
-          <div class="flex items-center justify-between">
-            <div class="flex-1">
-              <p class="text-sm text-gray-600 mb-1 font-medium">Asistencia General</p>
-              <h3 class="text-4xl font-bold mb-2" [ngClass]="getEstadoColor(metricas()!.promedioAsistenciaGeneral)">
-                {{ metricas()!.promedioAsistenciaGeneral | number:'1.1-1' }}%
-              </h3>
-              <p class="text-sm text-gray-500 font-medium">
-                Promedio global
-              </p>
-            </div>
-            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-              <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Gráficos -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        
-        <!-- Tendencia de Inscripciones -->
-        <div class="bg-white rounded-lg shadow-lg p-6">
-          <h3 class="text-xl font-bold text-gray-900 mb-4">Tendencia de Inscripciones</h3>
-          <div class="chart-container">
-            <canvas 
-              baseChart
-              [data]="lineChartData"
-              [options]="lineChartOptions"
-              >
-            </canvas>
-          </div>
-        </div>
-
-        <!-- Distribución por Categoría -->
-        <div class="bg-white rounded-lg shadow-lg p-6">
-          <h3 class="text-xl font-bold text-gray-900 mb-4">Distribución por Categoría</h3>
-          <div class="chart-container">
-            <canvas 
-              baseChart
-              [data]="doughnutChartData"
-              [options]="doughnutChartOptions"
-             >
-            </canvas>
-          </div>
-        </div>
-      </div>
-
-      <!-- Top 5 Cursos -->
-      <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
-        <h3 class="text-xl font-bold text-gray-900 mb-4">Top 5 Cursos por Inscritos</h3>
-        <div class="chart-container">
-          <canvas 
-            baseChart
-            [data]="barChartData"
-            [options]="barChartOptions"
-            >
-          </canvas>
-        </div>
-      </div>
-
-      <!-- Tabla de Cursos -->
-      <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200">
-          <h3 class="text-xl font-bold text-gray-900">Cursos Más Populares</h3>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-              <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Curso</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Categoría</th>
-                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Inscritos</th>
-                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Ocupación</th>
-                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Asistencia</th>
-              </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              @for (curso of metricas()!.cursosMasPopulares; track curso.cursoId) {
-              <tr class="hover:bg-gray-50">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="font-semibold text-gray-900">{{ curso.nombre }}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="px-3 py-1 text-xs font-semibold rounded-full bg-girardota-yellow text-girardota-teal-dark">
-                    {{ curso.categoria }}
-                  </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-center">
-                  <span class="font-medium text-gray-900">{{ curso.inscritos }} / {{ curso.capacidad }}</span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="flex items-center justify-center gap-2">
-                    <div class="w-24 bg-gray-200 rounded-full h-2">
-                      <div 
-                        class="h-2 rounded-full transition-all"
-                        [ngClass]="{
-                          'bg-green-600': curso.porcentajeOcupacion >= 80,
-                          'bg-yellow-600': curso.porcentajeOcupacion >= 50 && curso.porcentajeOcupacion < 80,
-                          'bg-red-600': curso.porcentajeOcupacion < 50
-                        }"
-                        [style.width.%]="curso.porcentajeOcupacion">
-                      </div>
-                    </div>
-                    <span class="text-sm font-medium text-gray-600">{{ curso.porcentajeOcupacion | number:'1.0-0' }}%</span>
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-center">
-                  <span 
-                    class="px-3 py-1 text-xs font-bold rounded-full"
-                    [ngClass]="getBadgeColor(curso.promedioAsistencia)">
-                    {{ curso.promedioAsistencia | number:'1.1-1' }}%
-                  </span>
-                </td>
-              </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      </div>
-    }
+  <!-- Encabezado + filtro (una sola fila, aplica a todo el tablero) -->
+  <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
+    <div>
+      <p class="text-inst-600 text-xs font-semibold uppercase tracking-[0.2em] mb-1">Analítica</p>
+      <h1 class="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight">Población e inscripciones</h1>
+      <p class="text-sm text-gray-500 mt-1">
+        {{ periodoId() ? 'Periodo seleccionado' : 'Periodos activos' }} · población atendida = personas con al menos una inscripción
+      </p>
+    </div>
+    <div class="flex items-center gap-2">
+      <label for="filtro-periodo" class="text-sm text-gray-600">Periodo</label>
+      <select id="filtro-periodo" [ngModel]="periodoId()" (ngModelChange)="onPeriodoChange($event)"
+              class="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white min-w-48">
+        <option value="">Periodos activos</option>
+        @for (p of programasService.periodos(); track p.id) {
+          <option [value]="p.id">{{ p.nombre }}</option>
+        }
+      </select>
+      <button type="button" (click)="cargar()" [disabled]="cargando()"
+              class="p-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+              aria-label="Actualizar">
+        <svg class="w-5 h-5" [class.animate-spin]="cargando()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+      </button>
+    </div>
   </div>
+
+  @if (error()) {
+    <div class="bg-red-50 border border-red-200 text-red-700 px-5 py-4 rounded-lg mb-6">{{ error() }}</div>
+  }
+
+  @if (!datos() && cargando()) {
+    <div class="text-center py-20">
+      <div class="inline-block animate-spin rounded-full h-10 w-10 border-2 border-inst-100 border-t-inst-600"></div>
+      <p class="text-gray-500 mt-4">Cargando analítica...</p>
+    </div>
+  }
+
+  @if (datos(); as d) {
+    <!-- Mantiene el render anterior atenuado mientras recarga (sin saltos de layout) -->
+    <div class="transition-opacity" [class.opacity-50]="cargando()">
+
+      <!-- Indicadores -->
+      <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-10">
+        <div class="bg-white rounded-xl ring-1 ring-black/5 shadow-sm p-5">
+          <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Personas atendidas</p>
+          <p class="mt-2 text-3xl font-bold text-gray-900">{{ d.resumen.personas | number }}</p>
+        </div>
+        <div class="bg-white rounded-xl ring-1 ring-black/5 shadow-sm p-5">
+          <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Inscripciones</p>
+          <p class="mt-2 text-3xl font-bold text-gray-900">{{ d.resumen.inscripciones | number }}</p>
+          <p class="text-xs text-gray-500 mt-1">
+            {{ d.resumen.personas ? (d.resumen.inscripciones / d.resumen.personas | number:'1.1-1') : 0 }} por persona
+          </p>
+        </div>
+        <div class="bg-white rounded-xl ring-1 ring-black/5 shadow-sm p-5">
+          <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Activas</p>
+          <p class="mt-2 text-3xl font-bold text-gray-900">{{ d.resumen.activas | number }}</p>
+        </div>
+        <div class="bg-white rounded-xl ring-1 ring-black/5 shadow-sm p-5">
+          <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Por revisar</p>
+          <p class="mt-2 text-3xl font-bold text-gray-900">{{ d.resumen.pendientes + d.resumen.en_espera | number }}</p>
+          <p class="text-xs text-gray-500 mt-1">{{ d.resumen.pendientes }} pendientes · {{ d.resumen.en_espera }} en espera</p>
+        </div>
+        <div class="bg-white rounded-xl ring-1 ring-black/5 shadow-sm p-5 col-span-2 lg:col-span-1">
+          <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Tasa de retiro</p>
+          <p class="mt-2 text-3xl font-bold text-gray-900">{{ d.resumen.tasaRetiro | number:'1.0-1' }}%</p>
+          <p class="text-xs text-gray-500 mt-1">{{ d.resumen.retiradas }} retiros</p>
+        </div>
+      </div>
+
+      <!-- ── Comportamiento de las inscripciones ── -->
+      <section class="mb-12">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Comportamiento de las inscripciones</h2>
+
+        <figure class="bg-white rounded-xl ring-1 ring-black/5 shadow-sm p-5 mb-6">
+          <figcaption class="mb-3">
+            <h3 class="text-base font-semibold text-gray-900">Inscripciones y retiros por mes</h3>
+            <p class="text-xs text-gray-500 mt-0.5">Según la fecha de inscripción</p>
+          </figcaption>
+          @if (d.inscripciones.porMes.length) {
+            <div class="relative h-72">
+              <canvas baseChart type="line" [data]="lineaData()" [options]="lineaOpciones"
+                      role="img" aria-label="Inscripciones y retiros por mes"></canvas>
+            </div>
+            <details class="mt-3 text-sm">
+              <summary class="cursor-pointer select-none text-xs font-medium text-gray-500 hover:text-gray-700">Ver tabla</summary>
+              <table class="mt-2 w-full text-left">
+                <thead>
+                  <tr class="text-xs text-gray-500 border-b border-gray-100">
+                    <th class="py-1.5 font-medium">Mes</th>
+                    <th class="py-1.5 font-medium text-right">Inscripciones</th>
+                    <th class="py-1.5 font-medium text-right">Retiros</th>
+                  </tr>
+                </thead>
+                <tbody class="tabular-nums">
+                  @for (m of d.inscripciones.porMes; track m.mes) {
+                    <tr class="border-b border-gray-50 last:border-0">
+                      <td class="py-1.5 text-gray-700 capitalize">{{ nombreMes(m.mes) }}</td>
+                      <td class="py-1.5 text-right text-gray-900">{{ m.total }}</td>
+                      <td class="py-1.5 text-right text-gray-900">{{ m.retiradas }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </details>
+          } @else {
+            <p class="py-10 text-center text-sm text-gray-400">Sin inscripciones para este filtro</p>
+          }
+        </figure>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <app-grafica-barras titulo="Estado de las inscripciones" [items]="porEstado()"
+                              unidad="Inscripciones" etiquetaColumna="Estado" />
+          <app-grafica-barras titulo="Inscripciones por área artística"
+                              subtitulo="Un curso de varios programas cuenta en cada área"
+                              [items]="d.inscripciones.porArea" unidad="Inscripciones" etiquetaColumna="Área" />
+
+          <!-- Ocupación: capacidad es una razón, se muestra como medidor por curso -->
+          <figure class="bg-white rounded-xl ring-1 ring-black/5 shadow-sm p-5">
+            <figcaption class="mb-4">
+              <h3 class="text-base font-semibold text-gray-900">Ocupación de cursos</h3>
+              <p class="text-xs text-gray-500 mt-0.5">
+                Inscritos activos / cupo · {{ cursosLlenos() }} de {{ totalCursos() }} cursos llenos
+              </p>
+            </figcaption>
+            @if (ocupacion().length) {
+              <ul class="space-y-3">
+                @for (c of ocupacion(); track $index) {
+                  <li>
+                    <div class="flex justify-between gap-3 text-sm mb-1">
+                      <span class="text-gray-700 truncate" [title]="c.curso">{{ c.curso }}</span>
+                      <span class="text-gray-900 tabular-nums shrink-0">{{ c.inscritos }}/{{ c.capacidad }}</span>
+                    </div>
+                    <div class="h-1.5 rounded-full bg-gray-100 overflow-hidden"
+                         role="meter" [attr.aria-valuenow]="c.porcentaje ?? 0" aria-valuemin="0" aria-valuemax="100"
+                         [attr.aria-label]="c.curso">
+                      <div class="h-full rounded-full" [style.background]="VIZ.serie1"
+                           [style.width.%]="(c.porcentaje ?? 0) > 100 ? 100 : (c.porcentaje ?? 0)"></div>
+                    </div>
+                  </li>
+                }
+              </ul>
+            } @else {
+              <p class="py-10 text-center text-sm text-gray-400">Sin cursos para este filtro</p>
+            }
+          </figure>
+        </div>
+      </section>
+
+      <!-- ── Población atendida ── -->
+      <section>
+        <div class="flex flex-wrap items-baseline justify-between gap-2 mb-4">
+          <h2 class="text-lg font-semibold text-gray-900">Población atendida</h2>
+          @if (pctDiscapacidad() !== null) {
+            <p class="text-sm text-gray-600">
+              <span class="font-semibold text-gray-900">{{ pctDiscapacidad() | number:'1.0-1' }}%</span>
+              reporta alguna discapacidad
+            </p>
+          }
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <app-grafica-barras titulo="Curso de vida" subtitulo="Edad actual según fecha de nacimiento"
+                              [items]="d.poblacion.cicloVida" orientacion="vertical" [maximo]="0"
+                              etiquetaColumna="Curso de vida" />
+          <app-grafica-barras titulo="Género" [items]="d.poblacion.genero" etiquetaColumna="Género" />
+          <app-grafica-barras titulo="Estrato socioeconómico" [items]="d.poblacion.estrato"
+                              orientacion="vertical" [maximo]="0" etiquetaColumna="Estrato" />
+          <app-grafica-barras titulo="Zona de residencia" [items]="d.poblacion.zona" etiquetaColumna="Zona" />
+          <app-grafica-barras titulo="Enfoque poblacional" [items]="d.poblacion.enfoque" etiquetaColumna="Enfoque" />
+          <app-grafica-barras titulo="Barrios con más participantes" subtitulo="Top 10"
+                              [items]="d.poblacion.barrios" [maximo]="0" etiquetaColumna="Barrio" />
+        </div>
+      </section>
+    </div>
+  }
+</div>
