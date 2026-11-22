@@ -1,0 +1,161 @@
+<div class="adm-page">
+  <div class="mb-6">
+    <h2 class="text-2xl font-bold text-gray-800">Niveles por asignatura</h2>
+    <p class="text-sm text-gray-500 mt-1">
+      Cada asignatura tiene su propia escala de niveles. El número del nivel es el que los docentes indican en el Excel de oferta
+      y sirve para seguir el progreso de los estudiantes en el tiempo.
+    </p>
+  </div>
+
+  @if (mensajeError()) {
+    <div class="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">{{ mensajeError() }}</div>
+  }
+  @if (mensajeExito()) {
+    <div class="mb-4 p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm">✓ {{ mensajeExito() }}</div>
+  }
+
+  @if (cargando()) {
+    <p class="text-center text-gray-400 py-12">Cargando…</p>
+  } @else {
+    <div class="grid lg:grid-cols-[320px_1fr] gap-6 items-start">
+      <!-- Asignaturas -->
+      <aside class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="p-3 border-b border-gray-100">
+          <input type="search" placeholder="Buscar asignatura…" [value]="busqueda()" (input)="busqueda.set($any($event.target).value)"
+                 class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-inst-600" />
+          @if (sinNiveles() > 0) {
+            <p class="text-xs text-amber-700 mt-2">{{ sinNiveles() }} asignatura(s) sin niveles configurados</p>
+          }
+        </div>
+        <ul class="max-h-[60vh] overflow-y-auto divide-y divide-gray-50">
+          @for (a of asignaturasFiltradas(); track a.id) {
+            <li>
+              <button type="button" (click)="seleccionar(a.id)"
+                      class="w-full flex items-center justify-between gap-3 px-4 py-3 text-left text-sm transition"
+                      [class]="seleccionadaId() === a.id ? 'bg-inst-50' : 'hover:bg-gray-50'">
+                <span class="min-w-0">
+                  <span class="block font-medium truncate" [class]="seleccionadaId() === a.id ? 'text-inst-800' : 'text-gray-800'">{{ a.nombre }}</span>
+                  @if (programas(a)) { <span class="block text-xs text-gray-400 truncate">{{ programas(a) }}</span> }
+                </span>
+                @if (cantidadNiveles(a.id)) {
+                  <span class="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">{{ cantidadNiveles(a.id) }}</span>
+                } @else {
+                  <span class="shrink-0 rounded-full bg-amber-50 px-2 py-0.5 text-xs text-amber-700">Sin niveles</span>
+                }
+              </button>
+            </li>
+          } @empty {
+            <li class="px-4 py-6 text-center text-sm text-gray-400">No hay asignaturas.</li>
+          }
+        </ul>
+      </aside>
+
+      <!-- Niveles de la asignatura -->
+      <section>
+        @if (seleccionada(); as a) {
+          <div class="bg-white rounded-xl border border-gray-200 p-5">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+              <h3 class="font-semibold text-gray-800">{{ a.nombre }}</h3>
+              <div class="flex flex-wrap items-center gap-2">
+                <label class="text-sm text-gray-600" for="cantidad">Crear niveles del 1 al</label>
+                <input id="cantidad" type="number" min="1" max="20" [value]="cantidadGenerar()"
+                       (input)="cantidadGenerar.set(+$any($event.target).value)"
+                       class="w-16 border border-gray-300 rounded-lg px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-inst-600" />
+                <button type="button" (click)="generar()" [disabled]="guardando()"
+                        class="px-3 py-1.5 rounded-lg ring-1 ring-inst-700 text-inst-800 text-sm font-medium hover:bg-inst-50 disabled:opacity-50">
+                  Generar
+                </button>
+                <button type="button" (click)="nuevo()"
+                        class="px-3 py-1.5 rounded-lg bg-inst-700 text-white text-sm font-semibold hover:bg-inst-800">
+                  + Nivel
+                </button>
+              </div>
+            </div>
+
+            @if (borrador(); as b) {
+              <div class="rounded-lg border border-inst-100 bg-inst-50/40 p-4 mb-4 grid sm:grid-cols-[90px_1fr] gap-3">
+                <div>
+                  <label class="block text-xs font-medium text-gray-600 mb-1">Número</label>
+                  <input type="number" min="1" [value]="b.orden" (input)="actualizarBorrador('orden', $any($event.target).value)"
+                         class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white outline-none focus:ring-2 focus:ring-inst-600" />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-600 mb-1">Nombre</label>
+                  <input [value]="b.nombre" (input)="actualizarBorrador('nombre', $any($event.target).value)" placeholder="Ej.: Nivel 2 · Básico"
+                         class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white outline-none focus:ring-2 focus:ring-inst-600" />
+                </div>
+                <div class="sm:col-span-2">
+                  <label class="block text-xs font-medium text-gray-600 mb-1">Descripción / logros esperados (opcional)</label>
+                  <textarea rows="2" [value]="b.descripcion" (input)="actualizarBorrador('descripcion', $any($event.target).value)"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white outline-none focus:ring-2 focus:ring-inst-600"></textarea>
+                </div>
+                <div class="sm:col-span-2 flex gap-3">
+                  <button type="button" (click)="guardar()" [disabled]="guardando()"
+                          class="px-4 py-2 rounded-lg bg-inst-700 text-white text-sm font-semibold hover:bg-inst-800 disabled:opacity-50">
+                    {{ guardando() ? 'Guardando…' : (b.id ? 'Guardar cambios' : 'Agregar nivel') }}
+                  </button>
+                  <button type="button" (click)="borrador.set(null)" class="px-3 py-2 text-sm text-gray-600 hover:text-gray-900">Cancelar</button>
+                </div>
+              </div>
+            }
+
+            @if (nivelesSeleccionada().length) {
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead class="text-left text-xs uppercase tracking-wider text-gray-500 border-b border-gray-200">
+                    <tr>
+                      <th class="py-2 pr-3 w-16">N.º</th>
+                      <th class="py-2 pr-3">Nivel</th>
+                      <th class="py-2 pr-3 w-24 text-center">Cursos</th>
+                      <th class="py-2 pr-3 w-24">Estado</th>
+                      <th class="py-2 text-right">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-100">
+                    @for (n of nivelesSeleccionada(); track n.id) {
+                      <tr [class.opacity-60]="!n.activo">
+                        <td class="py-3 pr-3">
+                          <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-inst-50 font-semibold text-inst-800">{{ n.orden }}</span>
+                        </td>
+                        <td class="py-3 pr-3">
+                          <p class="font-medium text-gray-800">{{ n.nombre }}</p>
+                          @if (n.descripcion) { <p class="text-xs text-gray-500">{{ n.descripcion }}</p> }
+                        </td>
+                        <td class="py-3 pr-3 text-center text-gray-600">{{ n.cursos ?? 0 }}</td>
+                        <td class="py-3 pr-3">
+                          <span class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium"
+                                [class]="n.activo ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'">
+                            {{ n.activo ? 'Activo' : 'Inactivo' }}
+                          </span>
+                        </td>
+                        <td class="py-3">
+                          <div class="flex justify-end gap-3 whitespace-nowrap">
+                            <button type="button" (click)="editar(n)" class="font-medium text-gray-700 hover:text-gray-900">Editar</button>
+                            <button type="button" (click)="alternarActivo(n)" class="font-medium text-amber-700 hover:text-amber-900">
+                              {{ n.activo ? 'Desactivar' : 'Activar' }}
+                            </button>
+                            @if (!n.cursos) {
+                              <button type="button" (click)="eliminar(n)" class="font-medium text-red-600 hover:text-red-800">Eliminar</button>
+                            }
+                          </div>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else if (!borrador()) {
+              <div class="text-center py-10 rounded-lg border border-dashed border-gray-300 text-sm text-gray-500">
+                Esta asignatura aún no tiene niveles. Usa <strong>Generar</strong> para crear Nivel 1, Nivel 2… de una vez.
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="text-center py-16 bg-white rounded-xl border border-dashed border-gray-300 text-sm text-gray-500">
+            Selecciona una asignatura para ver o configurar sus niveles.
+          </div>
+        }
+      </section>
+    </div>
+  }
+</div>

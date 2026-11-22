@@ -43,6 +43,8 @@ export interface Curso {
   notaAprobatoria: number;
   requiereNivelPrevio: boolean;
   cursoPrerequisitoId: string | null;
+  nivelId?: string | null;
+  tipoEstudiante?: 'nuevo' | 'antiguo' | null;
   activo: boolean;
   createdAt: string;
   updatedAt: string;
@@ -51,6 +53,7 @@ export interface Curso {
   docente?: PerfilDocente | null;
   horarios?: Horario[];
   cursoPrerequisito?: { id: string; nombre: string } | null;
+  nivel?: { id: string; nombre: string; orden: number } | null;
 }
 
 export interface CreateCursoDto {
@@ -67,6 +70,8 @@ export interface CreateCursoDto {
   notaAprobatoria?: number;
   requiereNivelPrevio?: boolean;
   cursoPrerequisitoId?: string | null;
+  nivelId?: string | null;
+  tipoEstudiante?: 'nuevo' | 'antiguo' | null;
   horarios?: CreateHorarioDto[];
 }
 

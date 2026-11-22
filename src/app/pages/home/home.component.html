@@ -46,8 +46,42 @@
   </div>
 </section>
 
+<!-- Áreas de formación -->
+<section id="areas" class="pt-24 pb-20 bg-white scroll-mt-28">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid lg:grid-cols-[1fr_2fr] gap-12 items-start">
+      <div class="lg:sticky lg:top-36">
+        <p class="text-inst-600 text-xs font-semibold uppercase tracking-[0.2em] mb-2">Formación artística</p>
+        <h2 class="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight mb-4">Áreas de formación</h2>
+        <p class="text-gray-600 leading-relaxed mb-6">
+          Procesos formativos para niños, jóvenes y adultos, orientados por docentes de cada disciplina y
+          abiertos a toda la comunidad girardotana.
+        </p>
+        <a routerLink="/oferta-publica" class="inline-flex items-center gap-2 text-sm font-semibold text-inst-700 hover:text-inst-900 transition">
+          Consultar cursos por área
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+        </a>
+      </div>
+
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-px bg-gray-200 rounded-lg overflow-hidden border border-gray-200">
+        @for (area of areas; track area.nombre) {
+          <div class="bg-white p-6 transition-colors hover:bg-inst-50">
+            <span class="flex h-10 w-10 items-center justify-center rounded-md bg-inst-50 text-inst-700 ring-1 ring-inst-100 mb-4">
+              <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" [attr.d]="area.icon"/>
+              </svg>
+            </span>
+            <h3 class="font-semibold text-gray-900 mb-1">{{ area.nombre }}</h3>
+            <p class="text-sm text-gray-600 leading-relaxed">{{ area.descripcion }}</p>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- Noticias e inscripciones -->
-<section id="talleres" class="py-20 bg-white scroll-mt-28">
+<section id="talleres" class="py-20 bg-inst-50 scroll-mt-28 border-y border-gray-100">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-10">
       <div>
@@ -70,11 +104,11 @@
         <p class="text-gray-500 mt-2">Por favor, intenta nuevamente más tarde.</p>
       </div>
     } @else {
-      <div class="grid md:grid-cols-3 gap-8">
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         @for (newsItem of news(); track newsItem.id) {
           <app-news-card [news]="newsItem" />
         } @empty {
-          <div class="md:col-span-3 text-center py-12 rounded-xl bg-inst-50">
+          <div class="sm:col-span-2 lg:col-span-3 text-center py-12 rounded-lg bg-white border border-gray-200">
             <p class="text-gray-500">No hay noticias disponibles en este momento.</p>
           </div>
         }
@@ -84,7 +118,7 @@
 </section>
 
 <!-- Inscripciones -->
-<section id="inscripciones" class="py-20 bg-inst-50 scroll-mt-28">
+<section id="inscripciones" class="py-20 bg-white scroll-mt-28">
   <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="relative overflow-hidden rounded-2xl bg-inst-800 text-white px-8 py-12 md:px-14 md:py-16">
       <div class="absolute -right-20 -top-20 w-72 h-72 rounded-full bg-inst-700/60"></div>
@@ -110,11 +144,28 @@
         </div>
       </div>
     </div>
+
+    <!-- Cómo inscribirte -->
+    <div class="mt-14">
+      <h3 class="text-center text-sm font-semibold uppercase tracking-[0.2em] text-inst-600 mb-2">¿Cómo matricularte?</h3>
+      <p class="text-center text-sm text-gray-600 mb-8">La matrícula se realiza de forma <span class="font-semibold text-gray-900">presencial</span> en la Casa de la Cultura.</p>
+      <ol class="grid md:grid-cols-3 gap-6">
+        @for (paso of pasos; track paso.titulo; let i = $index) {
+          <li class="relative rounded-lg border border-gray-200 bg-white p-6">
+            <span class="flex h-9 w-9 items-center justify-center rounded-full border-2 border-inst-gold text-sm font-bold text-inst-800 mb-4">
+              {{ i + 1 }}
+            </span>
+            <h4 class="font-semibold text-gray-900 mb-1">{{ paso.titulo }}</h4>
+            <p class="text-sm text-gray-600 leading-relaxed">{{ paso.descripcion }}</p>
+          </li>
+        }
+      </ol>
+    </div>
   </div>
 </section>
 
 <!-- Próximos eventos -->
-<section id="eventos" class="py-20 bg-white scroll-mt-28">
+<section id="eventos" class="py-20 bg-white scroll-mt-28 border-t border-gray-100">
   <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="mb-10">
       <p class="text-inst-600 text-xs font-semibold uppercase tracking-[0.2em] mb-2">Agenda cultural</p>
@@ -132,19 +183,31 @@
         <p class="text-gray-500 mt-2">Por favor, intenta nuevamente más tarde.</p>
       </div>
     } @else {
-      <div class="space-y-4">
-        @for (event of events(); track event.id) {
+      <div class="space-y-3">
+        @for (event of proximosEventos(); track event.id) {
           <app-event-item [event]="event" />
         } @empty {
-          <div class="text-center py-14 rounded-xl bg-inst-50">
-            <svg class="w-12 h-12 mx-auto text-inst-600/50 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="text-center py-12 rounded-lg bg-inst-50 border border-gray-200">
+            <svg class="w-10 h-10 mx-auto text-inst-600/50 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
             </svg>
-            <p class="text-gray-700 font-medium">No hay eventos próximos en este momento.</p>
-            <p class="text-gray-500 text-sm mt-1">Vuelve pronto para ver nuestras próximas actividades.</p>
+            <p class="text-gray-700 font-medium">No hay eventos próximos programados.</p>
+            <p class="text-gray-500 text-sm mt-1">Muy pronto publicaremos nuevas actividades de nuestra agenda cultural.</p>
           </div>
         }
       </div>
+
+      @if (proximosEventos().length === 0 && eventosRecientes().length > 0) {
+        <div class="mt-12">
+          <h3 class="text-sm font-semibold uppercase tracking-[0.2em] text-gray-500 mb-4">Eventos recientes</h3>
+          <div class="space-y-3 opacity-80">
+            @for (event of eventosRecientes(); track event.id) {
+              <app-event-item [event]="event" />
+            }
+          </div>
+        </div>
+      }
     }
   </div>
 </section>
+

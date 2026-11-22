@@ -1,0 +1,204 @@
+<div class="adm-page">
+  <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
+    <div>
+      <h2 class="text-2xl font-bold text-gray-800">Oferta docente</h2>
+      <p class="text-sm text-gray-500 mt-1">
+        Revisa los cursos propuestos por los docentes. Al aprobar se crea el curso con el salón, la asignatura y el nivel que asignes.
+      </p>
+    </div>
+    <div>
+      <label class="block text-xs text-gray-500 uppercase tracking-wider mb-1" for="periodo">Periodo</label>
+      <select id="periodo" [value]="periodoId()" (change)="cambiarPeriodo($any($event.target).value)"
+              class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white outline-none focus:ring-2 focus:ring-inst-600">
+        @for (p of periodos(); track p.id) {
+          <option [value]="p.id" [selected]="p.id === periodoId()">{{ p.nombre }}{{ p.activo ? '' : ' (inactivo)' }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  @if (mensajeError()) {
+    <div class="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">{{ mensajeError() }}</div>
+  }
+  @if (mensajeExito()) {
+    <div class="mb-4 p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm">✓ {{ mensajeExito() }}</div>
+  }
+
+  <!-- Filtros -->
+  <div class="bg-white rounded-xl border border-gray-200 p-4 mb-4">
+    <div class="flex flex-wrap gap-1.5 text-sm mb-4">
+      @for (e of filtrosEstado; track e) {
+        <button type="button" (click)="filtroEstado.set(e)"
+                class="px-3 py-1.5 rounded-full ring-1 transition"
+                [class]="filtroEstado() === e ? 'bg-gray-800 text-white ring-gray-800' : 'bg-white text-gray-600 ring-gray-200 hover:bg-gray-50'">
+          {{ etiquetaFiltro(e) }} <span class="opacity-70">{{ conteo()[e] ?? 0 }}</span>
+        </button>
+      }
+    </div>
+    <div class="grid sm:grid-cols-2 gap-3">
+      <input type="search" placeholder="Buscar curso, asignatura o docente…" [value]="busqueda()"
+             (input)="busqueda.set($any($event.target).value)"
+             class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-inst-600" />
+      <select [value]="filtroDocente()" (change)="filtroDocente.set($any($event.target).value)"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white outline-none focus:ring-2 focus:ring-inst-600">
+        <option value="">Todos los docentes</option>
+        @for (d of docentes(); track d.id) { <option [value]="d.id">{{ d.nombre }}</option> }
+      </select>
+    </div>
+  </div>
+
+  @if (cargando()) {
+    <p class="text-center text-gray-400 py-12">Cargando oferta…</p>
+  } @else {
+    <div class="space-y-3">
+      @for (o of filtradas(); track o.id) {
+        @let enRevision = revision()?.ofertaId === o.id ? revision() : null;
+        <article class="bg-white rounded-xl border p-5 transition"
+                 [class]="enRevision ? 'border-inst-600 ring-1 ring-inst-600' : 'border-gray-200'">
+          <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+            <div class="min-w-0 flex-1">
+              <div class="flex flex-wrap items-center gap-2">
+                <h3 class="font-semibold text-gray-800">{{ o.nombre }}</h3>
+                <span class="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ring-1" [class]="estadosOferta[o.estado].clase">
+                  {{ estadosOferta[o.estado].etiqueta }}
+                </span>
+                <span class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-700">
+                  {{ o.tipoEstudiante === 'antiguo' ? 'Antiguos' : 'Nuevos' }} · Nivel {{ o.nivelNumero }}
+                </span>
+              </div>
+              <p class="text-sm text-gray-600 mt-1">
+                <span class="font-medium text-gray-800">{{ nombreDocente(o) }}</span>
+                · {{ o.capacidadMax }} cupos · {{ textoEdades(o.edadMin, o.edadMax) }}
+                @if (o.intensidadHoraria) { · {{ o.intensidadHoraria }} h/semana }
+              </p>
+              <p class="text-sm text-gray-600 mt-0.5">{{ textoHorarios(o.horarios) }}</p>
+              @if (o.areaSugerida || o.asignaturaSugerida) {
+                <p class="text-xs text-gray-500 mt-1">
+                  Sugiere: {{ o.areaSugerida }}{{ o.areaSugerida && o.asignaturaSugerida ? ' · ' : '' }}{{ o.asignaturaSugerida }}
+                </p>
+              }
+              @if (o.descripcion) { <p class="text-sm text-gray-500 mt-2">{{ o.descripcion }}</p> }
+              @if (o.observaciones) {
+                <p class="text-xs text-gray-600 bg-gray-50 rounded-lg px-3 py-2 mt-2">
+                  <span class="font-semibold">Nota del docente:</span> {{ o.observaciones }}
+                </p>
+              }
+              @if (o.observacionRevision && o.estado !== 'aprobada') {
+                <p class="text-xs rounded-lg px-3 py-2 mt-2" [class]="o.estado === 'rechazada' ? 'bg-red-50 text-red-800' : 'bg-sky-50 text-sky-900'">
+                  <span class="font-semibold">{{ o.estado === 'pendiente' ? 'Observación anterior' : 'Revisión' }}:</span> {{ o.observacionRevision }}
+                </p>
+              }
+              @if (o.estado === 'aprobada' && o.curso) {
+                <p class="text-xs text-emerald-800 bg-emerald-50 rounded-lg px-3 py-2 mt-2">
+                  Curso creado · {{ o.curso.asignatura?.nombre }}
+                  @if (o.curso.nivel) { · {{ o.curso.nivel.nombre }} }
+                  @if (o.curso.horarios?.[0]?.aula) { · Salón {{ o.curso.horarios?.[0]?.aula?.nombre }} }
+                  · <a [routerLink]="['/admin/academico/cursos', o.curso.id]" class="font-semibold underline">Ver curso</a>
+                </p>
+              }
+            </div>
+
+            @if (o.estado === 'pendiente' && !enRevision) {
+              <div class="flex flex-wrap gap-2 shrink-0">
+                <button type="button" (click)="iniciar(o, 'aprobar')"
+                        class="px-4 py-2 rounded-lg bg-inst-700 text-white text-sm font-semibold hover:bg-inst-800">Aprobar</button>
+                <button type="button" (click)="iniciar(o, 'devolver')"
+                        class="px-4 py-2 rounded-lg ring-1 ring-sky-300 text-sky-800 text-sm font-medium hover:bg-sky-50">Devolver</button>
+                <button type="button" (click)="iniciar(o, 'rechazar')"
+                        class="px-4 py-2 rounded-lg ring-1 ring-red-200 text-red-700 text-sm font-medium hover:bg-red-50">Rechazar</button>
+              </div>
+            }
+          </div>
+
+          <!-- Panel de revisión -->
+          @if (enRevision; as r) {
+            <div class="mt-5 pt-5 border-t border-gray-100">
+              @if (r.accion === 'aprobar') {
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-3">
+                  <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Área artística</label>
+                    <select [value]="r.area" (change)="cambiarArea($any($event.target).value)"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white outline-none focus:ring-2 focus:ring-inst-600">
+                      <option value="">Todas</option>
+                      @for (a of areas(); track a) { <option [value]="a" [selected]="a === r.area">{{ a }}</option> }
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Asignatura *</label>
+                    <select [value]="r.asignaturaId" (change)="cambiarAsignatura(o, $any($event.target).value)"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white outline-none focus:ring-2 focus:ring-inst-600">
+                      <option value="">Selecciona…</option>
+                      @for (a of asignaturasFiltradas(); track a.id) {
+                        <option [value]="a.id" [selected]="a.id === r.asignaturaId">{{ a.nombre }}</option>
+                      }
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Nivel</label>
+                    @if (!r.asignaturaId) {
+                      <p class="text-xs text-gray-400 py-2">Elige primero la asignatura</p>
+                    } @else if (nivelesRevision() === null) {
+                      <p class="text-xs text-gray-400 py-2">Cargando niveles…</p>
+                    } @else if (!nivelesRevision()!.length) {
+                      <p class="text-xs text-amber-700 py-1">
+                        Esta asignatura no tiene niveles.
+                        <a routerLink="/admin/academico/niveles" class="underline font-medium">Configurarlos</a>
+                      </p>
+                    } @else {
+                      <select [value]="r.nivelId" (change)="actualizar('nivelId', $any($event.target).value)"
+                              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white outline-none focus:ring-2 focus:ring-inst-600">
+                        <option value="">Sin nivel</option>
+                        @for (n of nivelesRevision(); track n.id) {
+                          <option [value]="n.id" [selected]="n.id === r.nivelId" [disabled]="!n.activo">{{ n.nombre }}{{ n.activo ? '' : ' (inactivo)' }}</option>
+                        }
+                      </select>
+                      @if (!r.nivelId) {
+                        <p class="text-xs text-amber-700 mt-1">No existe el nivel {{ o.nivelNumero }} en esta asignatura.</p>
+                      }
+                    }
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Salón *</label>
+                    <select [value]="r.aulaId" (change)="actualizar('aulaId', $any($event.target).value)"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white outline-none focus:ring-2 focus:ring-inst-600">
+                      <option value="">Selecciona…</option>
+                      @for (a of aulas(); track a.id) {
+                        <option [value]="a.id" [selected]="a.id === r.aulaId">{{ a.nombre }}{{ a.capacidad ? ' (' + a.capacidad + ')' : '' }}</option>
+                      }
+                    </select>
+                    @if (aulaPequena(o)) {
+                      <p class="text-xs text-amber-700 mt-1">El salón tiene menos capacidad que el cupo del curso.</p>
+                    }
+                  </div>
+                </div>
+                <p class="text-xs text-gray-500 mt-3">Se verifica que el salón y el docente no tengan otro curso a la misma hora en este periodo.</p>
+              } @else {
+                <label class="block text-xs font-medium text-gray-600 mb-1">
+                  {{ r.accion === 'devolver' ? 'Qué debe corregir el docente *' : 'Motivo del rechazo *' }}
+                </label>
+                <textarea rows="3" [value]="r.observacion" (input)="actualizar('observacion', $any($event.target).value)"
+                          [placeholder]="r.accion === 'devolver' ? 'Ej.: ajustar el horario del sábado, el salón está ocupado' : 'Ej.: ya existe un curso equivalente en este periodo'"
+                          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-inst-600"></textarea>
+              }
+
+              @if (errorRevision()) { <p class="text-sm text-red-700 mt-3">{{ errorRevision() }}</p> }
+
+              <div class="flex gap-3 mt-4">
+                <button type="button" (click)="confirmar(o)" [disabled]="procesando()"
+                        class="px-5 py-2 rounded-lg text-white text-sm font-semibold disabled:opacity-50"
+                        [class]="r.accion === 'aprobar' ? 'bg-inst-700 hover:bg-inst-800' : r.accion === 'devolver' ? 'bg-sky-700 hover:bg-sky-800' : 'bg-red-600 hover:bg-red-700'">
+                  {{ procesando() ? 'Procesando…' : r.accion === 'aprobar' ? 'Aprobar y crear curso' : r.accion === 'devolver' ? 'Devolver al docente' : 'Rechazar curso' }}
+                </button>
+                <button type="button" (click)="cancelar()" class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900">Cancelar</button>
+              </div>
+            </div>
+          }
+        </article>
+      } @empty {
+        <div class="text-center py-14 bg-white rounded-xl border border-dashed border-gray-300 text-gray-500 text-sm">
+          {{ ofertas().length ? 'No hay cursos con estos filtros.' : 'Ningún docente ha cargado oferta para este periodo.' }}
+        </div>
+      }
+    </div>
+  }
+</div>

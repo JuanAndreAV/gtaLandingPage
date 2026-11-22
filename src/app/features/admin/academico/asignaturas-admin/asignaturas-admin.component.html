@@ -1,156 +1,164 @@
-<!-- asignaturas-admin.component.html -->
-<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="adm-page">
+  <app-admin-page-header seccion="Configuración académica" titulo="Asignaturas"
+                         descripcion="Materias que se dictan en los cursos, los programas a los que pertenecen (pensum) y sus niveles.">
+    <button acciones type="button" (click)="abrirModalNueva()" class="adm-btn-primary">
+      <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+      Nueva asignatura
+    </button>
+  </app-admin-page-header>
 
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-    <div>
-      <h1 class="text-2xl font-bold text-gray-900">Asignaturas</h1>
-      <p class="text-gray-500 text-sm mt-1">Materias del sistema y su asociación a programas (pensum).</p>
+  <div class="adm-toolbar">
+    <div class="relative flex-1 sm:max-w-sm">
+      <svg class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
+      <input type="search" class="adm-search" placeholder="Buscar asignatura…" aria-label="Buscar asignatura"
+             [value]="busqueda()" (input)="busqueda.set($any($event.target).value)" />
     </div>
-    <div class="flex items-center gap-3">
-      <select [(ngModel)]="filtroPrograma" (change)="onFiltroChange()"
-              class="px-3 py-2 border border-gray-300 rounded-lg text-sm">
-        <option value="">Todos los programas</option>
-        @for (prog of programasService.programas(); track prog.id) {
-          <option [value]="prog.id">{{ prog.nombre }}</option>
-        }
-      </select>
-      <button (click)="abrirModalNueva()"
-              class="px-5 py-2.5 bg-girardota-teal text-white rounded-lg hover:bg-girardota-teal-dark transition font-semibold whitespace-nowrap">
-        + Crear Asignatura
-      </button>
-    </div>
+    <select [(ngModel)]="filtroPrograma" (change)="onFiltroChange()" aria-label="Filtrar por programa" class="adm-input sm:w-64">
+      <option value="">Todos los programas</option>
+      @for (prog of programasService.programas(); track prog.id) {
+        <option [value]="prog.id">{{ prog.nombre }}</option>
+      }
+    </select>
+    <p class="text-sm text-gray-500 sm:ml-auto">{{ filtradas().length }} asignaturas</p>
   </div>
 
   @if (asignaturasService.isLoading()) {
-    <div class="text-center py-12 text-gray-400">Cargando asignaturas...</div>
+    <div class="adm-card p-10 text-center text-sm text-gray-400">Cargando asignaturas…</div>
   } @else if (asignaturasService.error()) {
-    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-      {{ asignaturasService.error() }}
-    </div>
+    <div class="adm-alert-error">{{ asignaturasService.error() }}</div>
   } @else {
-    <div class="bg-white rounded-lg shadow overflow-hidden">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-          <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Programas</th>
-            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Acciones</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-100">
-          @for (asignatura of asignaturasService.asignaturas(); track asignatura.id) {
-            <tr class="hover:bg-gray-50">
-              <td class="px-6 py-4 font-medium text-gray-900">{{ asignatura.nombre }}</td>
-             
-              <td class="px-6 py-4">
-                <div class="flex flex-wrap gap-1">
-                  @for (p of asignatura.pensum; track p.id) {
-                    <span class="text-xs px-2 py-0.5 rounded-full text-white"
-                          [style.background-color]="p.programa?.colorHex ?? '#6b7280'">
-                      {{ p.programa?.nombre }}
-                    </span>
-                  } @empty {
-                    <span class="text-xs text-gray-400">Sin programas asociados</span>
-                  }
-                </div>
-              </td>
-              <td class="px-6 py-4 text-center whitespace-nowrap">
-                <button (click)="abrirPensum(asignatura)" class="text-indigo-600 hover:underline text-sm mr-3">Pensum</button>
-                <button (click)="editar(asignatura)" class="text-blue-600 hover:underline text-sm mr-3">Editar</button>
-                <button (click)="desactivar(asignatura)" class="text-red-600 hover:underline text-sm">Desactivar</button>
-              </td>
+    <div class="adm-card overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="adm-table min-w-[720px]">
+          <thead>
+            <tr>
+              <th>Asignatura</th>
+              <th>Programas</th>
+              <th class="w-28">Niveles</th>
+              <th class="w-56 text-right">Acciones</th>
             </tr>
-          } @empty {
-            <tr><td colspan="4" class="text-center py-8 text-gray-400">No hay asignaturas registradas.</td></tr>
-          }
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            @for (asignatura of filtradas(); track asignatura.id) {
+              <tr>
+                <td>
+                  <p class="font-medium text-gray-900">{{ asignatura.nombre }}</p>
+                  @if (asignatura.descripcion) {
+                    <p class="max-w-sm truncate text-xs text-gray-500" [title]="asignatura.descripcion">{{ asignatura.descripcion }}</p>
+                  }
+                </td>
+                <td>
+                  <div class="flex flex-wrap gap-1.5">
+                    @for (p of asignatura.pensum; track p.id) {
+                      <span class="inline-flex items-center gap-1.5 rounded-full bg-gray-50 px-2 py-0.5 text-xs font-medium text-gray-700 ring-1 ring-inset ring-gray-200">
+                        <span class="h-2 w-2 rounded-full" [style.background-color]="p.programa?.colorHex ?? '#6b7280'"></span>
+                        {{ p.programa?.nombre }}
+                      </span>
+                    } @empty {
+                      <button type="button" (click)="abrirPensum(asignatura)" class="text-xs font-medium text-amber-700 hover:underline">
+                        Sin programa · asociar
+                      </button>
+                    }
+                  </div>
+                </td>
+                <td>
+                  <a routerLink="/admin/academico/niveles" class="text-sm hover:underline"
+                     [class]="cantidadNiveles(asignatura.id) ? 'text-gray-700' : 'text-amber-700'">
+                    {{ cantidadNiveles(asignatura.id) ? cantidadNiveles(asignatura.id) + ' niveles' : 'Configurar' }}
+                  </a>
+                </td>
+                <td class="text-right whitespace-nowrap">
+                  <button type="button" (click)="abrirPensum(asignatura)" class="adm-btn-ghost">Pensum</button>
+                  <button type="button" (click)="editar(asignatura)" class="adm-btn-ghost">Editar</button>
+                  <button type="button" (click)="desactivar(asignatura)" class="adm-btn-ghost-danger">Desactivar</button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="4" class="py-12 text-center">
+                  @if (busqueda() || filtroPrograma()) {
+                    <p class="text-sm text-gray-500">Ninguna asignatura coincide con los filtros.</p>
+                  } @else {
+                    <p class="text-sm font-medium text-gray-700">Aún no hay asignaturas</p>
+                    <button type="button" (click)="abrirModalNueva()" class="adm-btn-primary mt-4">Nueva asignatura</button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
     </div>
   }
 
-  <!-- Modal CRUD básico -->
+  @if (porDesactivar(); as a) {
+    <app-confirm-popup [popupName]="a.nombre" (confirm)="confirmarDesactivar($event)" />
+  }
+
+  <!-- Crear / editar -->
   @if (modalAbierto()) {
-    <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div class="bg-white rounded-lg shadow-2xl max-w-md w-full">
-        <div class="bg-girardota-teal px-6 py-4 rounded-t-lg">
-          <h2 class="text-xl font-bold text-white">{{ modoEdicion() ? 'Editar Asignatura' : 'Crear Asignatura' }}</h2>
+    <app-admin-modal [titulo]="modoEdicion() ? 'Editar asignatura' : 'Nueva asignatura'" tamano="sm" (cerrar)="cerrarModal()">
+      <form (ngSubmit)="guardar()" id="form-asignatura" class="space-y-4" novalidate>
+        <div>
+          <label class="adm-label" for="asig-nombre">Nombre <span class="text-red-500">*</span></label>
+          <input id="asig-nombre" type="text" [(ngModel)]="form.nombre" name="nombre" class="adm-input" placeholder="Ej.: Guitarra"
+                 [class.adm-input-error]="formularioEnviado && !form.nombre.trim()" />
+          @if (formularioEnviado && !form.nombre.trim()) { <p class="adm-error">El nombre es obligatorio.</p> }
         </div>
-        <form (ngSubmit)="guardar()" class="p-6 space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
-            <input type="text" [(ngModel)]="form.nombre" name="nombre"
-                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-girardota-teal"
-                   [class.border-red-500]="formularioEnviado && !form.nombre">
-            @if (formularioEnviado && !form.nombre) {
-              <p class="text-red-500 text-xs mt-1">El nombre es requerido</p>
+        <div>
+          <label class="adm-label" for="asig-descripcion">Descripción</label>
+          <textarea id="asig-descripcion" [(ngModel)]="form.descripcion" name="descripcion" rows="3" class="adm-input"
+                    placeholder="Contenidos generales de la asignatura"></textarea>
+        </div>
+        @if (!modoEdicion()) {
+          <p class="adm-hint">Después de crearla podrás asociarla a programas (Pensum) y configurar sus niveles.</p>
+        }
+        @if (errorGuardado()) { <div class="adm-alert-error">{{ errorGuardado() }}</div> }
+      </form>
+      <div pie class="contents">
+        <button type="button" (click)="cerrarModal()" class="adm-btn-secondary">Cancelar</button>
+        <button type="submit" form="form-asignatura" [disabled]="guardando()" class="adm-btn-primary">
+          {{ guardando() ? 'Guardando…' : (modoEdicion() ? 'Guardar cambios' : 'Crear asignatura') }}
+        </button>
+      </div>
+    </app-admin-modal>
+  }
+
+  <!-- Pensum -->
+  @if (modalPensumAbierto()) {
+    <app-admin-modal [titulo]="'Pensum · ' + (asignaturaPensum?.nombre ?? '')" tamano="lg"
+                     descripcion="Marca los programas a los que pertenece la asignatura, si es obligatoria y su orden dentro del programa."
+                     (cerrar)="cerrarPensum()">
+      <div class="space-y-2">
+        @for (fila of filasPensum(); track fila.programaId) {
+          <div class="flex flex-wrap items-center gap-3 rounded-lg border p-3 transition"
+               [class]="fila.seleccionado ? 'border-inst-600/40 bg-inst-50' : 'border-gray-200 bg-white'">
+            <label class="flex min-w-0 flex-1 cursor-pointer items-center gap-3">
+              <input type="checkbox" [checked]="fila.seleccionado" (change)="toggleFila(fila)" class="h-4 w-4 shrink-0 accent-[var(--color-inst-700)]" />
+              <span class="h-2.5 w-2.5 shrink-0 rounded-full" [style.background-color]="fila.colorHex ?? '#6b7280'"></span>
+              <span class="truncate font-medium text-gray-800">{{ fila.nombre }}</span>
+            </label>
+            @if (fila.seleccionado) {
+              <label class="flex items-center gap-1.5 text-sm text-gray-600">
+                <input type="checkbox" [(ngModel)]="fila.obligatoria" class="h-4 w-4 accent-[var(--color-inst-700)]" />
+                Obligatoria
+              </label>
+              <input type="number" min="1" [(ngModel)]="fila.orden" placeholder="Orden" aria-label="Orden en el programa"
+                     class="adm-input w-24 py-1.5" />
             }
           </div>
-          <div>
-            
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-            <textarea [(ngModel)]="form.descripcion" name="descripcion" rows="2"
-                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-girardota-teal"></textarea>
-          </div>
-          <div class="flex gap-3 pt-2">
-            <button type="button" (click)="cerrarModal()"
-                    class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
-              Cancelar
-            </button>
-            <button type="submit" [disabled]="guardando()"
-                    class="flex-1 px-4 py-2 bg-girardota-teal text-white rounded-lg hover:bg-girardota-teal-dark disabled:opacity-50">
-              {{ guardando() ? 'Guardando...' : 'Guardar' }}
-            </button>
-          </div>
-        </form>
+        } @empty {
+          <p class="text-sm text-gray-500">No hay programas creados.</p>
+        }
       </div>
-    </div>
-  }
-
-  <!-- Modal de Pensum -->
-  @if (modalPensumAbierto()) {
-    <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div class="bg-white rounded-lg shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto">
-        <div class="bg-girardota-teal px-6 py-4 rounded-t-lg sticky top-0">
-          <h2 class="text-xl font-bold text-white">Pensum — {{ asignaturaPensum?.nombre }}</h2>
-          <p class="text-indigo-100 text-sm">Selecciona los programas a los que pertenece esta asignatura.</p>
-        </div>
-
-        <div class="p-6 space-y-3">
-          @for (fila of filasPensum(); track fila.programaId) {
-            <div class="flex items-center gap-3 p-3 border rounded-lg"
-                 [class.border-indigo-300]="fila.seleccionado"
-                 [class.bg-indigo-50]="fila.seleccionado"
-                 [class.border-gray-200]="!fila.seleccionado">
-              <input type="checkbox" [checked]="fila.seleccionado" (change)="toggleFila(fila)"
-                     class="w-5 h-5 accent-indigo-600 flex-shrink-0">
-              <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" [style.background-color]="fila.colorHex ?? '#6b7280'"></span>
-              <span class="flex-1 font-medium text-gray-800">{{ fila.nombre }}</span>
-
-              @if (fila.seleccionado) {
-                <label class="flex items-center gap-1.5 text-xs text-gray-600">
-                  <input type="checkbox" [(ngModel)]="fila.obligatoria" class="accent-indigo-600">
-                  Obligatoria
-                </label>
-                <input type="number" [(ngModel)]="fila.orden" placeholder="Orden"
-                       class="w-20 px-2 py-1 border border-gray-300 rounded text-sm">
-              }
-            </div>
-          }
-        </div>
-
-        <div class="flex gap-3 p-6 pt-0">
-          <button type="button" (click)="cerrarPensum()"
-                  class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
-            Cancelar
-          </button>
-          <button type="button" (click)="guardarPensum()" [disabled]="guardandoPensum()"
-                  class="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50">
-            {{ guardandoPensum() ? 'Guardando...' : 'Guardar Pensum' }}
-          </button>
-        </div>
+      @if (errorPensum()) { <div class="adm-alert-error mt-4">{{ errorPensum() }}</div> }
+      <div pie class="contents">
+        <span class="mr-auto self-center text-sm text-gray-500">{{ seleccionadasPensum() }} programa(s) seleccionados</span>
+        <button type="button" (click)="cerrarPensum()" class="adm-btn-secondary">Cancelar</button>
+        <button type="button" (click)="guardarPensum()" [disabled]="guardandoPensum()" class="adm-btn-primary">
+          {{ guardandoPensum() ? 'Guardando…' : 'Guardar pensum' }}
+        </button>
       </div>
-    </div>
+    </app-admin-modal>
   }
 </div>

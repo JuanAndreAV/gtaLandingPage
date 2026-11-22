@@ -1,85 +1,278 @@
-<div class="max-w-3xl mx-auto p-6">
-  <a routerLink="/profesor/horario" class="text-sm text-gray-500 hover:text-gray-700 underline">← Mi horario</a>
+<div class="max-w-4xl mx-auto px-4 sm:px-6 py-6 pb-28 sm:pb-6">
+  <a routerLink="/profesor/horario" class="text-sm text-gray-500 hover:text-gray-700">← Mi horario</a>
 
-  <h2 class="text-2xl font-bold text-gray-800 mt-2">{{ curso()?.nombre }}</h2>
-  <p class="text-sm text-gray-500 mb-5">{{ curso()?.asignatura?.nombre }} · {{ curso()?.periodo?.nombre }}</p>
-
-  <div class="flex flex-wrap items-end gap-3 mb-2">
-    <div>
-      <label class="block text-xs text-gray-500 uppercase tracking-wider mb-1">Fecha de la clase</label>
-      <input type="date" [formControl]="fecha" [max]="hoy"
-        class="border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500" />
-    </div>
-    <button type="button" (click)="todosPresentes()" class="text-sm text-indigo-600 hover:underline pb-2">
-      Marcar los pendientes como presentes
-    </button>
-    <span class="ml-auto text-xs text-gray-400 pb-2">
-      {{ presentes() }} presentes · {{ ausentes() }} ausentes · {{ pendientes() }} sin marcar
-    </span>
+  <div class="mt-2 mb-5">
+    <h2 class="text-2xl font-bold text-gray-800">{{ curso()?.nombre }}</h2>
+    <p class="text-sm text-gray-500">
+      {{ curso()?.asignatura?.nombre }}
+      @if (curso()?.nivel) { · {{ curso()?.nivel?.nombre }} }
+      · {{ curso()?.periodo?.nombre }}
+      · Asistencia mínima {{ minimo() }}%
+    </p>
   </div>
 
-  @if (!esDiaDeClase()) {
-    <p class="text-xs bg-amber-50 border border-amber-200 text-amber-800 rounded px-3 py-2 mb-3">
-      Esta fecha no coincide con un día de clase de este curso.
-    </p>
-  }
-  @if (sinGuardar()) {
-    <p class="text-xs text-amber-600 mb-3">Hay cambios sin guardar.</p>
-  }
+  <!-- Pestañas -->
+  <div class="inline-flex rounded-lg bg-gray-100 p-1 mb-5 text-sm" role="tablist">
+    <button type="button" role="tab" (click)="cambiarVista('lista')" [attr.aria-selected]="vista() === 'lista'"
+            class="px-4 py-1.5 rounded-md font-medium transition"
+            [class]="vista() === 'lista' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'">
+      Pasar lista
+    </button>
+    <button type="button" role="tab" (click)="cambiarVista('historial')" [attr.aria-selected]="vista() === 'historial'"
+            class="px-4 py-1.5 rounded-md font-medium transition"
+            [class]="vista() === 'historial' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'">
+      Historial
+    </button>
+  </div>
+
   @if (errorMsg()) {
     <div class="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm mb-3">{{ errorMsg() }}</div>
   }
   @if (okMsg()) {
-    <div class="bg-green-50 border border-green-200 rounded-lg p-3 text-green-700 text-sm mb-3">✓ {{ okMsg() }}</div>
+    <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-emerald-700 text-sm mb-3">✓ {{ okMsg() }}</div>
   }
 
-  @if (cargando()) {
-    <p class="text-center text-gray-400 py-10">Cargando...</p>
-  } @else {
-    <div class="bg-white rounded-xl border border-gray-100 shadow-sm divide-y divide-gray-100">
-      @for (f of filas(); track f.inscripcionId; let i = $index) {
-        <div class="p-4">
-          <div class="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p class="font-medium text-gray-800">{{ f.apellido }} {{ f.nombre }}</p>
-              <p class="text-xs text-gray-400">{{ f.documento }}</p>
-            </div>
-            <div class="flex gap-2">
-              <button type="button" (click)="marcar(i, true)"
-                class="px-4 py-1.5 rounded-full text-sm font-medium transition"
-                [class]="f.asistio === true ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
-                Presente
-              </button>
-              <button type="button" (click)="marcar(i, false)"
-                class="px-4 py-1.5 rounded-full text-sm font-medium transition"
-                [class]="f.asistio === false ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
-                Ausente
-              </button>
-            </div>
-          </div>
-
-          @if (f.observacionInscripcion) {
-            <p class="mt-2 text-xs bg-amber-50 border border-amber-200 text-amber-800 rounded px-2 py-1">
-              ⚠ Novedad del estudiante: {{ f.observacionInscripcion }}
-            </p>
-          }
-
-          @if (f.asistio === false) {
-            <input [value]="f.observacion ?? ''" (input)="nota(i, $any($event.target).value)"
-              placeholder="Motivo o nota (opcional)"
-              class="mt-2 w-full border border-gray-200 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500" />
-          }
+  @if (vista() === 'lista') {
+    <!-- Controles -->
+    <div class="bg-white rounded-xl border border-gray-200 p-4 mb-3">
+      <div class="flex flex-wrap items-end gap-3">
+        <div>
+          <label class="block text-xs text-gray-500 uppercase tracking-wider mb-1" for="fecha">Fecha de la clase</label>
+          <input id="fecha" type="date" [formControl]="fecha" [max]="hoy"
+                 class="border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-500" />
         </div>
-      } @empty {
-        <p class="p-10 text-center text-gray-400">Este curso no tiene estudiantes activos.</p>
-      }
+        <div class="flex-1 min-w-48">
+          <label class="block text-xs text-gray-500 uppercase tracking-wider mb-1" for="buscar">Buscar estudiante</label>
+          <input id="buscar" type="search" placeholder="Nombre o documento" [value]="busqueda()"
+                 (input)="busqueda.set($any($event.target).value)"
+                 class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-500" />
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2 mt-4 text-xs">
+        @for (e of estados; track e.valor) {
+          <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-medium" [class]="e.celda">
+            {{ e.etiqueta }} <strong>{{ conteo()[e.valor] }}</strong>
+          </span>
+        }
+        <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-medium bg-gray-100 text-gray-600">
+          Sin marcar <strong>{{ conteo().pendiente }}</strong>
+        </span>
+        <span class="flex-1"></span>
+        @if (enRiesgo() > 0) {
+          <label class="inline-flex items-center gap-2 text-red-700 font-medium cursor-pointer">
+            <input type="checkbox" [checked]="soloRiesgo()" (change)="soloRiesgo.set($any($event.target).checked)" class="rounded" />
+            {{ enRiesgo() }} en riesgo · ver solo alertas
+          </label>
+        }
+      </div>
     </div>
 
-    @if (filas().length) {
-      <button type="button" (click)="guardar()" [disabled]="guardando() || marcados() === 0"
-        class="mt-4 w-full bg-indigo-600 text-white rounded-lg py-2.5 font-medium hover:bg-indigo-700 disabled:opacity-50">
-        {{ guardando() ? 'Guardando...' : 'Guardar asistencia' }}
+    @if (!esDiaDeClase()) {
+      <p class="text-xs bg-sky-50 border border-sky-200 text-sky-900 rounded-lg px-3 py-2 mb-3">
+        Esta fecha no es un día de clase de este curso. Si es una <strong>clase reprogramada</strong>, toma la asistencia
+        normalmente: quedará registrada como reposición de la clase pendiente.
+      </p>
+    }
+
+    <!-- Clase no realizada -->
+    @if (marcaFecha(); as m) {
+      <div class="mb-3 rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-sm flex flex-wrap items-center justify-between gap-3">
+        <p class="text-gray-700">
+          <strong>Clase no realizada</strong> · {{ etiquetaMotivo(m.motivo) }}@if (m.observacion) {: {{ m.observacion }} }
+          <span class="block text-xs text-gray-500">No cuenta como asistencia pendiente. Si la clase sí se dictó, toma la asistencia y la marca se quita sola.</span>
+        </p>
+        <div class="flex gap-3 shrink-0">
+          <button type="button" (click)="abrirNoRealizada()" class="font-medium text-gray-700 hover:text-gray-900">Cambiar motivo</button>
+          <button type="button" (click)="quitarMarca()" class="font-medium text-red-600 hover:text-red-800">Quitar</button>
+        </div>
+      </div>
+    } @else if (esDiaDeClase() && !formNoRealizada() && conteo().presente + conteo().tarde + conteo().excusa + conteo().ausente === 0) {
+      <button type="button" (click)="abrirNoRealizada()" class="mb-3 text-sm font-medium text-gray-600 hover:text-gray-900 underline">
+        Esta clase no se dictó
       </button>
+    }
+
+    @if (formNoRealizada(); as fnr) {
+      <div class="mb-3 rounded-lg border border-gray-300 bg-white p-4">
+        <p class="text-sm font-semibold text-gray-800 mb-3">¿Por qué no se dictó la clase del {{ fecha.value }}?</p>
+        <div class="grid sm:grid-cols-2 gap-3">
+          <select [value]="fnr.motivo" (change)="actualizarFormNoRealizada('motivo', $any($event.target).value)"
+                  class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white outline-none focus:ring-2 focus:ring-teal-500">
+            @for (mo of motivos; track mo.valor) { <option [value]="mo.valor" [selected]="mo.valor === fnr.motivo">{{ mo.etiqueta }}</option> }
+          </select>
+          <input [value]="fnr.observacion" (input)="actualizarFormNoRealizada('observacion', $any($event.target).value)"
+                 [placeholder]="fnr.motivo === 'otro' ? 'Describe el motivo (obligatorio)' : 'Detalle (opcional)'"
+                 class="border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-500" />
+        </div>
+        <p class="text-xs text-gray-500 mt-2">Si la clase se reprogramó, no la marques aquí: toma la asistencia en la fecha en que se dictó.</p>
+        <div class="flex gap-3 mt-3">
+          <button type="button" (click)="guardarNoRealizada()" [disabled]="guardandoMarca()"
+                  class="px-4 py-2 rounded-lg bg-gray-800 text-white text-sm font-semibold hover:bg-gray-900 disabled:opacity-50">
+            {{ guardandoMarca() ? 'Guardando…' : 'Registrar clase no realizada' }}
+          </button>
+          <button type="button" (click)="formNoRealizada.set(null)" class="px-3 py-2 text-sm text-gray-600 hover:text-gray-900">Cancelar</button>
+        </div>
+      </div>
+    }
+
+    @if (cargando()) {
+      <p class="text-center text-gray-400 py-10">Cargando…</p>
+    } @else {
+      @if (conteo().pendiente > 0 && filas().length) {
+        <button type="button" (click)="todosPresentes()"
+                class="mb-3 text-sm font-medium text-teal-700 hover:text-teal-900">
+          Marcar los {{ conteo().pendiente }} sin marcar como presentes
+        </button>
+      }
+
+      <div class="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100">
+        @for (item of filasVisibles(); track item.f.inscripcionId) {
+          @let f = item.f;
+          @let i = item.i;
+          <div class="p-4">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div class="min-w-0">
+                <p class="font-medium text-gray-800">{{ f.apellido }} {{ f.nombre }}</p>
+                <div class="flex flex-wrap items-center gap-2 mt-0.5">
+                  <span class="text-xs text-gray-400">{{ f.documento }}</span>
+                  <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1"
+                        [class]="claseRiesgo(f.resumen)" [title]="detalleResumen(f.resumen)">
+                    @switch (riesgo(f.resumen)) {
+                      @case ('sin-datos') { Sin registros }
+                      @case ('riesgo') { {{ f.resumen.porcentaje }}% · en riesgo }
+                      @default { {{ f.resumen.porcentaje }}% asistencia }
+                    }
+                  </span>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-4 gap-1.5 sm:flex sm:gap-1" role="radiogroup" [attr.aria-label]="'Asistencia de ' + f.nombre">
+                @for (e of estados; track e.valor) {
+                  <button type="button" role="radio" [attr.aria-checked]="f.estado === e.valor" (click)="marcar(i, e.valor)"
+                          class="min-h-11 rounded-lg px-3 text-sm font-medium ring-1 transition"
+                          [class]="f.estado === e.valor ? e.activo : 'bg-white text-gray-600 ring-gray-200 hover:bg-gray-50'">
+                    {{ e.etiqueta }}
+                  </button>
+                }
+              </div>
+            </div>
+
+            @if (f.observacionInscripcion) {
+              <p class="mt-2 text-xs bg-amber-50 border border-amber-200 text-amber-800 rounded px-2 py-1">
+                ⚠ Novedad del estudiante: {{ f.observacionInscripcion }}
+              </p>
+            }
+
+            @if (f.estado && f.estado !== 'presente') {
+              <input [value]="f.observacion ?? ''" (input)="nota(i, $any($event.target).value)"
+                     [placeholder]="f.estado === 'excusa' ? 'Motivo de la excusa' : 'Nota (opcional)'"
+                     class="mt-2 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-500" />
+            }
+          </div>
+        } @empty {
+          <p class="p-10 text-center text-gray-400">
+            {{ filas().length ? 'Ningún estudiante coincide con la búsqueda.' : 'Este curso no tiene estudiantes activos.' }}
+          </p>
+        }
+      </div>
+
+      <!-- Barra de guardado: fija abajo en celular -->
+      @if (filas().length) {
+        <div class="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white/95 backdrop-blur p-3
+                    sm:static sm:mt-4 sm:border-0 sm:bg-transparent sm:p-0">
+          <div class="max-w-4xl mx-auto flex items-center gap-3">
+            <p class="text-xs text-gray-500 flex-1 sm:hidden">
+              {{ marcados() }}/{{ filas().length }} marcados
+              @if (sinGuardar()) { · <span class="text-amber-600 font-medium">sin guardar</span> }
+            </p>
+            @if (sinGuardar()) {
+              <p class="hidden sm:block text-sm text-amber-600 flex-1">Hay cambios sin guardar.</p>
+            }
+            <button type="button" (click)="guardar()" [disabled]="guardando() || marcados() === 0"
+                    class="flex-1 sm:flex-none sm:ml-auto sm:min-w-56 bg-teal-700 text-white rounded-lg py-3 px-6 font-semibold hover:bg-teal-800 disabled:opacity-50">
+              {{ guardando() ? 'Guardando…' : 'Guardar asistencia' }}
+            </button>
+          </div>
+        </div>
+      }
+    }
+  } @else {
+    <!-- Historial -->
+    @if (cargandoHistorial()) {
+      <p class="text-center text-gray-400 py-10">Cargando historial…</p>
+    } @else if (historial(); as h) {
+      @if (!h.fechas.length) {
+        <p class="text-center text-gray-400 py-10 bg-white rounded-xl border border-gray-200">
+          Aún no se ha tomado asistencia en este curso.
+        </p>
+      } @else {
+        <div class="flex flex-wrap items-center gap-3 mb-3 text-xs text-gray-500">
+          @for (e of estados; track e.valor) {
+            <span class="inline-flex items-center gap-1.5">
+              <span class="inline-flex h-5 w-5 items-center justify-center rounded font-bold" [class]="e.celda">{{ e.corta }}</span>
+              {{ e.etiqueta }}
+            </span>
+          }
+          <span class="ml-auto">Toca una fecha para corregirla</span>
+        </div>
+
+        <div class="bg-white rounded-xl border border-gray-200 overflow-x-auto">
+          <table class="text-sm border-separate border-spacing-0">
+            <thead>
+              <tr>
+                <th class="sticky left-0 z-10 bg-gray-50 px-4 py-2 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 border-b border-gray-200 min-w-48">
+                  Estudiante
+                </th>
+                <th class="bg-gray-50 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gray-500 border-b border-gray-200">%</th>
+                @for (fecha of h.fechas; track fecha) {
+                  @let fc = fechaCorta(fecha);
+                  <th class="bg-gray-50 px-1 py-1 border-b border-gray-200">
+                    <button type="button" (click)="abrirFecha(fecha)" [title]="'Corregir ' + fecha"
+                            class="w-10 rounded-md py-1 leading-tight hover:bg-teal-50 hover:text-teal-800 text-gray-600">
+                      <span class="block text-[10px] uppercase">{{ fc.semana }}</span>
+                      <span class="block text-sm font-semibold">{{ fc.dia }}</span>
+                      <span class="block text-[10px]">{{ fc.mes }}</span>
+                    </button>
+                  </th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (fila of h.filas; track fila.inscripcionId) {
+                <tr class="hover:bg-gray-50/60">
+                  <td class="sticky left-0 z-10 bg-white px-4 py-2 border-b border-gray-100">
+                    <p class="font-medium text-gray-800 whitespace-nowrap">{{ fila.apellido }} {{ fila.nombre }}</p>
+                  </td>
+                  <td class="px-2 py-2 border-b border-gray-100 text-center">
+                    <span class="inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 whitespace-nowrap"
+                          [class]="claseRiesgo(fila.resumen)" [title]="detalleResumen(fila.resumen)">
+                      {{ fila.resumen.porcentaje === null ? '—' : fila.resumen.porcentaje + '%' }}
+                    </span>
+                  </td>
+                  @for (fecha of h.fechas; track fecha) {
+                    @let reg = fila.registros[fecha];
+                    @let e = estado(reg?.estado);
+                    <td class="px-1 py-2 border-b border-gray-100 text-center">
+                      @if (e) {
+                        <span class="inline-flex h-7 w-7 items-center justify-center rounded text-xs font-bold" [class]="e.celda"
+                              [title]="e.etiqueta + (reg?.observacion ? ': ' + reg?.observacion : '')">
+                          {{ e.corta }}
+                        </span>
+                      } @else {
+                        <span class="text-gray-300">·</span>
+                      }
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <p class="text-xs text-gray-400 mt-2">
+          El porcentaje cuenta presente y tarde como asistencia; las excusas no cuentan en contra.
+        </p>
+      }
     }
   }
 </div>

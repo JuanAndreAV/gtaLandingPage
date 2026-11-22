@@ -1,112 +1,115 @@
-<!-- aulas-admin.component.html -->
-<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-  <div class="flex items-center justify-between mb-6">
-    <app-title title="Aulas" subtitle="Gestión de espacios físicos para los cursos."></app-title>
-    <button
-      (click)="abrirModalNueva()"
-      class="px-5 py-2.5 bg-girardota-teal text-white rounded-lg hover:bg-girardota-teal-dark transition font-semibold">
-      + Crear Aula
+<div class="adm-page">
+  <app-admin-page-header seccion="Configuración académica" titulo="Aulas"
+                         descripcion="Espacios físicos donde se dictan los cursos. La capacidad ayuda a validar los cupos al asignar salón.">
+    <button acciones type="button" (click)="abrirModalNueva()" class="adm-btn-primary">
+      <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+      Nueva aula
     </button>
-  </div>
+  </app-admin-page-header>
 
- @if (aulasService.isLoading()) {
-    <div class="text-center py-12 text-gray-400">Cargando aulas...</div>
+  @if (aulasService.isLoading()) {
+    <div class="adm-card p-10 text-center text-sm text-gray-400">Cargando aulas…</div>
   } @else if (aulasService.error()) {
-    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-      {{ aulasService.error() }}
-    </div>
+    <div class="adm-alert-error">{{ aulasService.error() }}</div>
   } @else {
-    <!-- Contenedor con borde y sombra -->
-    <div class="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
-      <!-- Wrapper con scroll horizontal en móvil -->
+    <div class="adm-toolbar">
+      <div class="relative flex-1 sm:max-w-sm">
+        <svg class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
+        <input type="search" class="adm-search" placeholder="Buscar aula…" aria-label="Buscar aula"
+               [value]="busqueda()" (input)="busqueda.set($any($event.target).value)" />
+      </div>
+      <p class="text-sm text-gray-500 sm:ml-auto">
+        {{ aulasService.aulas().length }} aulas · capacidad total {{ capacidadTotal() }} personas
+      </p>
+    </div>
+
+    <div class="adm-card overflow-hidden">
       <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse min-w-[600px]">
-          <thead class="bg-gray-50 border-b border-gray-200">
+        <table class="adm-table min-w-[560px]">
+          <thead>
             <tr>
-              <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Nombre</th>
-              <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Capacidad</th>
-              <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Descripción</th>
-              <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Acciones</th>
+              <th>Aula</th>
+              <th class="w-32">Capacidad</th>
+              <th>Descripción</th>
+              <th class="w-40 text-right">Acciones</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-100">
-            @for (aula of aulasService.aulas(); track aula.id) {
-              <tr class="hover:bg-gray-50 transition-colors">
-                <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">{{ aula.nombre }}</td>
-                <td class="px-6 py-4 text-gray-600 whitespace-nowrap">{{ aula.capacidad ?? '—' }}</td>
-                <td class="px-6 py-4 text-gray-500 text-sm max-w-xs truncate" [title]="aula.descripcion ?? ''">
-                  {{ aula.descripcion ?? '—' }}
+          <tbody>
+            @for (aula of filtradas(); track aula.id) {
+              <tr>
+                <td>
+                  <div class="flex items-center gap-3">
+                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-inst-50 text-inst-700">
+                      <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/></svg>
+                    </span>
+                    <span class="font-medium text-gray-900">{{ aula.nombre }}</span>
+                  </div>
                 </td>
-                <td class="px-6 py-4 text-center whitespace-nowrap">
-                  <button (click)="editar(aula)" class="text-blue-600 hover:underline text-sm font-medium mr-3">Editar</button>
-                  <button (click)="desactivarModal(aula)" class="text-red-600 hover:underline text-sm font-medium">Desactivar</button>
+                <td>
+                  @if (aula.capacidad) {
+                    <span class="adm-badge-neutral">{{ aula.capacidad }} personas</span>
+                  } @else {
+                    <span class="text-xs text-gray-400">Sin definir</span>
+                  }
+                </td>
+                <td class="max-w-xs truncate text-gray-500" [title]="aula.descripcion ?? ''">{{ aula.descripcion || '—' }}</td>
+                <td class="text-right whitespace-nowrap">
+                  <button type="button" (click)="editar(aula)" class="adm-btn-ghost">Editar</button>
+                  <button type="button" (click)="desactivarModal(aula)" class="adm-btn-ghost-danger">Desactivar</button>
                 </td>
               </tr>
-             
             } @empty {
               <tr>
-                <td colspan="4" class="text-center py-8 text-gray-400">No hay aulas registradas.</td>
+                <td colspan="4" class="py-12 text-center">
+                  @if (busqueda()) {
+                    <p class="text-sm text-gray-500">Ninguna aula coincide con "{{ busqueda() }}".</p>
+                  } @else {
+                    <p class="text-sm font-medium text-gray-700">Aún no hay aulas registradas</p>
+                    <p class="mt-1 text-sm text-gray-500">Crea las aulas para poder asignarlas a los horarios de los cursos.</p>
+                    <button type="button" (click)="abrirModalNueva()" class="adm-btn-primary mt-4">Nueva aula</button>
+                  }
+                </td>
               </tr>
             }
           </tbody>
         </table>
       </div>
     </div>
-    
   }
-   @if(confirmPopup()) {
-      <app-confirm-popup [popupName]="this.aula()?.nombre" (confirm)="desactivar($event)"></app-confirm-popup>
-    }
+
+  @if (confirmPopup()) {
+    <app-confirm-popup [popupName]="aula()?.nombre" (confirm)="desactivar($event)" />
+  }
 
   @if (modalAbierto()) {
-    <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div class="bg-white rounded-lg shadow-2xl max-w-md w-full">
-        <div class="bg-girardota-teal px-6 py-4 rounded-t-lg">
-          <h2 class="text-xl font-bold text-white">{{ modoEdicion() ? 'Editar Aula' : 'Crear Aula' }}</h2>
+    <app-admin-modal [titulo]="modoEdicion() ? 'Editar aula' : 'Nueva aula'" tamano="sm" (cerrar)="cerrarModal()">
+      <form [formGroup]="aulaForm" (ngSubmit)="guardar()" id="form-aula" class="space-y-4" novalidate>
+        <div>
+          <label class="adm-label" for="aula-nombre">Nombre <span class="text-red-500">*</span></label>
+          <input id="aula-nombre" type="text" formControlName="nombre" class="adm-input" placeholder="Ej.: Salón de música 1"
+                 [class.adm-input-error]="campoInvalido('nombre')" />
+          @if (campoInvalido('nombre')) { <p class="adm-error">El nombre es obligatorio.</p> }
         </div>
-        <form [formGroup]="aulaForm"  class="p-6 space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
-            <input type="text" formControlName="nombre" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-girardota-teal"
-                   [class.border-red-500]="formularioEnviado && !aulaForm.get('nombre')?.value">
-            @if (formularioEnviado && !aulaForm.get('nombre')?.value) {
-              <p class="text-red-500 text-xs mt-1">El nombre es requerido</p>
-            }
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Capacidad</label>
-            <input type="number" formControlName="capacidad" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-girardota-teal">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-            <textarea formControlName="descripcion" rows="2"
-                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-girardota-teal"></textarea>
-          </div>
-          <div class="flex gap-3 pt-2">
-            <button type="button" (click)="cerrarModal()"
-                    class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
-              Cancelar
-            </button>
-            <button [disabled]="guardando()"
-                    (click)="guardar()"
-                    (keydown.enter)="guardar()"
-                    class="flex-1 px-4 py-2 bg-girardota-teal text-white rounded-lg hover:bg-girardota-teal-dark disabled:opacity-50">
-              @if (guardando()) {
-                <div class="flex justify-center gap-2">
-                    Guardando...
-                 <app-spinner></app-spinner>
-                </div>
-              }
-              @else {
-                Guardar
-              }
-
-              
-            </button>
-          </div>
-        </form>
+        <div>
+          <label class="adm-label" for="aula-capacidad">Capacidad</label>
+          <input id="aula-capacidad" type="number" min="1" formControlName="capacidad" class="adm-input" placeholder="Número de personas"
+                 [class.adm-input-error]="campoInvalido('capacidad')" />
+          @if (campoInvalido('capacidad')) { <p class="adm-error">Debe ser mayor a 0.</p> }
+          @else { <p class="adm-hint">Se usa para avisar cuando el cupo de un curso supera el aula.</p> }
+        </div>
+        <div>
+          <label class="adm-label" for="aula-descripcion">Descripción</label>
+          <textarea id="aula-descripcion" formControlName="descripcion" rows="3" class="adm-input"
+                    placeholder="Ubicación, dotación, accesibilidad…"></textarea>
+        </div>
+        @if (errorGuardado()) { <div class="adm-alert-error">{{ errorGuardado() }}</div> }
+      </form>
+      <div pie class="contents">
+        <button type="button" (click)="cerrarModal()" class="adm-btn-secondary">Cancelar</button>
+        <button type="submit" form="form-aula" [disabled]="guardando()" class="adm-btn-primary">
+          {{ guardando() ? 'Guardando…' : (modoEdicion() ? 'Guardar cambios' : 'Crear aula') }}
+        </button>
       </div>
-    </div>
+    </app-admin-modal>
   }
 </div>

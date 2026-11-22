@@ -1,23 +1,10 @@
-import { Component, signal } from '@angular/core';
-import { RouterModule } from '@angular/router';
-import { NavigateOptionsComponent } from '../../shared/components/navigate-options/navigate-options.component';
+import { Component } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
 
+// La navegación del área académica vive en el menú lateral del panel (DashboardComponent)
 @Component({
   selector: 'app-academico',
-  imports: [RouterModule, NavigateOptionsComponent],
-  templateUrl: './academico.component.html',
-  styleUrl: './academico.component.css',
+  imports: [RouterOutlet],
+  template: '<router-outlet />',
 })
-export class AcademicoComponent {
-  rutas = signal  ([
-    { nombre: 'Aulas', ruta: '/admin/academico/aulas' },
-    { nombre: 'Periodos', ruta: '/admin/academico/periodos' },
-    { nombre: 'Programas', ruta: '/admin/academico/programas' },
-    { nombre: 'Asignaturas', ruta: '/admin/academico/asignaturas' },
-    { nombre: 'Cursos', ruta: '/admin/academico/cursos' },
-    //{ nombre: 'Inscripciones', ruta: '/admin/academico/inscripciones' },
-    { nombre: 'Estado-cursos', ruta: '/admin/academico/cursos-disponibles' },
-    { nombre: 'Inscripción-estudiante', ruta: '/admin/academico/registro-estudiante' },
-  ])
-
-}
+export class AcademicoComponent {}

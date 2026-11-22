@@ -1,0 +1,309 @@
+<div class="max-w-5xl mx-auto px-4 sm:px-6 py-6">
+  <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
+    <div>
+      <h2 class="text-2xl font-bold text-gray-800">Mi oferta de cursos</h2>
+      <p class="text-sm text-gray-500 mt-1">
+        Carga los cursos que propones para el periodo. Coordinación los revisa y asigna salón y asignatura.
+      </p>
+    </div>
+    @if (periodos().length) {
+      <div>
+        <label class="block text-xs text-gray-500 uppercase tracking-wider mb-1" for="periodo">Periodo</label>
+        <select id="periodo" [value]="periodoId()" (change)="cambiarPeriodo($any($event.target).value)"
+                class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white outline-none focus:ring-2 focus:ring-teal-500">
+          @for (p of periodos(); track p.id) {
+            <option [value]="p.id" [selected]="p.id === periodoId()">{{ p.nombre }}</option>
+          }
+        </select>
+      </div>
+    }
+  </div>
+
+  @if (mensajeError()) {
+    <div class="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">{{ mensajeError() }}</div>
+  }
+  @if (mensajeExito()) {
+    <div class="mb-4 p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm">✓ {{ mensajeExito() }}</div>
+  }
+
+  @if (!periodos().length) {
+    <div class="text-center py-12 bg-white rounded-xl border border-dashed border-gray-300 text-gray-500 text-sm">
+      No hay un periodo activo para cargar oferta. Consulta con coordinación.
+    </div>
+  } @else {
+    <!-- Carga del Excel -->
+    <section class="bg-white rounded-xl border border-gray-200 p-5 mb-8">
+      <h3 class="font-semibold text-gray-800 mb-4">Cargar oferta desde Excel</h3>
+
+      @if (!previsualizacion()) {
+        <ol class="grid md:grid-cols-2 gap-4">
+          <li class="rounded-lg border border-gray-200 p-4">
+            <p class="text-xs font-semibold uppercase tracking-wider text-teal-700 mb-1">Paso 1</p>
+            <p class="text-sm text-gray-700 mb-3">
+              Descarga la plantilla y diligencia un curso por fila: cursos para estudiantes <strong>nuevos</strong>
+              y <strong>antiguos</strong> (con su nivel), cupo, edades y horarios.
+            </p>
+            <button type="button" (click)="descargarPlantilla()" [disabled]="descargando()"
+                    class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-teal-700 text-teal-800 text-sm font-semibold hover:bg-teal-50 disabled:opacity-50">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              {{ descargando() ? 'Descargando…' : 'Descargar plantilla' }}
+            </button>
+          </li>
+          <li class="rounded-lg border border-gray-200 p-4">
+            <p class="text-xs font-semibold uppercase tracking-wider text-teal-700 mb-1">Paso 2</p>
+            <p class="text-sm text-gray-700 mb-3">
+              Sube el archivo. Antes de enviarlo verás cada curso y los errores que haya que corregir.
+            </p>
+            <label class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-teal-700 text-white text-sm font-semibold hover:bg-teal-800 cursor-pointer"
+                   [class.opacity-50]="leyendo()">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+              {{ leyendo() ? 'Leyendo archivo…' : 'Subir Excel' }}
+              <input type="file" accept=".xlsx" class="sr-only" (change)="seleccionarArchivo($event)" [disabled]="leyendo()" />
+            </label>
+          </li>
+        </ol>
+      } @else {
+        @let p = previsualizacion()!;
+        <div class="flex flex-wrap items-center gap-3 mb-4 text-sm">
+          <span class="text-gray-600">{{ archivo()?.name }}</span>
+          <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">
+            {{ p.validas }} listos
+          </span>
+          @if (p.conErrores) {
+            <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold bg-red-50 text-red-700 ring-1 ring-red-200">
+              {{ p.conErrores }} con errores
+            </span>
+          }
+        </div>
+
+        <div class="overflow-x-auto rounded-lg border border-gray-200">
+          <table class="w-full text-sm min-w-[720px]">
+            <thead class="bg-gray-50 text-left text-xs uppercase tracking-wider text-gray-500">
+              <tr>
+                <th class="px-3 py-2">Fila</th>
+                <th class="px-3 py-2">Curso</th>
+                <th class="px-3 py-2">Tipo / nivel</th>
+                <th class="px-3 py-2">Cupo · edades</th>
+                <th class="px-3 py-2">Horario</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              @for (f of p.filas; track f.fila) {
+                <tr class="align-top" [class.bg-red-50]="f.errores.length">
+                  <td class="px-3 py-2 text-gray-500">{{ f.fila }}</td>
+                  <td class="px-3 py-2">
+                    <p class="font-medium text-gray-800">{{ f.curso.nombre || '(sin nombre)' }}</p>
+                    @if (f.curso.asignaturaSugerida || f.curso.areaSugerida) {
+                      <p class="text-xs text-gray-500">{{ f.curso.areaSugerida }}{{ f.curso.areaSugerida && f.curso.asignaturaSugerida ? ' · ' : '' }}{{ f.curso.asignaturaSugerida }}</p>
+                    }
+                    @if (f.errores.length) {
+                      <ul class="mt-1 space-y-0.5 text-xs text-red-700">
+                        @for (e of f.errores; track e) { <li>• {{ e }}</li> }
+                      </ul>
+                    }
+                  </td>
+                  <td class="px-3 py-2 whitespace-nowrap text-gray-700">
+                    {{ f.curso.tipoEstudiante === 'antiguo' ? 'Antiguos' : f.curso.tipoEstudiante === 'nuevo' ? 'Nuevos' : '—' }}
+                    · Nivel {{ f.curso.nivelNumero }}
+                  </td>
+                  <td class="px-3 py-2 text-gray-700">
+                    {{ f.curso.capacidadMax ?? '—' }} cupos<br />
+                    <span class="text-xs text-gray-500">{{ textoEdades(f.curso.edadMin, f.curso.edadMax) }}</span>
+                  </td>
+                  <td class="px-3 py-2 text-gray-700 text-xs">{{ textoHorarios(f.curso.horarios) || '—' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        @if (p.conErrores) {
+          <p class="mt-3 text-xs text-gray-500">
+            Los cursos con errores no se enviarán. Corrígelos y sube un archivo solo con esos cursos, para no duplicar los que ya enviaste.
+          </p>
+        }
+
+        <div class="flex flex-wrap gap-3 mt-4">
+          <button type="button" (click)="enviarOferta()" [disabled]="enviando() || !p.validas"
+                  class="px-5 py-2.5 rounded-lg bg-teal-700 text-white text-sm font-semibold hover:bg-teal-800 disabled:opacity-50">
+            {{ enviando() ? 'Enviando…' : 'Enviar ' + p.validas + ' curso(s) a revisión' }}
+          </button>
+          <button type="button" (click)="cancelarCarga()" class="px-4 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900">
+            Cancelar
+          </button>
+        </div>
+      }
+    </section>
+
+    <!-- Mis cursos propuestos -->
+    <section>
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <h3 class="font-semibold text-gray-800">Cursos propuestos · {{ periodoActual()?.nombre }}</h3>
+        <div class="flex flex-wrap gap-1.5 text-sm">
+          @for (e of filtrosEstado; track e) {
+            <button type="button" (click)="filtroEstado.set(e)"
+                    class="px-3 py-1 rounded-full ring-1 transition"
+                    [class]="filtroEstado() === e ? 'bg-gray-800 text-white ring-gray-800' : 'bg-white text-gray-600 ring-gray-200 hover:bg-gray-50'">
+              {{ etiquetaFiltro(e) }} <span class="opacity-70">{{ conteo()[e] ?? 0 }}</span>
+            </button>
+          }
+        </div>
+      </div>
+
+      @if (cargando()) {
+        <p class="text-center text-gray-400 py-10">Cargando…</p>
+      } @else {
+        <div class="space-y-3">
+          @for (o of ofertasFiltradas(); track o.id) {
+            <article class="bg-white rounded-xl border border-gray-200 p-4">
+              <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                <div class="min-w-0">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <h4 class="font-semibold text-gray-800">{{ o.nombre }}</h4>
+                    <span class="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ring-1" [class]="estadosOferta[o.estado].clase">
+                      {{ estadosOferta[o.estado].etiqueta }}
+                    </span>
+                  </div>
+                  <p class="text-sm text-gray-600 mt-1">
+                    {{ o.tipoEstudiante === 'antiguo' ? 'Estudiantes antiguos' : 'Estudiantes nuevos' }} · Nivel {{ o.nivelNumero }}
+                    · {{ o.capacidadMax }} cupos · {{ textoEdades(o.edadMin, o.edadMax) }}
+                  </p>
+                  <p class="text-xs text-gray-500 mt-1">{{ textoHorarios(o.horarios) }}</p>
+
+                  @if (o.estado === 'aprobada' && o.curso) {
+                    <p class="text-xs text-emerald-800 mt-2">
+                      Asignatura: <strong>{{ o.curso.asignatura?.nombre }}</strong>
+                      @if (o.curso.nivel) { · {{ o.curso.nivel.nombre }} }
+                      @if (o.curso.horarios?.[0]?.aula) { · Salón {{ o.curso.horarios?.[0]?.aula?.nombre }} }
+                    </p>
+                  }
+                </div>
+
+                @if (editable(o)) {
+                  <div class="flex gap-3 text-sm shrink-0">
+                    <button type="button" (click)="abrirEditar(o)" class="font-medium text-teal-700 hover:text-teal-900">
+                      {{ o.estado === 'devuelta' ? 'Corregir y reenviar' : 'Editar' }}
+                    </button>
+                    <button type="button" (click)="retirar(o)" class="font-medium text-red-600 hover:text-red-800">Retirar</button>
+                  </div>
+                }
+              </div>
+
+              @if (o.observacionRevision && o.estado !== 'aprobada') {
+                <div class="mt-3 rounded-lg px-3 py-2 text-sm"
+                     [class]="o.estado === 'rechazada' ? 'bg-red-50 text-red-800' : 'bg-sky-50 text-sky-900'">
+                  <span class="font-semibold">Coordinación:</span> {{ o.observacionRevision }}
+                </div>
+              }
+            </article>
+          } @empty {
+            <div class="text-center py-12 bg-white rounded-xl border border-dashed border-gray-300 text-gray-500 text-sm">
+              {{ ofertas().length ? 'No hay cursos en este estado.' : 'Aún no has cargado cursos para este periodo.' }}
+            </div>
+          }
+        </div>
+      }
+    </section>
+  }
+</div>
+
+<!-- Modal de edición -->
+@if (editando(); as o) {
+  <div class="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="absolute inset-0 bg-gray-900/50" (click)="cerrarEditar()"></div>
+    <form [formGroup]="form" (ngSubmit)="guardarEdicion()"
+          class="relative w-full sm:max-w-2xl max-h-[92vh] flex flex-col bg-white rounded-t-2xl sm:rounded-2xl shadow-xl">
+      <div class="px-5 py-4 border-b border-gray-200">
+        <h3 class="font-semibold text-gray-800">{{ o.estado === 'devuelta' ? 'Corregir curso' : 'Editar curso' }}</h3>
+        @if (o.observacionRevision) {
+          <p class="text-sm text-sky-900 bg-sky-50 rounded-lg px-3 py-2 mt-2">
+            <span class="font-semibold">Coordinación:</span> {{ o.observacionRevision }}
+          </p>
+        }
+      </div>
+
+      <div class="flex-1 overflow-y-auto px-5 py-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="sm:col-span-2">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Nombre del curso</label>
+          <input formControlName="nombre" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white outline-none focus:ring-2 focus:ring-teal-500" [class.border-red-400]="campoInvalido('nombre')" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
+          <select formControlName="tipoEstudiante" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white outline-none focus:ring-2 focus:ring-teal-500">
+            <option value="nuevo">Estudiantes nuevos</option>
+            <option value="antiguo">Estudiantes antiguos</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Nivel</label>
+          <input type="number" min="1" formControlName="nivelNumero" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white outline-none focus:ring-2 focus:ring-teal-500" />
+        </div>
+        <div class="sm:col-span-2">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+          <textarea formControlName="descripcion" rows="2" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white outline-none focus:ring-2 focus:ring-teal-500"></textarea>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Área artística sugerida</label>
+          <input formControlName="areaSugerida" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white outline-none focus:ring-2 focus:ring-teal-500" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Asignatura sugerida</label>
+          <input formControlName="asignaturaSugerida" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white outline-none focus:ring-2 focus:ring-teal-500" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Edad mínima</label>
+          <input type="number" min="0" formControlName="edadMin" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white outline-none focus:ring-2 focus:ring-teal-500" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Edad máxima</label>
+          <input type="number" min="0" formControlName="edadMax" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white outline-none focus:ring-2 focus:ring-teal-500" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Cupo máximo</label>
+          <input type="number" min="1" formControlName="capacidadMax" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white outline-none focus:ring-2 focus:ring-teal-500" [class.border-red-400]="campoInvalido('capacidadMax')" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Horas por semana</label>
+          <input type="number" min="0" step="0.5" formControlName="intensidadHoraria" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white outline-none focus:ring-2 focus:ring-teal-500" />
+        </div>
+
+        <div class="sm:col-span-2">
+          <div class="flex items-center justify-between mb-2">
+            <span class="block text-sm font-medium text-gray-700">Horarios <span class="font-normal text-gray-400">(1 a 3 por semana)</span></span>
+            @if (horariosForm.length < 3) {
+              <button type="button" (click)="agregarHorario()" class="text-sm font-medium text-teal-700 hover:text-teal-900">+ Agregar</button>
+            }
+          </div>
+          <div formArrayName="horarios" class="space-y-2">
+            @for (h of horariosForm.controls; track h; let i = $index) {
+              <div [formGroupName]="i" class="grid grid-cols-[1fr_auto_auto_auto] gap-2 items-center">
+                <select formControlName="diaSemana" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white outline-none focus:ring-2 focus:ring-teal-500">
+                  @for (d of dias; track d.valor) { <option [value]="d.valor">{{ d.etiqueta }}</option> }
+                </select>
+                <input type="time" formControlName="horaInicio" class="w-28 border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white outline-none focus:ring-2 focus:ring-teal-500" aria-label="Hora de inicio" />
+                <input type="time" formControlName="horaFin" class="w-28 border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white outline-none focus:ring-2 focus:ring-teal-500" aria-label="Hora de fin" />
+                <button type="button" (click)="quitarHorario(i)" [disabled]="horariosForm.length === 1" class="p-2 text-gray-400 hover:text-red-600 disabled:opacity-30 disabled:hover:text-gray-400" aria-label="Quitar horario">✕</button>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="sm:col-span-2">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Observaciones para coordinación</label>
+          <textarea formControlName="observaciones" rows="2" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white outline-none focus:ring-2 focus:ring-teal-500"></textarea>
+        </div>
+      </div>
+
+      <div class="px-5 py-4 border-t border-gray-200">
+        @if (errorFormulario()) { <p class="text-sm text-red-700 mb-3">{{ errorFormulario() }}</p> }
+        <div class="flex gap-3">
+          <button type="submit" [disabled]="guardando()"
+                  class="px-5 py-2.5 rounded-lg bg-teal-700 text-white text-sm font-semibold hover:bg-teal-800 disabled:opacity-50">
+            {{ guardando() ? 'Guardando…' : (o.estado === 'devuelta' ? 'Guardar y reenviar' : 'Guardar cambios') }}
+          </button>
+          <button type="button" (click)="cerrarEditar()" class="px-4 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900">Cancelar</button>
+        </div>
+      </div>
+    </form>
+  </div>
+}

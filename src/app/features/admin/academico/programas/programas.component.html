@@ -1,97 +1,117 @@
-<!-- programas-admin.component.html -->
-<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-  <div class="flex items-center justify-between mb-6">
-    <div>
-      <app-title title="Programas" subtitle="Áreas artísticas y programas formativos de la casa de la cultura."></app-title>
-    </div>
-    <button
-      (click)="abrirModalNuevo()"
-      class="px-5 py-2.5 bg-girardota-teal text-white rounded-lg hover:bg-girardota-teal-dark transition font-semibold">
-      + Crear Programa
+<div class="adm-page">
+  <app-admin-page-header seccion="Configuración académica" titulo="Programas"
+                         descripcion="Programas formativos agrupados por área artística. Las asignaturas se asocian a ellos en su pensum.">
+    <button acciones type="button" (click)="abrirModalNuevo()" class="adm-btn-primary">
+      <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+      Nuevo programa
     </button>
-  </div>
+  </app-admin-page-header>
 
   @if (programasService.isLoadingProgramas()) {
-    <div class="flex  justify-center py-12 gap-3"><p class="text-center">Cargando programas...</p> <span><app-spinner></app-spinner></span></div>
+    <div class="adm-card p-10 text-center text-sm text-gray-400">Cargando programas…</div>
   } @else if (programasService.errorProgramas()) {
-    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-      {{ programasService.errorProgramas() }}
-    </div>
+    <div class="adm-alert-error">{{ programasService.errorProgramas() }}</div>
   } @else {
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      @for (programa of programasService.programas(); track programa.id) {
-        <div class="bg-white rounded-xl shadow p-5 border-t-4" [style.border-top-color]="programa.colorHex">
-          <div class="flex items-start justify-between mb-2">
-            <h3 class="font-bold text-gray-900">{{ programa.nombre }}</h3>
-            <span class="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">{{ programa.area }}</span>
+    @if (areasConProgramas().length > 1) {
+      <div class="mb-5 flex flex-wrap gap-2" role="group" aria-label="Filtrar por área">
+        <button type="button" (click)="filtroArea.set('')"
+                class="rounded-full px-3 py-1.5 text-sm font-medium ring-1 ring-inset transition"
+                [class]="filtroArea() === '' ? 'bg-inst-700 text-white ring-inst-700' : 'bg-white text-gray-600 ring-gray-300 hover:bg-gray-50'">
+          Todas <span class="opacity-70">{{ programasService.programas().length }}</span>
+        </button>
+        @for (a of areasConProgramas(); track a.area) {
+          <button type="button" (click)="filtroArea.set(a.area)"
+                  class="rounded-full px-3 py-1.5 text-sm font-medium ring-1 ring-inset transition"
+                  [class]="filtroArea() === a.area ? 'bg-inst-700 text-white ring-inst-700' : 'bg-white text-gray-600 ring-gray-300 hover:bg-gray-50'">
+            {{ a.area }} <span class="opacity-70">{{ a.total }}</span>
+          </button>
+        }
+      </div>
+    }
+
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+      @for (programa of filtrados(); track programa.id) {
+        <article class="adm-card group flex flex-col overflow-hidden">
+          <div class="h-1.5" [style.background-color]="programa.colorHex ?? '#17573a'"></div>
+          <div class="flex flex-1 flex-col p-5">
+            <div class="mb-3 flex items-start gap-3">
+              <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-sm font-bold text-white"
+                    [style.background-color]="programa.colorHex ?? '#17573a'">
+                {{ programa.nombre.charAt(0).toUpperCase() }}
+              </span>
+              <div class="min-w-0">
+                <h3 class="font-semibold leading-snug text-gray-900">{{ programa.nombre }}</h3>
+                <span class="adm-badge-neutral mt-1">{{ programa.area }}</span>
+              </div>
+            </div>
+            <p class="flex-1 text-sm leading-relaxed text-gray-500">{{ programa.descripcion || 'Sin descripción.' }}</p>
+            <div class="mt-4 flex justify-end gap-1 border-t border-gray-100 pt-3">
+              <button type="button" (click)="editar(programa)" class="adm-btn-ghost">Editar</button>
+              <button type="button" (click)="desactivarConfirm(programa)" class="adm-btn-ghost-danger">Desactivar</button>
+            </div>
           </div>
-          @if (programa.descripcion) {
-            <p class="text-sm text-gray-500 mb-4">{{ programa.descripcion }}</p>
-          }
-          <div class="flex gap-3 pt-2 border-t border-gray-100">
-            <button (click)="editar(programa)" class="text-blue-600 hover:underline text-sm">Editar</button>
-            <button (click)="desactivarConfirm(programa)" class="text-red-600 hover:underline text-sm">Desactivar</button>
-          </div>
-        </div>
+        </article>
       } @empty {
-        <p class="col-span-full text-center py-8 text-gray-400">No hay programas registrados.</p>
+        <div class="adm-card col-span-full py-12 text-center">
+          <p class="text-sm font-medium text-gray-700">Aún no hay programas</p>
+          <p class="mt-1 text-sm text-gray-500">Crea los programas formativos de cada área artística.</p>
+          <button type="button" (click)="abrirModalNuevo()" class="adm-btn-primary mt-4">Nuevo programa</button>
+        </div>
       }
     </div>
   }
-  @if(confirmPopup()) {
-      <app-confirm-popup [popupName]="this.programa()?.nombre" (confirm)="desactivar($event)"></app-confirm-popup>
-    }
+
+  @if (confirmPopup()) {
+    <app-confirm-popup [popupName]="programa()?.nombre" (confirm)="desactivar($event)" />
+  }
 
   @if (modalAbierto()) {
-    <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div class="bg-white rounded-lg shadow-2xl max-w-md w-full">
-        <div class="bg-girardota-teal px-6 py-4 rounded-t-lg">
-          <h2 class="text-xl font-bold text-white">{{ modoEdicion() ? 'Editar Programa' : 'Crear Programa' }}</h2>
+    <app-admin-modal [titulo]="modoEdicion() ? 'Editar programa' : 'Nuevo programa'" (cerrar)="cerrarModal()">
+      <form [formGroup]="programaForm" (ngSubmit)="guardar()" id="form-programa" class="space-y-4" novalidate>
+        <div>
+          <label class="adm-label" for="programa-nombre">Nombre <span class="text-red-500">*</span></label>
+          <input id="programa-nombre" type="text" formControlName="nombre" class="adm-input" placeholder="Ej.: Escuela de música"
+                 [class.adm-input-error]="formularioEnviado && !programaForm.value.nombre?.trim()" />
+          @if (formularioEnviado && !programaForm.value.nombre?.trim()) { <p class="adm-error">El nombre es obligatorio.</p> }
         </div>
-        <form  [formGroup]="programaForm" class="p-6 space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
-            <input type="text" formControlName="nombre"
-                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-girardota-teal"
-                   [class.border-red-500]="formularioEnviado && !programaForm.get('nombre')?.value">
-            @if (formularioEnviado && !programaForm.get('nombre')?.value) {
-              <p class="text-red-500 text-xs mt-1">El nombre es requerido</p>
+        <div>
+          <label class="adm-label" for="programa-area">Área artística <span class="text-red-500">*</span></label>
+          <select id="programa-area" formControlName="area" class="adm-input"
+                  [class.adm-input-error]="formularioEnviado && !programaForm.value.area">
+            <option [ngValue]="null" disabled>Selecciona un área</option>
+            @for (area of areas; track area) { <option [ngValue]="area">{{ area }}</option> }
+          </select>
+          @if (formularioEnviado && !programaForm.value.area) { <p class="adm-error">Elige el área artística.</p> }
+        </div>
+        <div>
+          <span class="adm-label">Color</span>
+          <div class="flex flex-wrap items-center gap-2">
+            @for (c of coloresSugeridos; track c) {
+              <button type="button" (click)="elegirColor(c)" [attr.aria-label]="'Color ' + c"
+                      class="h-8 w-8 rounded-full ring-offset-2 transition"
+                      [class]="programaForm.value.colorHex === c ? 'ring-2 ring-gray-900' : 'ring-1 ring-black/10 hover:scale-110'"
+                      [style.background-color]="c"></button>
             }
+            <label class="ml-1 inline-flex cursor-pointer items-center gap-2 text-sm text-gray-600">
+              <input type="color" formControlName="colorHex" class="h-8 w-8 cursor-pointer rounded border border-gray-300 bg-white p-0.5" />
+              Otro
+            </label>
           </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Área artística *</label>
-            <select formControlName="area"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-girardota-teal">
-              @for (area of areas; track area) {
-                <option [value]="area">{{ area }}</option>
-              }
-            </select>
-          </div>
-          <div class="flex gap-4 items-end">
-            <div class="flex-1">
-              <label class="block text-sm font-medium text-gray-700 mb-1">Color</label>
-              <input type="color" formControlName="colorHex"
-                     class="w-full h-10 border border-gray-300 rounded-lg cursor-pointer">
-            </div>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-            <textarea formControlName="descripcion" rows="2"
-                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-girardota-teal"></textarea>
-          </div>
-          <div class="flex gap-3 pt-2">
-            <button type="button" (click)="cerrarModal()"
-                    class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
-              Cancelar
-            </button>
-            <button  (click)="guardar()" [disabled]="guardando()"
-                    class="flex-1 px-4 py-2 bg-girardota-teal text-white rounded-lg hover:bg-girardota-teal-dark disabled:opacity-50">
-              {{ guardando() ? 'Guardando...' : 'Guardar' }}
-            </button>
-          </div>
-        </form>
+          <p class="adm-hint">Identifica el programa en las listas de asignaturas y cursos.</p>
+        </div>
+        <div>
+          <label class="adm-label" for="programa-descripcion">Descripción</label>
+          <textarea id="programa-descripcion" formControlName="descripcion" rows="3" class="adm-input"
+                    placeholder="Público al que va dirigido, enfoque, duración…"></textarea>
+        </div>
+        @if (errorGuardado()) { <div class="adm-alert-error">{{ errorGuardado() }}</div> }
+      </form>
+      <div pie class="contents">
+        <button type="button" (click)="cerrarModal()" class="adm-btn-secondary">Cancelar</button>
+        <button type="submit" form="form-programa" [disabled]="guardando()" class="adm-btn-primary">
+          {{ guardando() ? 'Guardando…' : (modoEdicion() ? 'Guardar cambios' : 'Crear programa') }}
+        </button>
       </div>
-    </div>
+    </app-admin-modal>
   }
 </div>

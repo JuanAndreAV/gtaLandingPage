@@ -1,18 +1,23 @@
-<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div class="bg-white rounded-lg shadow-2xl max-w-md w-full">
-        <div class="bg-girardota-teal px-6 py-4 rounded-t-lg">
-          <h2 class="text-xl font-bold text-white">Deseas desactivar: {{popupName() }}</h2>
-        </div>
-        <div class="p-6 space-y-4">
-          <p class="text-gray-700">Esta acción no se puede deshacer. ¿Estás seguro de que deseas continuar?</p>
-          <div class="flex gap-3 pt-2">
-            <button type="button" (click)="onCancel()"
-                    class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
-              Cancelar
-            </button>
-            <button (click)="onConfirm()"
-                    class="flex-1 px-4 py-2 bg-girardota-teal text-white rounded-lg hover:bg-girardota-teal-dark">
-              Confirmar
-            </button>
-          </div>
-</div>       
+<div class="fixed inset-0 z-[80] flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-gray-900/50" (click)="onCancel()"></div>
+  <section role="alertdialog" aria-modal="true" aria-labelledby="confirm-titulo"
+           class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+    <div class="flex gap-4">
+      <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-50 text-red-600">
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3.75m0 3.75h.008M10.34 3.94 1.82 18a1.875 1.875 0 0 0 1.6 2.82h17.16a1.875 1.875 0 0 0 1.6-2.82L13.66 3.94a1.875 1.875 0 0 0-3.32 0Z"/></svg>
+      </span>
+      <div class="min-w-0">
+        <h2 id="confirm-titulo" class="text-base font-semibold text-gray-900">
+          {{ titulo() ?? '¿Desactivar ' + (popupName() ?? 'este registro') + '?' }}
+        </h2>
+        <p class="mt-1 text-sm text-gray-500">
+          {{ mensaje() ?? 'Dejará de aparecer en las listas y no se podrá usar en nuevos registros. Los datos históricos se conservan.' }}
+        </p>
+      </div>
+    </div>
+    <div class="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+      <button type="button" (click)="onCancel()" class="adm-btn-secondary">Cancelar</button>
+      <button type="button" (click)="onConfirm()" class="adm-btn-danger">{{ textoConfirmar() }}</button>
+    </div>
+  </section>
+</div>

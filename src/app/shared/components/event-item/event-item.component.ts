@@ -1,6 +1,14 @@
-import { Component, input } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 import { Event } from '../../../models/event';
 
+const MESES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+const DIAS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+
+const ACCENT: Record<Event['borderColor'], string> = {
+  teal: 'bg-inst-600',
+  yellow: 'bg-inst-gold',
+  orange: 'bg-[#b5652a]'
+};
 
 @Component({
   selector: 'app-event-item',
@@ -10,27 +18,16 @@ import { Event } from '../../../models/event';
   styleUrl: './event-item.component.css'
 })
 export class EventItemComponent {
-event = input.required<Event>()
+  event = input.required<Event>();
 
-getBorderColorClass(): string {
-    const colorMap: Record<string, string> = {
-      'teal': 'border-girardota-teal',
-      'yellow': 'border-girardota-yellow',
-      'orange': 'border-girardota-orange'
-    };
-    return colorMap[this.event().borderColor] || 'border-gray-500';
-  }
-getBackgroundGradientClass(): string {
-    return `bg-gradient-to-r ${this.event().bgGradient}`;
-  }
+  accentClass = computed(() => ACCENT[this.event().borderColor] ?? 'bg-gray-400');
 
-  getDateColorClass(): string {
-    const colorMap: Record<string, string> = {
-      'teal': 'text-girardota-teal',
-      'yellow': 'text-girardota-yellow',
-      'orange': 'text-girardota-orange'
-    };
-    return colorMap[this.event().borderColor] || 'text-gray-900';
-  }
-
+  /** Parsea "YYYY-MM-DD" sin zona horaria para evitar corrimientos de día */
+  fecha = computed(() => {
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(this.event().date ?? '');
+    if (!m) return null;
+    const d = new Date(+m[1], +m[2] - 1, +m[3]);
+    if (isNaN(d.getTime())) return null;
+    return { dia: d.getDate(), mes: MESES[d.getMonth()], semana: DIAS[d.getDay()] };
+  });
 }

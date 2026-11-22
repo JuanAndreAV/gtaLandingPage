@@ -26,3 +26,60 @@
 
   --font-sans: 'Poppins', ui-sans-serif, system-ui, sans-serif;
 }
+
+/* =============================================================================
+   Panel administrativo — sistema de estilos compartido
+   Clases "adm-*" para que todas las pantallas del panel se vean iguales.
+   ========================================================================== */
+@layer components {
+  /* Página */
+  .adm-page        { @apply mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8; }
+  .adm-card        { @apply rounded-xl border border-gray-200 bg-white shadow-sm; }
+  .adm-toolbar     { @apply mb-4 flex flex-col gap-3 sm:flex-row sm:items-center; }
+
+  /* Formularios */
+  .adm-label       { @apply mb-1.5 block text-sm font-medium text-gray-700; }
+  .adm-hint        { @apply mt-1 text-xs text-gray-500; }
+  .adm-error       { @apply mt-1 text-xs font-medium text-red-600; }
+  .adm-input, .adm-search {
+    @apply block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-xs
+           placeholder:text-gray-400 transition
+           focus:border-inst-600 focus:outline-none focus:ring-2 focus:ring-inst-600/20
+           disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500;
+  }
+  .adm-search      { @apply pl-9; }
+  .adm-input-error { @apply border-red-400 focus:border-red-500 focus:ring-red-500/20; }
+
+  /* Botones */
+  .adm-btn-primary, .adm-btn-secondary, .adm-btn-danger, .adm-btn-ghost, .adm-btn-ghost-danger {
+    @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-semibold
+           transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inst-600/40
+           disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .adm-btn-primary      { @apply bg-inst-700 text-white shadow-sm hover:bg-inst-800; }
+  .adm-btn-secondary    { @apply border border-gray-300 bg-white text-gray-700 hover:bg-gray-50; }
+  .adm-btn-danger       { @apply bg-red-600 text-white shadow-sm hover:bg-red-700; }
+  .adm-btn-ghost        { @apply px-2.5 py-1.5 font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900; }
+  .adm-btn-ghost-danger { @apply px-2.5 py-1.5 font-medium text-red-600 hover:bg-red-50; }
+
+  /* Tablas */
+  .adm-table              { @apply w-full text-left text-sm; }
+  .adm-table thead        { @apply border-b border-gray-200 bg-gray-50; }
+  .adm-table th           { @apply whitespace-nowrap px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500; }
+  .adm-table td           { @apply px-4 py-3 align-middle text-gray-700; }
+  .adm-table tbody tr     { @apply border-b border-gray-100 transition-colors last:border-0 hover:bg-gray-50; }
+
+  /* Etiquetas de estado */
+  .adm-badge-success, .adm-badge-warning, .adm-badge-info, .adm-badge-neutral, .adm-badge-danger {
+    @apply inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset;
+  }
+  .adm-badge-success { @apply bg-emerald-50 text-emerald-700 ring-emerald-600/20; }
+  .adm-badge-warning { @apply bg-amber-50 text-amber-800 ring-amber-600/20; }
+  .adm-badge-info    { @apply bg-sky-50 text-sky-700 ring-sky-600/20; }
+  .adm-badge-neutral { @apply bg-gray-50 text-gray-600 ring-gray-500/20; }
+  .adm-badge-danger  { @apply bg-red-50 text-red-700 ring-red-600/20; }
+
+  /* Avisos */
+  .adm-alert-error   { @apply rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700; }
+  .adm-alert-success { @apply rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800; }
+}

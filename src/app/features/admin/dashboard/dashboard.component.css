@@ -1,11 +1,19 @@
-.chart-container {
-  position: relative;
-  height: 300px;
-  width: 100%;
+/* Opción activa del menú: fondo institucional con barra dorada a la izquierda */
+.item-menu.activo {
+  background-color: var(--color-inst-50);
+  color: var(--color-inst-800);
+  font-weight: 600;
 }
-
-@media (max-width: 768px) {
-  .chart-container {
-    height: 250px;
-  }
+.item-menu.activo svg {
+  color: var(--color-inst-700);
+}
+.item-menu.activo::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.4rem;
+  bottom: 0.4rem;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background-color: var(--color-inst-gold);
 }

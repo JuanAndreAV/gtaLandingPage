@@ -1,15 +1,17 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { ProgramasService } from '../../../../services/gestion-academica/programas.service';
 import { Periodo, CreatePeriodoDto } from '../../../../models/gestion-academica/programa';
-import { TitleComponent } from '../../../../shared/components/title/title.component';
-import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 import { DatePipe } from '@angular/common';
+import { AdminPageHeaderComponent } from '../../../../shared/components/admin/page-header/admin-page-header.component';
+import { AdminModalComponent } from '../../../../shared/components/admin/modal/admin-modal.component';
+
+type EstadoPeriodo = 'vigente' | 'proximo' | 'finalizado' | 'inactivo';
 import { ConfirmPopupComponent } from '../../../shared/components/confirm-popup/confirm-popup.component';
 
 @Component({
   selector: 'app-periodos',
-  imports: [ReactiveFormsModule, SpinnerComponent, TitleComponent, DatePipe, ConfirmPopupComponent],
+  imports: [ReactiveFormsModule, DatePipe, ConfirmPopupComponent, AdminPageHeaderComponent, AdminModalComponent],
   templateUrl: './periodos.component.html',
   styleUrl: './periodos.component.css',
 })
@@ -23,6 +25,14 @@ export class PeriodosComponent implements OnInit {
   formularioEnviado = false;
   periodoEditando: Periodo | null = null;
   errorFechas = signal<string | null>(null);
+
+  private readonly hoy = new Date().toLocaleDateString('en-CA');
+
+  // Más recientes primero
+  readonly periodosOrdenados = computed(() =>
+    [...this.programasService.periodos()].sort((a, b) => b.fechaInicio.localeCompare(a.fechaInicio)));
+
+  readonly vigente = computed(() => this.periodosOrdenados().find((p) => this.estado(p) === 'vigente') ?? null);
 
   confirmPopup = signal(false);
   periodo = signal<Periodo | null>(null);
@@ -117,4 +127,29 @@ export class PeriodosComponent implements OnInit {
   
     }
 
+
+  estado(p: Periodo): EstadoPeriodo {
+    if (!p.activo) return 'inactivo';
+    const inicio = p.fechaInicio.slice(0, 10), fin = p.fechaFin.slice(0, 10);
+    if (this.hoy < inicio) return 'proximo';
+    if (this.hoy > fin) return 'finalizado';
+    return 'vigente';
+  }
+
+  semanas(p: Periodo): number {
+    const ms = new Date(p.fechaFin.slice(0, 10)).getTime() - new Date(p.fechaInicio.slice(0, 10)).getTime();
+    return Math.max(1, Math.round(ms / (7 * 86_400_000)));
+  }
+
+  /** % transcurrido del periodo vigente */
+  avance(p: Periodo): number {
+    const inicio = new Date(p.fechaInicio.slice(0, 10)).getTime();
+    const fin = new Date(p.fechaFin.slice(0, 10)).getTime();
+    const ahora = new Date(this.hoy).getTime();
+    return Math.min(100, Math.max(0, Math.round(((ahora - inicio) / Math.max(1, fin - inicio)) * 100)));
+  }
+
+  campoInvalido(nombre: 'nombre' | 'fechaInicio' | 'fechaFin'): boolean {
+    return this.formularioEnviado && !this.createPeriodoForm.value[nombre];
+  }
 }

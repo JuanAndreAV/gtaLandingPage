@@ -2,6 +2,37 @@
   <h2 class="text-2xl font-bold text-gray-800 mb-1">Mi horario</h2>
   <p class="text-sm text-gray-500 mb-6">Tus clases del periodo vigente. Toca una sesión para pasar lista.</p>
 
+  @if (totalPendientes() > 0) {
+    <section class="mb-6 rounded-xl border border-amber-300 bg-amber-50 p-4">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <p class="text-sm text-amber-900">
+          <strong>Tienes {{ totalPendientes() }} clase{{ totalPendientes() === 1 ? '' : 's' }} sin asistencia registrada.</strong>
+          Coordinación revisa este registro; tómala para mantener al día el seguimiento de tus estudiantes.
+        </p>
+        <button type="button" (click)="verPendientes.set(!verPendientes())" class="text-sm font-semibold text-amber-900 underline">
+          {{ verPendientes() ? 'Ocultar' : 'Ver cuáles' }}
+        </button>
+      </div>
+      @if (verPendientes()) {
+        <ul class="mt-3 space-y-2">
+          @for (c of pendientes(); track c.cursoId) {
+            <li class="text-sm">
+              <span class="font-medium text-gray-800">{{ c.curso }}</span>
+              <div class="flex flex-wrap gap-1.5 mt-1">
+                @for (f of c.faltantes; track f) {
+                  <a [routerLink]="['/profesor/cursos', c.cursoId, 'asistencia']" [queryParams]="{ fecha: f }"
+                     class="rounded-md bg-white px-2 py-1 text-xs font-medium text-amber-900 ring-1 ring-amber-300 hover:bg-amber-100 capitalize">
+                    {{ fechaCorta(f) }}
+                  </a>
+                }
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  }
+
   @if (error()) {
     <div class="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm mb-4">{{ error() }}</div>
   }

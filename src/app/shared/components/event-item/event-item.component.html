@@ -1,27 +1,45 @@
-<div 
-  class="p-6 rounded-xl border-l-4 card-hover"
-  [class]="[getBorderColorClass(), getBackgroundGradientClass()]">
-  <div class="flex flex-col md:flex-row md:items-center md:justify-between">
-    <div class="flex-1">
-      <h4 class="text-xl font-bold text-gray-900 mb-2">{{ event().title }}</h4>
-      <p class="text-gray-600 mb-2">{{ event().description }}</p>
-      @if (event().location) {
-      <p class="text-gray-500 text-sm flex items-center">
-        <svg class="w-4 h-4 mr-1 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-        </svg>
-        {{ event().location }}
-      </p>
-      }
-    </div>
-    <div class="mt-4 md:mt-0 md:text-right md:ml-4">
-      <p class="text-2xl font-bold" [class]="getDateColorClass()">
-        {{ event().dateDisplay }}
-      </p>
-      @if (event().time) {
-      <p class="text-gray-500 text-sm">{{ event().time }}</p>
-      }
-    </div>
+<article class="group flex items-stretch bg-white rounded-lg border border-gray-200 overflow-hidden transition-all duration-200 hover:border-inst-600/40 hover:shadow-[0_8px_24px_-12px_rgba(11,46,31,0.25)]">
+  <!-- Bloque de fecha -->
+  <div class="flex w-20 sm:w-24 shrink-0 flex-col items-center justify-center border-r border-gray-200 bg-inst-50 py-4">
+    @if (fecha(); as f) {
+      <span class="text-[11px] font-semibold uppercase tracking-[0.16em] text-inst-600">{{ f.mes }}</span>
+      <span class="text-3xl font-bold leading-none text-inst-900 my-1">{{ f.dia }}</span>
+      <span class="text-[11px] text-gray-500 capitalize">{{ f.semana }}</span>
+    } @else {
+      <span class="px-2 text-center text-sm font-bold text-inst-900">{{ event().dateDisplay }}</span>
+    }
   </div>
-</div>
+
+  <!-- Contenido -->
+  <div class="flex flex-1 flex-col justify-center gap-2 p-5 min-w-0">
+    <div class="flex items-start gap-3">
+      <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full" [class]="accentClass()"></span>
+      <div class="min-w-0">
+        <h3 class="text-base sm:text-lg font-semibold text-gray-900 leading-snug">{{ event().title }}</h3>
+        @if (event().description) {
+          <p class="text-sm text-gray-600 mt-0.5">{{ event().description }}</p>
+        }
+      </div>
+    </div>
+
+    @if (event().location || event().time) {
+      <div class="flex flex-wrap items-center gap-x-5 gap-y-1 pl-4.5 text-xs sm:text-sm text-gray-500">
+        @if (event().time) {
+          <span class="inline-flex items-center gap-1.5">
+            <svg class="h-4 w-4 text-inst-600/70" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            {{ event().time }}
+          </span>
+        }
+        @if (event().location) {
+          <span class="inline-flex items-center gap-1.5">
+            <svg class="h-4 w-4 text-inst-600/70" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            {{ event().location }}
+          </span>
+        }
+      </div>
+    }
+  </div>
+</article>

@@ -1,0 +1,238 @@
+<div class="adm-page">
+  <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
+    <div>
+      <h2 class="text-2xl font-bold text-gray-800">Seguimiento de asistencia</h2>
+      <p class="text-sm text-gray-500 mt-1">
+        Clases que según el horario debieron dictarse y no tienen asistencia registrada.
+        @if (datos(); as d) { Calculado hasta el {{ fechaLarga(d.hasta) }}, sin contar festivos. }
+      </p>
+    </div>
+    <div class="flex flex-wrap items-end gap-3">
+      <div>
+        <label class="block text-xs text-gray-500 uppercase tracking-wider mb-1" for="periodo">Periodo</label>
+        <select id="periodo" [value]="periodoId()" (change)="cambiarPeriodo($any($event.target).value)"
+                class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white outline-none focus:ring-2 focus:ring-inst-600">
+          @for (p of periodos(); track p.id) {
+            <option [value]="p.id" [selected]="p.id === periodoId()">{{ p.nombre }}{{ p.activo ? '' : ' (inactivo)' }}</option>
+          }
+        </select>
+      </div>
+      <button type="button" (click)="abrirReceso()" [disabled]="!periodoId()"
+              class="px-4 py-2 rounded-lg ring-1 ring-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">
+        Registrar receso
+      </button>
+      <button type="button" (click)="exportarCsv()" [disabled]="!datos()"
+              class="px-4 py-2 rounded-lg ring-1 ring-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">
+        Exportar CSV
+      </button>
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">{{ error() }}</div>
+  }
+  @if (mensajeReceso() && !receso()) {
+    <div class="mb-4 p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm">{{ mensajeReceso() }}</div>
+  }
+
+  @if (receso(); as rc) {
+    <div class="mb-6 bg-white rounded-xl border border-gray-300 p-5">
+      <h3 class="font-semibold text-gray-800">Registrar receso para todos los cursos</h3>
+      <p class="text-sm text-gray-500 mt-1 mb-4">
+        Marca como no realizadas las clases programadas en el rango (vacaciones, semana de receso, cierre por instrucción).
+        Los docentes no tendrán que marcarlas una por una. No afecta fechas que ya tienen asistencia.
+      </p>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">Desde</label>
+          <input type="date" [value]="rc.desde" (input)="actualizarReceso('desde', $any($event.target).value)"
+                 class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-inst-600" />
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">Hasta</label>
+          <input type="date" [value]="rc.hasta" [min]="rc.desde" (input)="actualizarReceso('hasta', $any($event.target).value)"
+                 class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-inst-600" />
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">Motivo</label>
+          <select [value]="rc.motivo" (change)="actualizarReceso('motivo', $any($event.target).value)"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white outline-none focus:ring-2 focus:ring-inst-600">
+            @for (mo of motivos; track mo.valor) { <option [value]="mo.valor" [selected]="mo.valor === rc.motivo">{{ mo.etiqueta }}</option> }
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">Detalle {{ rc.motivo === 'otro' ? '*' : '(opcional)' }}</label>
+          <input [value]="rc.observacion" (input)="actualizarReceso('observacion', $any($event.target).value)" placeholder="Ej.: vacaciones de mitad de año"
+                 class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-inst-600" />
+        </div>
+      </div>
+      @if (mensajeReceso()) { <p class="text-sm text-red-700 mt-3">{{ mensajeReceso() }}</p> }
+      <div class="flex gap-3 mt-4">
+        <button type="button" (click)="guardarReceso()" [disabled]="guardandoReceso()"
+                class="px-4 py-2 rounded-lg bg-gray-800 text-white text-sm font-semibold hover:bg-gray-900 disabled:opacity-50">
+          {{ guardandoReceso() ? 'Registrando…' : 'Registrar receso' }}
+        </button>
+        <button type="button" (click)="receso.set(null); mensajeReceso.set(null)" class="px-3 py-2 text-sm text-gray-600 hover:text-gray-900">Cancelar</button>
+      </div>
+    </div>
+  }
+
+  @if (cargando()) {
+    <p class="text-center text-gray-400 py-12">Calculando…</p>
+  } @else if (datos()) {
+    @let r = resumen();
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+      <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-xs font-medium uppercase tracking-wider text-gray-500">Cumplimiento general</p>
+        <p class="text-2xl font-bold mt-1" [class]="r.cumplimiento === null ? 'text-gray-400' : r.cumplimiento >= 90 ? 'text-emerald-700' : r.cumplimiento >= 70 ? 'text-amber-700' : 'text-red-700'">
+          {{ r.cumplimiento === null ? '—' : r.cumplimiento + '%' }}
+        </p>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-xs font-medium uppercase tracking-wider text-gray-500">Clases sin asistencia</p>
+        <p class="text-2xl font-bold text-gray-800 mt-1">{{ r.faltantes }}</p>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-xs font-medium uppercase tracking-wider text-gray-500">Cursos con pendientes</p>
+        <p class="text-2xl font-bold text-gray-800 mt-1">{{ r.cursosPendientes }} <span class="text-sm font-normal text-gray-400">de {{ r.cursosTotal }}</span></p>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <p class="text-xs font-medium uppercase tracking-wider text-gray-500">Docentes con pendientes</p>
+        <p class="text-2xl font-bold text-gray-800 mt-1">{{ r.docentesPendientes }}</p>
+      </div>
+    </div>
+
+    @if (r.sinHorario || r.sinDocente) {
+      <p class="mb-4 text-xs bg-amber-50 border border-amber-200 text-amber-800 rounded-lg px-3 py-2">
+        @if (r.sinHorario) { {{ r.sinHorario }} curso(s) sin horario no se pueden controlar. }
+        @if (r.sinDocente) { {{ r.sinDocente }} curso(s) sin docente asignado. }
+        Revísalos en <a routerLink="/admin/academico/cursos" class="underline font-medium">Cursos</a>.
+      </p>
+    }
+
+    <div class="flex flex-wrap items-center gap-3 mb-4">
+      <input type="search" placeholder="Buscar docente o curso…" [value]="busqueda()" (input)="busqueda.set($any($event.target).value)"
+             class="flex-1 min-w-56 border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-inst-600" />
+      <label class="inline-flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+        <input type="checkbox" [checked]="soloPendientes()" (change)="soloPendientes.set($any($event.target).checked)" class="rounded" />
+        Solo con clases pendientes
+      </label>
+    </div>
+
+    <div class="space-y-3">
+      @for (d of filtrados(); track d.id) {
+        @let abierto = abiertos().has(d.id);
+        <article class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-3 p-4">
+            <button type="button" (click)="alternar(d.id)" class="flex-1 flex items-center gap-3 text-left min-w-0" [attr.aria-expanded]="abierto">
+              <svg class="w-4 h-4 text-gray-400 shrink-0 transition-transform" [class.rotate-90]="abierto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+              <span class="min-w-0">
+                <span class="block font-semibold text-gray-800 truncate">{{ d.nombre }}</span>
+                <span class="block text-xs text-gray-500">
+                  {{ d.cursos.length }} curso(s)
+                  @if (d.ultimaFecha) {
+                    · última asistencia {{ fechaCorta(d.ultimaFecha) }}
+                    @if ((diasSinTomar(d.ultimaFecha) ?? 0) > 7) { <span class="text-red-600 font-medium">(hace {{ diasSinTomar(d.ultimaFecha) }} días)</span> }
+                  } @else {
+                    · <span class="text-red-600 font-medium">nunca ha tomado asistencia</span>
+                  }
+                </span>
+              </span>
+            </button>
+
+            <div class="flex items-center gap-3 shrink-0">
+              @if (d.faltantes) {
+                <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold bg-red-50 text-red-700">{{ d.faltantes }} sin asistencia</span>
+              } @else {
+                <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold bg-emerald-50 text-emerald-700">Al día</span>
+              }
+              <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" [class]="claseCumplimiento(d.cumplimiento)">
+                {{ d.cumplimiento === null ? '—' : d.cumplimiento + '%' }}
+              </span>
+              @if (d.faltantes && enlaceCorreo(d); as correo) {
+                <a [href]="correo" class="px-3 py-1.5 rounded-lg bg-inst-700 text-white text-xs font-semibold hover:bg-inst-800">Avisar por correo</a>
+              }
+            </div>
+          </div>
+
+          @if (abierto) {
+            <div class="border-t border-gray-100 overflow-x-auto">
+              <table class="w-full text-sm min-w-[640px]">
+                <thead class="bg-gray-50 text-left text-xs uppercase tracking-wider text-gray-500">
+                  <tr>
+                    <th class="px-4 py-2">Curso</th>
+                    <th class="px-4 py-2 text-center">Inscritos</th>
+                    <th class="px-4 py-2 text-center">Clases</th>
+                    <th class="px-4 py-2">Fechas sin asistencia</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  @for (c of d.cursos; track c.cursoId) {
+                    <tr class="align-top">
+                      <td class="px-4 py-3">
+                        <a [routerLink]="['/admin/academico/cursos', c.cursoId]" class="font-medium text-gray-800 hover:text-inst-700">{{ c.curso }}</a>
+                        <p class="text-xs text-gray-500">
+                          {{ c.asignatura }}@if (c.nivel) { · {{ c.nivel }} }
+                          @if (c.dias.length) { · {{ textoDias(c.dias) }} } @else { · <span class="text-amber-700">sin horario</span> }
+                        </p>
+                      </td>
+                      <td class="px-4 py-3 text-center text-gray-600">{{ c.inscritos }}</td>
+                      <td class="px-4 py-3 text-center whitespace-nowrap">
+                        <span class="text-gray-700">{{ c.registradas }}/{{ c.esperadas }}</span>
+                        @if (c.cumplimiento !== null) {
+                          <span class="ml-1 inline-flex rounded-full px-1.5 py-0.5 text-[11px] font-semibold" [class]="claseCumplimiento(c.cumplimiento)">{{ c.cumplimiento }}%</span>
+                        }
+                      </td>
+                      <td class="px-4 py-3">
+                        @if (c.faltantes.length) {
+                          <div class="flex flex-wrap gap-1">
+                            @for (f of c.faltantes.slice(0, 10); track f) {
+                              <span class="rounded bg-red-50 px-1.5 py-0.5 text-xs text-red-700 capitalize">{{ fechaCorta(f) }}</span>
+                            }
+                            @if (c.faltantes.length > 10) {
+                              <span class="text-xs text-gray-500 self-center">y {{ c.faltantes.length - 10 }} más</span>
+                            }
+                          </div>
+                        }
+                        @if (c.reprogramadas.length) {
+                          <p class="mt-1.5 text-xs text-sky-800">
+                            Reprogramadas:
+                            @for (rp of c.reprogramadas; track rp.nueva; let ult = $last) {
+                              <span class="capitalize">{{ fechaCorta(rp.original) }}</span> → <span class="capitalize">{{ fechaCorta(rp.nueva) }}</span>{{ ult ? '' : ' · ' }}
+                            }
+                          </p>
+                        }
+                        @if (c.noDictadas.length) {
+                          <p class="mt-1.5 text-xs text-gray-500">
+                            No dictadas:
+                            @for (nd of c.noDictadas; track nd.fecha; let ult = $last) {
+                              <span [title]="nd.observacion ?? ''"><span class="capitalize">{{ fechaCorta(nd.fecha) }}</span> ({{ etiquetaMotivo(nd.motivo) }})</span>{{ ult ? '' : ' · ' }}
+                            }
+                          </p>
+                        }
+                        @if (c.faltantes.length) {
+                        } @else if (!c.inscritos) {
+                          <span class="text-xs text-gray-400">Sin estudiantes activos</span>
+                        } @else if (!c.esperadas) {
+                          <span class="text-xs text-gray-400">Aún no hay clases para controlar</span>
+                        } @else {
+                          <span class="text-xs text-emerald-700">Al día</span>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </article>
+      } @empty {
+        <div class="text-center py-14 bg-white rounded-xl border border-dashed border-gray-300 text-gray-500 text-sm">
+          {{ soloPendientes() && docentes().length ? 'Todos los docentes tienen la asistencia al día.' : 'No hay cursos para mostrar.' }}
+        </div>
+      }
+    </div>
+  }
+</div>

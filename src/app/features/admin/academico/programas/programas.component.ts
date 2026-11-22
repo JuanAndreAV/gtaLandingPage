@@ -1,17 +1,15 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, computed, inject, signal, OnInit } from '@angular/core';
 import { ProgramasService } from '../../../../services/gestion-academica/programas.service';
 import { Programa, CreateProgramaDto, AreaArtistica } from '../../../../models/gestion-academica/programa';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
-import { TitleComponent } from '../../../../shared/components/title/title.component';
-import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
+import { AdminPageHeaderComponent } from '../../../../shared/components/admin/page-header/admin-page-header.component';
+import { AdminModalComponent } from '../../../../shared/components/admin/modal/admin-modal.component';
 import { ConfirmPopupComponent } from '../../../shared/components/confirm-popup/confirm-popup.component';
 
 @Component({
   selector: 'app-programas',
   imports: [
-    ReactiveFormsModule,
-    TitleComponent,
-    SpinnerComponent, ConfirmPopupComponent
+    ReactiveFormsModule, ConfirmPopupComponent, AdminPageHeaderComponent, AdminModalComponent,
   ],
   templateUrl: './programas.component.html',
   styleUrl: './programas.component.css',
@@ -26,6 +24,24 @@ export class ProgramasComponent implements OnInit {
   guardando = signal(false);
   formularioEnviado = false;
   programaEditando: Programa | null = null;
+
+  errorGuardado = signal<string | null>(null);
+  filtroArea = signal<AreaArtistica | ''>('');
+
+  /** Colores sugeridos, coherentes con la paleta del sitio */
+  readonly coloresSugeridos = ['#17573a', '#1c7a2e', '#c9a227', '#0e7490', '#1d4ed8', '#6d28d9', '#be185d', '#c2410c', '#475569'];
+
+  readonly areasConProgramas = computed(() => {
+    const conteo = new Map<string, number>();
+    for (const p of this.programasService.programas()) conteo.set(p.area, (conteo.get(p.area) ?? 0) + 1);
+    return this.areas.filter((a) => conteo.has(a)).map((a) => ({ area: a, total: conteo.get(a)! }));
+  });
+
+  readonly filtrados = computed(() => {
+    const area = this.filtroArea();
+    const lista = this.programasService.programas();
+    return area ? lista.filter((p) => p.area === area) : lista;
+  });
 
   confirmPopup = signal(false);
   programa = signal<Programa | null>(null);
@@ -45,8 +61,9 @@ export class ProgramasComponent implements OnInit {
   abrirModalNuevo() {
     this.modoEdicion.set(false);
     this.programaEditando = null;
-    this.programaForm.reset();
+    this.programaForm.reset({ nombre: '', area: null, descripcion: '', colorHex: this.coloresSugeridos[0] });
     this.formularioEnviado = false;
+    this.errorGuardado.set(null);
     this.modalAbierto.set(true);
   }
 
@@ -57,9 +74,10 @@ export class ProgramasComponent implements OnInit {
       nombre: programa.nombre,
       area: programa.area,
       descripcion: programa.descripcion ?? '',
-      colorHex: programa.colorHex ?? '#6366f1',
+      colorHex: programa.colorHex ?? this.coloresSugeridos[0],
     });
     this.formularioEnviado = false;
+    this.errorGuardado.set(null);
     this.modalAbierto.set(true);
   }
 
@@ -69,7 +87,8 @@ export class ProgramasComponent implements OnInit {
 
   guardar() {
     this.formularioEnviado = true;
-    if (!this.programaForm.value.nombre || !this.programaForm.value.area) return;
+    if (!this.programaForm.value.nombre?.trim() || !this.programaForm.value.area) return;
+    this.errorGuardado.set(null);
 
     this.guardando.set(true);
     const obs = this.modoEdicion() && this.programaEditando
@@ -84,7 +103,8 @@ export class ProgramasComponent implements OnInit {
       },
       error: (err) => {
         this.guardando.set(false);
-        alert(err.error?.message ?? 'Error al guardar el programa');
+        const m = err?.error?.message;
+        this.errorGuardado.set(Array.isArray(m) ? m.join('. ') : (m ?? 'No se pudo guardar el programa'));
       },
     });
   }
@@ -114,4 +134,8 @@ desactivarConfirm(programa: Programa){
    
   
 
+
+  elegirColor(color: string) {
+    this.programaForm.patchValue({ colorHex: color });
+  }
 }

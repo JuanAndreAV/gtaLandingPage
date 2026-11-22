@@ -1,4 +1,4 @@
-import { Component, output, input } from '@angular/core';
+import { Component, HostListener, output, input } from '@angular/core';
 
 @Component({
   selector: 'app-confirm-popup',
@@ -10,6 +10,14 @@ export class ConfirmPopupComponent {
   isActive = input<boolean>();
   confirm = output<boolean>();
   popupName = input<string>();
+  titulo = input<string>();
+  mensaje = input<string>();
+  textoConfirmar = input('Desactivar');
+
+  @HostListener('document:keydown.escape')
+  alPresionarEscape() {
+    this.onCancel();
+  }
 
   onConfirm() {
     this.confirm.emit(true);

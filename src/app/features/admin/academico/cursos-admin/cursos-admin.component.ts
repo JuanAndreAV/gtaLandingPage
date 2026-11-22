@@ -8,15 +8,20 @@ import { ProgramasService } from '../../../../services/gestion-academica/program
 import { AulasService } from '../../../../services/gestion-academica/aulas.service';
 import { DocentesService } from '../../../../services/gestion-academica/docentes.service';
 import { Curso, CreateCursoDto, DiaSemana, CreateHorarioDto, Horario } from '../../../../models/gestion-academica/curso';
-import { TitleComponent } from '../../../../shared/components/title/title.component';
-import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 import { ConfirmPopupComponent } from '../../../shared/components/confirm-popup/confirm-popup.component';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { NivelesService } from '../../../../services/gestion-academica/niveles.service';
+import { AdminPageHeaderComponent } from '../../../../shared/components/admin/page-header/admin-page-header.component';
+import { AdminModalComponent } from '../../../../shared/components/admin/modal/admin-modal.component';
+import { Nivel } from '../../../../models/gestion-academica/oferta';
+
+/** Un curso se dicta de 1 a 3 veces por semana */
+export const MAX_HORARIOS = 3;
 
 @Component({
   selector: 'app-cursos-admin',
   standalone: true,
-  imports: [CommonModule, FormsModule, ConfirmPopupComponent, SpinnerComponent, TitleComponent],
+  imports: [CommonModule, FormsModule, RouterLink, ConfirmPopupComponent, AdminPageHeaderComponent, AdminModalComponent],
   templateUrl: './cursos-admin.component.html',
 })
 export class CursosAdminComponent implements OnInit {
@@ -26,12 +31,39 @@ export class CursosAdminComponent implements OnInit {
   private router = inject(Router)
   aulasService = inject(AulasService);
   docentesService = inject(DocentesService);
+  private nivelesService = inject(NivelesService);
 
   diasSemana = Object.values(DiaSemana);
+  readonly maxHorarios = MAX_HORARIOS;
+
+  // ── Niveles de la asignatura elegida en el formulario ──
+  niveles = signal<Nivel[] | null>(null); // null = cargando / sin asignatura
+
+  /** Cantidad de sesiones semanales del curso en el formulario */
+  totalHorarios = computed(() => this.modoEdicion() ? this.horariosGuardados().length : this.horariosPendientes().length);
 
   // ── Filtros ─────────────────────────────────────────────
   filtroPeriodo = signal<string>('');
   filtroAsignatura = signal<string>('');
+  busqueda = signal('');
+
+  readonly cursosFiltrados = computed(() => {
+    const q = this.normalizar(this.busqueda().trim());
+    const lista = this.cursosService.cursos();
+    if (!q) return lista;
+    return lista.filter((c) => this.normalizar(
+      `${c.nombre} ${c.asignatura?.nombre ?? ''} ${c.docente?.nombre ?? ''} ${c.docente?.apellido ?? ''}`,
+    ).includes(q));
+  });
+
+  private normalizar(s: string): string {
+    return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
+
+  etiquetaDia(d: string): string {
+    const m: Record<string, string> = { lunes: 'Lun', martes: 'Mar', miercoles: 'Mié', jueves: 'Jue', viernes: 'Vie', sabado: 'Sáb', domingo: 'Dom' };
+    return m[d] ?? d;
+  }
 
   // ── Modal curso ─────────────────────────────────────────
   modalAbierto = signal(false);
@@ -70,7 +102,24 @@ export class CursosAdminComponent implements OnInit {
       edadMin: undefined, edadMax: undefined, intensidadHoraria: undefined,
       porcentajeAsistenciaMin: 80, notaAprobatoria: 3,
       requiereNivelPrevio: false, cursoPrerequisitoId: undefined,
+      nivelId: null, tipoEstudiante: null,
     };
+  }
+
+  /** Al cambiar la asignatura, el nivel elegido deja de ser válido: se recargan sus niveles */
+  cambiarAsignatura(asignaturaId: string) {
+    this.form.asignaturaId = asignaturaId;
+    this.form.nivelId = null;
+    this.cargarNiveles(asignaturaId);
+  }
+
+  private cargarNiveles(asignaturaId: string) {
+    this.niveles.set(null);
+    if (!asignaturaId) return;
+    this.nivelesService.listar(asignaturaId).subscribe({
+      next: (n) => { if (this.form.asignaturaId === asignaturaId) this.niveles.set(n); },
+      error: () => this.niveles.set([]),
+    });
   }
 
   onFiltroChange() {
@@ -87,6 +136,7 @@ export class CursosAdminComponent implements OnInit {
     this.form = this.formVacio();
     this.horariosPendientes.set([]);
     this.horariosGuardados.set([]);
+    this.niveles.set(null);
     this.formularioEnviado = false;
     this.errorGuardado.set(null);
     this.modalAbierto.set(true);
@@ -110,7 +160,10 @@ export class CursosAdminComponent implements OnInit {
       notaAprobatoria: this.aNumero(curso.notaAprobatoria) ?? 3,
       requiereNivelPrevio: curso.requiereNivelPrevio,
       cursoPrerequisitoId: curso.cursoPrerequisitoId ?? undefined,
+      nivelId: curso.nivelId ?? null,
+      tipoEstudiante: curso.tipoEstudiante ?? null,
     };
+    this.cargarNiveles(curso.asignaturaId);
     this.formularioEnviado = false;
     this.errorGuardado.set(null);
     this.horariosPendientes.set([]);
@@ -130,6 +183,10 @@ export class CursosAdminComponent implements OnInit {
     this.errorGuardado.set(null);
 
     if (!this.form.nombre || !this.form.asignaturaId || !this.form.periodoId) return;
+    if (!this.modoEdicion() && this.horariosPendientes().length === 0) {
+      this.errorGuardado.set('Agrega al menos un horario (el curso se dicta de 1 a 3 veces por semana).');
+      return;
+    }
     if (this.form.edadMin != null && this.form.edadMax != null && this.form.edadMax < this.form.edadMin) {
       this.errorGuardado.set('La edad máxima debe ser mayor a la mínima.');
       return;
@@ -177,6 +234,8 @@ export class CursosAdminComponent implements OnInit {
       notaAprobatoria: this.aNumero(f.notaAprobatoria) ?? 3,
       requiereNivelPrevio: !!f.requiereNivelPrevio,
       cursoPrerequisitoId: f.requiereNivelPrevio ? (f.cursoPrerequisitoId || null) : null,
+      nivelId: f.nivelId || null,
+      tipoEstudiante: f.tipoEstudiante || null,
     };
   }
 
@@ -232,6 +291,10 @@ export class CursosAdminComponent implements OnInit {
   // ── Horarios: curso NUEVO (aún sin id, se acumulan localmente) ──
   agregarHorarioPendiente() {
     this.errorHorario.set(null);
+    if (this.totalHorarios() >= MAX_HORARIOS) {
+      this.errorHorario.set(`Un curso se dicta máximo ${MAX_HORARIOS} veces por semana.`);
+      return;
+    }
     if (!this.nuevoHorario.horaInicio || !this.nuevoHorario.horaFin) {
       this.errorHorario.set('Completa hora de inicio y fin.');
       return;
@@ -252,6 +315,10 @@ export class CursosAdminComponent implements OnInit {
   agregarHorarioGuardado() {
     if (!this.cursoEditando) return;
     this.errorHorario.set(null);
+    if (this.totalHorarios() >= MAX_HORARIOS) {
+      this.errorHorario.set(`Un curso se dicta máximo ${MAX_HORARIOS} veces por semana.`);
+      return;
+    }
     if (!this.nuevoHorario.horaInicio || !this.nuevoHorario.horaFin) {
       this.errorHorario.set('Completa hora de inicio y fin.');
       return;

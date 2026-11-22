@@ -1,14 +1,14 @@
-import { Component, signal, inject } from '@angular/core';
+import { Component, signal, inject, computed } from '@angular/core';
 import { Aulas as Aula, CreateAulaDto } from '../../../../models/gestion-academica/aulas';
 import { AulasService } from '../../../../services/gestion-academica/aulas.service';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
-import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
-import { TitleComponent } from '../../../../shared/components/title/title.component';
+import { AdminPageHeaderComponent } from '../../../../shared/components/admin/page-header/admin-page-header.component';
+import { AdminModalComponent } from '../../../../shared/components/admin/modal/admin-modal.component';
 import { ConfirmPopupComponent } from '../../../shared/components/confirm-popup/confirm-popup.component';
 
 @Component({
   selector: 'app-aulas',
-  imports: [ReactiveFormsModule, SpinnerComponent, TitleComponent, ConfirmPopupComponent],
+  imports: [ReactiveFormsModule, AdminPageHeaderComponent, AdminModalComponent, ConfirmPopupComponent],
   templateUrl: './aulas.component.html',
   styleUrl: './aulas.component.css',
 })
@@ -20,6 +20,18 @@ export class AulasComponent {
   guardando = signal(false);
   aulaEditando: Aula | null = null;
   formularioEnviado = false;
+
+  errorGuardado = signal<string | null>(null);
+  busqueda = signal('');
+
+  readonly filtradas = computed(() => {
+    const q = this.normalizar(this.busqueda().trim());
+    const aulas = this.aulasService.aulas();
+    return q ? aulas.filter((a) => this.normalizar(`${a.nombre} ${a.descripcion ?? ''}`).includes(q)) : aulas;
+  });
+
+  readonly capacidadTotal = computed(() =>
+    this.aulasService.aulas().reduce((s, a) => s + (a.capacidad ?? 0), 0));
 
   confirmPopup = signal(false);
   aula = signal<Aula | null>(null);
@@ -40,6 +52,7 @@ export class AulasComponent {
     this.aulaEditando = null;
     this.aulaForm.reset();
     this.formularioEnviado = false;
+    this.errorGuardado.set(null);
     this.modalAbierto.set(true);
   }
 
@@ -52,6 +65,7 @@ export class AulasComponent {
       descripcion: aula.descripcion ?? '',
     });
     this.formularioEnviado = false;
+    this.errorGuardado.set(null);
     this.modalAbierto.set(true);
   }
 
@@ -61,7 +75,9 @@ export class AulasComponent {
 
   guardar() {
     this.formularioEnviado = true;
-    if (!this.aulaForm.get('nombre')?.value) return;
+    if (!String(this.aulaForm.get('nombre')?.value ?? '').trim()) return;
+    if (this.aulaForm.get('capacidad')?.invalid) return;
+    this.errorGuardado.set(null);
 
     this.guardando.set(true);   
     const nombreVal = String(this.aulaForm.get('nombre')?.value ?? '');
@@ -84,7 +100,7 @@ export class AulasComponent {
       },
       error: (err) => {
         this.guardando.set(false);
-        alert(err.error?.message ?? 'Error al guardar el aula');
+        this.errorGuardado.set(this.mensaje(err, 'No se pudo guardar el aula'));
       },
     });
   }
@@ -112,4 +128,19 @@ export class AulasComponent {
   }
 
 
+
+  campoInvalido(nombre: 'nombre' | 'capacidad'): boolean {
+    const c = this.aulaForm.get(nombre);
+    if (nombre === 'nombre') return this.formularioEnviado && !String(c?.value ?? '').trim();
+    return !!c?.invalid && (this.formularioEnviado || !!c?.touched);
+  }
+
+  private normalizar(s: string): string {
+    return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
+
+  private mensaje(err: any, defecto: string): string {
+    const m = err?.error?.message;
+    return Array.isArray(m) ? m.join('. ') : (m ?? defecto);
+  }
 }

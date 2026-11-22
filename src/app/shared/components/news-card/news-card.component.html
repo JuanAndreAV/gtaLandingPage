@@ -1,23 +1,35 @@
-<div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover">
-  <div class="h-48 flex items-center justify-center" [class]="getIconGradientClass()">
-    <svg class="w-20 h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path 
-        stroke-linecap="round" 
-        stroke-linejoin="round" 
-        stroke-width="2" 
-        [attr.d]="getIconPath()"/>
-    </svg>
+<article class="group relative flex h-full flex-col bg-white rounded-lg border border-gray-200 transition-all duration-200 hover:border-inst-600/40 hover:shadow-[0_8px_24px_-12px_rgba(11,46,31,0.25)]">
+  <!-- Acento superior -->
+  <span class="absolute inset-x-0 top-0 h-0.5 rounded-t-lg" [class]="accentClass()"></span>
+
+  <div class="flex flex-1 flex-col p-6">
+    <div class="flex items-center justify-between mb-5">
+      <span class="flex h-11 w-11 items-center justify-center rounded-md bg-inst-50 text-inst-700 ring-1 ring-inst-100">
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" [attr.d]="iconPath()"/>
+        </svg>
+      </span>
+      <span class="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.14em]" [class]="badgeTextClass()">
+        <span class="h-1.5 w-1.5 rounded-full" [class]="accentClass()"></span>
+        {{ news().badge }}
+      </span>
+    </div>
+
+    <h3 class="text-lg font-semibold text-gray-900 leading-snug mb-2">{{ news().title }}</h3>
+    <p class="text-sm text-gray-600 leading-relaxed flex-1">{{ news().description }}</p>
+
+    <div class="mt-6 pt-4 border-t border-gray-100">
+      @if (isInternalRoute()) {
+        <a [routerLink]="news().link" class="inline-flex items-center gap-2 text-sm font-semibold text-inst-700 hover:text-inst-900 transition">
+          {{ linkLabel() }}
+          <svg class="h-4 w-4 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+        </a>
+      } @else {
+        <a [href]="news().link" class="inline-flex items-center gap-2 text-sm font-semibold text-inst-700 hover:text-inst-900 transition">
+          {{ linkLabel() }}
+          <svg class="h-4 w-4 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+        </a>
+      }
+    </div>
   </div>
-  <div class="p-6">
-    <span [class]="getBadgeColorClass()" class="text-sm font-bold px-3 py-1 rounded-full inline-block">
-      {{ news().badge }}
-    </span>
-    <h4 class="text-xl font-bold mt-3 mb-3 text-gray-900">{{ news().title }}</h4>
-    <p class="text-gray-600 mb-4">{{ news().description }}</p>
-    <a 
-      [href]="news().link" 
-      class="text-girardota-teal font-bold hover:text-girardota-teal-dark transition">
-      {{ news().linkText }}
-    </a>
-  </div>
-</div>
+</article>

@@ -133,7 +133,19 @@ export const routes: Routes = [
                {path: 'inscripciones', component: InscripcionesComponent},
                {path: 'cursos-disponibles', component: CursosDisponiblesComponent},
                {path: 'registro-estudiante', component: RegistroEstudianteComponent},
-               {path: 'cursos/:id', component: CursoDetalleComponent}
+               {path: 'cursos/:id', component: CursoDetalleComponent},
+               {
+                  path: 'ofertas',
+                  loadComponent: () => import('./features/admin/academico/ofertas-revision/ofertas-revision.component').then(m => m.OfertasRevisionComponent),
+               },
+               {
+                  path: 'seguimiento-asistencia',
+                  loadComponent: () => import('./features/admin/academico/seguimiento-asistencia/seguimiento-asistencia.component').then(m => m.SeguimientoAsistenciaComponent),
+               },
+               {
+                  path: 'niveles',
+                  loadComponent: () => import('./features/admin/academico/niveles/niveles.component').then(m => m.NivelesComponent),
+               }
             ]
          },
          {
@@ -179,6 +191,10 @@ export const routes: Routes = [
          { path: '', redirectTo: 'horario', pathMatch: 'full' },
          { path: 'horario', component: MiHorarioComponent },
          { path: 'cursos/:id/asistencia', component: TomarAsistenciaComponent },
+         {
+            path: 'oferta',
+            loadComponent: () => import('./features/profesor/mi-oferta/mi-oferta.component').then(m => m.MiOfertaComponent),
+         },
       ]
 
    }, 
